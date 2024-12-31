@@ -1,17 +1,17 @@
 <p align='center'>
-<img src='https://github.com/user-attachments/assets/80989807-139e-41aa-8c3f-5d32e53dcac0' width=600 height=314 />
+<img src='https://github.com/user-attachments/assets/1e417f4e-0f3a-4b56-8f6c-68188572421d' width=340 height=340 />
 </p>
 
 
-# react-analytics-logger
+# logguer
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/toss/slash/blob/main/LICENSE) 
-[![NPM badge](https://img.shields.io/npm/v/react-analytics-logger?logo=npm)](https://www.npmjs.com/package/react-analytics-logger) 
+[![NPM badge](https://img.shields.io/npm/v/logguer?logo=npm)](https://www.npmjs.com/package/logguer) 
 
 This package provides a flexible and extensible analytics logging system(e.g. GA, Amplitude) designed to handle various types of events and context management in your application. It is built with TypeScript, ensuring type safety and ease of integration.
 
 ## Main Features
 1. Supports both declarative and imperative APIs, allowing developers to choose the style that best fits their needs.
-2. Offers type-safe React components and hooks through the `createConfig` function by using JavaScript closure.
+2. Offers type-safe React components and hooks through the `createConfig` function.
 3. Clearly defines a layer for injecting dependencies related to analytics tools.
 
 ## Installing
