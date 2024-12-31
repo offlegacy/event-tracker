@@ -1,12 +1,22 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Children, cloneElement, createContext, isValidElement, useContext, useEffect, useMemo, useRef } from "react";
+import {
+  Children,
+  cloneElement,
+  createContext,
+  isValidElement,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 
 import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
 import { useMergeRefs } from "../hooks/useMergeRefs";
 
-import type { DOMEvents, ImpressionOptions, LoggerConfig, LoggerContextProps } from "./types";
+import type { DOMEvents, ImpressionOptions, LoggerConfig, LoggerContextProps, Task } from "./types";
 
 export function createLogger<Context, SendParams, EventParams, ImpressionParams, PageViewParams>(
   config: LoggerConfig<Context, SendParams, EventParams, ImpressionParams, PageViewParams>,
@@ -28,7 +38,9 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
     let _events = {} as Record<keyof DOMEvents, (params: EventParams) => void>;
     for (const key in loggerContext.logger.events) {
       _events[key as keyof DOMEvents] = (params: EventParams) => {
-        return loggerContext.logger.events?.[key as keyof DOMEvents]?.(params, loggerContext._getContext());
+        return loggerContext._schedule(() =>
+          loggerContext.logger.events?.[key as keyof DOMEvents]?.(params, loggerContext._getContext()),
+        );
       };
     }
     return {
@@ -40,21 +52,44 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
         ..._events,
 
         onImpression: (params: ImpressionParams) => {
-          return loggerContext.logger.impression?.onImpression(params, loggerContext._getContext());
+          return loggerContext._schedule(() =>
+            loggerContext.logger.impression?.onImpression(params, loggerContext._getContext()),
+          );
         },
         onPageView: (params: PageViewParams) => {
-          return loggerContext.logger.pageView?.onPageView(params, loggerContext._getContext());
+          return loggerContext._schedule(() =>
+            loggerContext.logger.pageView?.onPageView(params, loggerContext._getContext()),
+          );
         },
       },
     };
   };
-
   const Provider = ({ children, initialContext }: { children: ReactNode; initialContext: Context }) => {
     const contextRef = useRef<Context>(initialContext);
+    const isInitializedRef = useRef(false);
+    const queueRef = useRef<Task[]>([]);
 
-    if (initialContext !== undefined) {
-      config.init?.(initialContext);
-    }
+    // NOTE: guarantee that the task is executed after the initialization
+    const _schedule = useCallback((task: Task) => {
+      if (!isInitializedRef.current) {
+        queueRef.current.push(task);
+        return;
+      }
+      task();
+    }, []);
+
+    useEffect(() => {
+      const initialize = config.init?.(initialContext);
+      if (initialize instanceof Promise) {
+        initialize.then(() => {
+          isInitializedRef.current = true;
+          queueRef.current.forEach((fn) => fn());
+        });
+      } else {
+        isInitializedRef.current = true;
+        queueRef.current.forEach((fn) => fn());
+      }
+    }, [initialContext]);
 
     return (
       <LoggerContext.Provider
@@ -69,8 +104,9 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
               }
             },
             _getContext: () => contextRef.current,
+            _schedule,
           }),
-          [contextRef],
+          [_schedule],
         )}
       >
         {children}

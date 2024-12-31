@@ -21,7 +21,7 @@ export interface PageViewOptions {
   // TODO: add options
 }
 
-type InitFunction<C> = (initialContext: C) => void;
+type InitFunction<C> = (initialContext: C) => void | Promise<void>;
 
 type SendFunction<P, C> = (params: P, context: C) => void;
 
@@ -33,7 +33,7 @@ type ImpressionFunction<P, C> = (params: P, context: C) => void;
 
 type PageViewFunction<P, C> = (params: P, context: C) => void;
 
-type SetContextFunction<C> = (context: C) => C;
+export type Task<T = any> = (...args: T[]) => void;
 
 export interface LoggerConfig<Context, SendParams, EventParams, ImpressionParams, PageViewParams> {
   /**
@@ -77,4 +77,5 @@ export interface LoggerContextProps<Context, SendParams, EventParams, Impression
   logger: LoggerConfig<Context, SendParams, EventParams, ImpressionParams, PageTrackParams>;
   _setContext: (context: Context | ((prevContext: Context) => Context)) => void;
   _getContext: () => Context;
+  _schedule: (task: Task) => void;
 }

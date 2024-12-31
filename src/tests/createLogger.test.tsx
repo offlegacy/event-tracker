@@ -35,6 +35,32 @@ describe("init", () => {
 
     expect(initFn).toHaveBeenCalledOnce();
   });
+
+  it("init function should always be resolved first before any other functions run", async () => {
+    initFn.mockImplementationOnce(() => sleep(500));
+    const context = { userId: "id" };
+    const clickParams = { a: 1 };
+    const pageViewParams = { page: "/home" };
+
+    const page = render(
+      <Log.Provider initialContext={context}>
+        <div>test</div>
+        <Log.Click params={clickParams}>
+          <button type="button">click</button>
+        </Log.Click>
+        <Log.PageView {...pageViewParams} />
+      </Log.Provider>,
+    );
+
+    page.getByText("click").click();
+    expect(clickFn).not.toHaveBeenCalled();
+    expect(pageViewFn).not.toHaveBeenCalled();
+
+    await sleep(500);
+
+    expect(clickFn).toHaveBeenCalledWith(clickParams, context);
+    expect(pageViewFn).toHaveBeenCalledWith(pageViewParams, context);
+  });
 });
 
 describe("events", () => {
