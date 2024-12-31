@@ -1,0 +1,23 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Local env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+
+# Build Outputs
+out/
+build
+dist
+
+
+# Misc
+.DS_Store
+*.pem
+test.sh
