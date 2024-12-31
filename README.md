@@ -4,7 +4,7 @@
 
 
 # logguer
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/toss/slash/blob/main/LICENSE) 
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/logguer/logguer/blob/main/LICENSE) 
 [![NPM badge](https://img.shields.io/npm/v/logguer?logo=npm)](https://www.npmjs.com/package/logguer) 
 
 This package provides a flexible and extensible analytics logging system(e.g. GA, Amplitude) designed to handle various types of events and context management in your application. It is built with TypeScript, ensuring type safety and ease of integration.
