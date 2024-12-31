@@ -1,4 +1,5 @@
 import { DOMAttributes } from "react";
+import { SchedulerConfig } from "../scheduler";
 
 export interface ImpressionOptions {
   /**
@@ -21,19 +22,22 @@ export interface PageViewOptions {
   // TODO: add options
 }
 
+export type TaskReturnType = void | Promise<void | Param> | Param;
+export type Task = (...args: any) => TaskReturnType;
+
 type InitFunction<C> = (initialContext: C) => void | Promise<void>;
 
-type SendFunction<P, C> = (params: P, context: C) => void;
+type SendFunction<P, C> = (params: P, context: C) => TaskReturnType;
 
 export type DOMEvents = Omit<DOMAttributes<HTMLDivElement>, "children" | "dangerouslySetInnerHTML">;
 type Events<P, C> = Partial<Record<keyof DOMEvents, EventFunction<P, C>>>;
-type EventFunction<P, C> = (params: P, context: C) => void;
+type EventFunction<P, C> = (params: P, context: C) => TaskReturnType;
 
-type ImpressionFunction<P, C> = (params: P, context: C) => void;
+type ImpressionFunction<P, C> = (params: P, context: C) => TaskReturnType;
 
-type PageViewFunction<P, C> = (params: P, context: C) => void;
+type PageViewFunction<P, C> = (params: P, context: C) => TaskReturnType;
 
-export type Task<T = any> = (...args: T[]) => void;
+export type Param = Record<string, any>;
 
 export interface LoggerConfig<Context, SendParams, EventParams, ImpressionParams, PageViewParams> {
   /**
@@ -44,6 +48,9 @@ export interface LoggerConfig<Context, SendParams, EventParams, ImpressionParams
   readonly init?: InitFunction<Context>;
   /**
    * The send function to send the event.
+   * @param params - The custom params to send.
+   * @param context - The context to send.
+   * @returns void
    */
   readonly send?: SendFunction<SendParams, Context>;
   /**
@@ -67,15 +74,12 @@ export interface LoggerConfig<Context, SendParams, EventParams, ImpressionParams
      */
     // options?: PageViewOptions;
   };
-  /**
-   * The context setter.
-   */
-  // setContext?: SetContextFunction<Context>;
+  batch?: SchedulerConfig["batch"];
 }
 
 export interface LoggerContextProps<Context, SendParams, EventParams, ImpressionParams, PageTrackParams> {
   logger: LoggerConfig<Context, SendParams, EventParams, ImpressionParams, PageTrackParams>;
   _setContext: (context: Context | ((prevContext: Context) => Context)) => void;
   _getContext: () => Context;
-  _schedule: (task: Task) => void;
+  _schedule: (task: Task) => Promise<void>;
 }

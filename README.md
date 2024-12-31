@@ -3,9 +3,9 @@
 </p>
 
 
-# logguer
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/logguer/logguer/blob/main/LICENSE) 
-[![NPM badge](https://img.shields.io/npm/v/@logguer/logguer?logo=npm)](https://www.npmjs.com/package/@logguer/logguer) 
+# logger
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/loggists/logger/blob/main/LICENSE) 
+[![NPM badge](https://img.shields.io/npm/v/@loggists/logger?logo=npm)](https://www.npmjs.com/package/@loggists/logger) 
 
 This package provides a flexible and extensible analytics logging system(e.g. GA, Amplitude) designed to handle various types of events and context management in your application. It is built with TypeScript, ensuring type safety and ease of integration.
 
@@ -18,17 +18,17 @@ This package provides a flexible and extensible analytics logging system(e.g. GA
 Using npm:
 
 ```bash
-$ npm install react-analytics-logger
+$ npm install @loggists/logger
 ```
 
 Using yarn:
 ```bash
-$ yarn add react-analytics-logger
+$ yarn add @loggists/logger
 ```
 
 Using pnpm:
 ```bash
-$ pnpm add react-analytics-logger
+$ pnpm add @loggists/logger
 ```
 
 ## Example with react-ga4
@@ -36,7 +36,7 @@ $ pnpm add react-analytics-logger
 #### logger.ts
 ```tsx
 import ReactGA from "react-ga4";
-import { createLogger } from "react-analytics-logger";
+import { createLogger } from "@loggists/logger";
 import { SendParams, EventParams, GAContext, ImpressionParams, PageViewParams } from "./types";
 
 export const [Log, useLog] = createLogger<GAContext, SendParams, EventParams, ImpressionParams, PageViewParams>({

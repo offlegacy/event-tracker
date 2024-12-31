@@ -1,5 +1,5 @@
 {
-  "name": "@logguer/logguer",
+  "name": "@loggists/logger",
   "version": "0.1.0",
   "description": "The modern logging solution for React applications.",
   "scripts": {

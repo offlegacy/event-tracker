@@ -1,22 +1,13 @@
 "use client";
 
 import type { ReactNode } from "react";
-import {
-  Children,
-  cloneElement,
-  createContext,
-  isValidElement,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-} from "react";
+import { Children, cloneElement, createContext, isValidElement, useContext, useEffect, useMemo, useRef } from "react";
 
 import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
 import { useMergeRefs } from "../hooks/useMergeRefs";
+import { LogScheduler } from "../scheduler";
 
-import type { DOMEvents, ImpressionOptions, LoggerConfig, LoggerContextProps, Task } from "./types";
+import type { DOMEvents, ImpressionOptions, LoggerConfig, LoggerContextProps } from "./types";
 
 export function createLogger<Context, SendParams, EventParams, ImpressionParams, PageViewParams>(
   config: LoggerConfig<Context, SendParams, EventParams, ImpressionParams, PageViewParams>,
@@ -35,7 +26,7 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
       throw new Error("useLogger must be used within a LoggerProvider");
     }
 
-    let _events = {} as Record<keyof DOMEvents, (params: EventParams) => void>;
+    const _events = {} as Record<keyof DOMEvents, (params: EventParams) => void>;
     for (const key in loggerContext.logger.events) {
       _events[key as keyof DOMEvents] = (params: EventParams) => {
         return loggerContext._schedule(() =>
@@ -67,28 +58,32 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
   const Provider = ({ children, initialContext }: { children: ReactNode; initialContext: Context }) => {
     const contextRef = useRef<Context>(initialContext);
     const isInitializedRef = useRef(false);
-    const queueRef = useRef<Task[]>([]);
-
-    // NOTE: guarantee that the task is executed after the initialization
-    const _schedule = useCallback((task: Task) => {
-      if (!isInitializedRef.current) {
-        queueRef.current.push(task);
-        return;
-      }
-      task();
-    }, []);
+    const schedulerRef = useRef<LogScheduler>(
+      new LogScheduler({
+        isLoggerInitialized: () => isInitializedRef.current,
+        batch: config.batch ?? { enable: false },
+      }),
+    );
 
     useEffect(() => {
       const initialize = config.init?.(initialContext);
+
       if (initialize instanceof Promise) {
         initialize.then(() => {
           isInitializedRef.current = true;
-          queueRef.current.forEach((fn) => fn());
+          schedulerRef.current.startDelayedJobs();
         });
       } else {
         isInitializedRef.current = true;
-        queueRef.current.forEach((fn) => fn());
+        schedulerRef.current.startDelayedJobs();
       }
+
+      const scheduler = schedulerRef.current;
+
+      scheduler.listen();
+      return () => {
+        scheduler.remove();
+      };
     }, [initialContext]);
 
     return (
@@ -104,9 +99,9 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
               }
             },
             _getContext: () => contextRef.current,
-            _schedule,
+            _schedule: schedulerRef.current.schedule,
           }),
-          [_schedule],
+          [],
         )}
       >
         {children}
