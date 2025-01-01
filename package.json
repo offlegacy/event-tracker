@@ -1,7 +1,7 @@
 {
   "name": "@loggists/logger",
   "version": "0.1.3",
-  "description": "The modern logging solution for React applications.",
+  "description": "The best solution for logging in React applications.",
   "scripts": {
     "clean": "rimraf dist",
     "build": "pnpm clean && pnpm build:js && pnpm build:ts",
@@ -56,14 +56,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/logguer/logguer.git"
+    "url": "git+https://github.com/loggists/logger.git"
   },
   "author": "stakbucks",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/logguer/logguer/issues"
+    "url": "https://github.com/loggists/logger/issues"
   },
-  "homepage": "https://github.com/logguer/logguer#readme",
+  "homepage": "https://github.com/loggists/logger#readme",
   "keywords": [
     "react",
     "analytics",
