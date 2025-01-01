@@ -7,20 +7,19 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/loggists/logger/blob/main/LICENSE) 
 [![NPM badge](https://img.shields.io/npm/v/@loggists/logger?logo=npm)](https://www.npmjs.com/package/@loggists/logger) 
 
-This package provides a simple integration with your analytics tool(e.g. Google Analytics, Amplitude) designed to handle various types of events and context management in your application. It is built with TypeScript, ensuring type safety and ease of integration.
+This package provides a simple integration with your analytics tool(e.g. Google Analytics, Amplitude) designed to handle various types of events and context management in your React application. It is built with TypeScript, ensuring type safety and ease of integration.
 
 ## Why logger?
-If you're developing a web service with various experiments and iterations, user event tracking and logging are essential. However, logging during frontend development can sometimes be a painful process.
+If you're developing a web service with various experiments and iterations, user event tracking and logging is essential. However, logging during frontend development can sometimes be a painful process.
 
 We often experience our main business logic and logging logic getting intertwined, making the code bloated and harder to read. We also have to go through numerous files just to add a new parameter to log.
 
 `logger` helps you track events with type-safe declarative APIs, and enhances your logging performance with batching.
 
-
 ## Main Features
 1. Supports both declarative and imperative event tracking APIs, allowing developers to choose the style that best fits their needs.
 2. Offers type-safe React components and hooks through the `createConfig` function.
-3. Clearly defines a layer for injecting dependencies related to event-tracking tools.
+3. Clearly defines a layer for injecting dependencies related to analytics tools.
 4. Supports batching options for efficient and performant data transmission.
    
 ## Install
@@ -59,7 +58,7 @@ export const [Log, useLog] = createLogger<GAContext, SendParams, EventParams, Im
         ...rest,
       });
   },
-  events: {
+  DOMEvents: {
     onClick: (params, context) => {
       ReactGA.event({
         ...params,
@@ -107,22 +106,20 @@ function App() {
         <Log.Click
           params={{ category: "button", label: "count", value: count + 1 }}
         >
-          <button onClick={() => setCount((count) => count + 1)}>
+          <button onClick={() => setCount((count) => count + 1)} >
             count is {count}
           </button>
         </Log.Click>
       </div>
       <Log.Impression
-        params={{ category: "text", label: "Log your way!" }}
+        params={{ category: "text", label: "Good morning" }}
       >
-         <div>Log your way!</div>
+         <div>Good morning</div>
       </Log.Impression>
       <Log.PageView page="/home" />
     </Log.Provider>
   );
 }
-
-export default App;
 
 ```
 

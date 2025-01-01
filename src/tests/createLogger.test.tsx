@@ -161,7 +161,6 @@ describe("set context", () => {
     );
 
     page.getByText("click").click();
-    console.log("CLICKED");
     expect(pageViewFn).toHaveBeenNthCalledWith(1, pageViewParams, newContext);
   });
 
