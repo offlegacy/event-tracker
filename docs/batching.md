@@ -7,7 +7,7 @@ If not, you might need to think about the performance issues since each event lo
 To solve this issue, you can use the `batch` option. It will batch the parameters returned by the event functions in memory and provide the batch at the right time so you can handle them at once.
 
 ```tsx
-const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useLog] = createLogger({
+const [Log, useLog] = createLogger({
   // ...
   DOMEvents:{
     onClick:(clickParams: ClickParams, context: Context)=>{
