@@ -13,7 +13,7 @@ const pageViewFn = vi.fn();
 const [Log, useLog] = createLogger({
   init: initFn,
   send: sendFn,
-  events: {
+  DOMEvents: {
     onClick: clickFn,
     onFocus: focusFn,
   },
@@ -48,7 +48,7 @@ describe("init", () => {
         <Log.Click params={clickParams}>
           <button type="button">click</button>
         </Log.Click>
-        <Log.PageView {...pageViewParams} />
+        <Log.PageView params={pageViewParams} />
       </Log.Provider>,
     );
 
@@ -85,10 +85,10 @@ describe("events", () => {
     const clickParams = { a: 1 };
 
     const ButtonWithLogger = () => {
-      const { logger } = useLog();
+      const logger = useLog();
 
       return (
-        <button type="button" onClick={() => logger.onClick?.(clickParams)}>
+        <button type="button" onClick={() => logger.events.onClick(clickParams)}>
           click
         </button>
       );
@@ -111,9 +111,9 @@ describe("events", () => {
     const page = render(
       <Log.Provider initialContext={context}>
         <div>test</div>
-        <Log.Event type="onFocus" params={focusEventParams}>
+        <Log.DOMEvent type="onFocus" params={focusEventParams}>
           <input />
-        </Log.Event>
+        </Log.DOMEvent>
       </Log.Provider>,
     );
 
@@ -129,7 +129,7 @@ describe("page view", () => {
     render(
       <Log.Provider initialContext={context}>
         <div>test</div>
-        <Log.PageView {...pageViewParams} />
+        <Log.PageView params={pageViewParams} />
       </Log.Provider>,
     );
 
@@ -156,7 +156,7 @@ describe("set context", () => {
         <Log.Click params={clickParams}>
           <button type="button">click</button>
         </Log.Click>
-        <Log.PageView {...pageViewParams} />
+        <Log.PageView params={pageViewParams} />
       </Log.Provider>,
     );
 
@@ -197,8 +197,8 @@ describe("set context", () => {
       wrapper: ({ children }) => <Log.Provider initialContext={context}>{children}</Log.Provider>,
     });
 
-    result.current.logger.setContext(newContext);
-    result.current.logger.onClick(clickParams);
+    result.current.setContext(newContext);
+    result.current.events.onClick(clickParams);
     expect(clickFn).toHaveBeenNthCalledWith(1, clickParams, newContext);
   });
 });

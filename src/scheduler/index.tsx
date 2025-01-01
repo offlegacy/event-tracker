@@ -1,51 +1,15 @@
-import type { Param, Task } from "../logger/types";
+import type { EventResult, Task } from "../logger/types";
 
-type OnFlush = (params: Param[], isBrowserClosing: boolean) => void | Promise<void>;
-type OnError = (error: Error) => void | Promise<void>;
-
-type FlushType = "interval" | "batchFull" | "pageLeave" | "unknown";
-
-export interface SchedulerConfig {
-  isLoggerInitialized: () => boolean;
-  batch:
-    | {
-        enable: false;
-      }
-    | {
-        enable: true;
-        /**
-         * The interval(ms) to flush the tasks.
-         * @default 3000
-         */
-        interval?: number;
-        /**
-         * The max size of the batch until it is flushed.
-         * @default 25
-         */
-        thresholdSize?: number;
-        /**
-         * The function to flush the tasks.
-         * @param tasks - The tasks to flush.
-         */
-        onFlush: OnFlush;
-        /**
-         * The function to flush the tasks.
-         * @param error - The error to handle.
-         */
-        onError?: OnError;
-      };
-}
+import type { FlushType, OnError, OnFlush, SchedulerConfig } from "./types";
 
 const DEFAULT_INTERVAL = 3000;
 const DEFAULT_THRESHOLD_SIZE = 25;
-/**
- * if `batch` is enabled, the each function should return an object
- */
+
 export class LogScheduler {
   onFlush?: OnFlush;
   onError?: OnError;
   delayedTasks: Task[] = [];
-  batch: Param[] = [];
+  batch: EventResult[] = [];
 
   private isBatchEnabled: boolean;
   private isLoggerInitialized: () => boolean;

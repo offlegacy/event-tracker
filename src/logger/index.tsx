@@ -7,7 +7,7 @@ import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
 import { useMergeRefs } from "../hooks/useMergeRefs";
 import { LogScheduler } from "../scheduler";
 
-import type { DOMEvents, ImpressionOptions, LoggerConfig, LoggerContextProps } from "./types";
+import type { DOMEventNames, ImpressionOptions, LoggerConfig, LoggerContextProps } from "./types";
 
 export function createLogger<Context, SendParams, EventParams, ImpressionParams, PageViewParams>(
   config: LoggerConfig<Context, SendParams, EventParams, ImpressionParams, PageViewParams>,
@@ -26,22 +26,21 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
       throw new Error("useLogger must be used within a LoggerProvider");
     }
 
-    const _events = {} as Record<keyof DOMEvents, (params: EventParams) => void>;
-    for (const key in loggerContext.logger.events) {
-      _events[key as keyof DOMEvents] = (params: EventParams) => {
+    const scheduledDomEvents = {} as Record<DOMEventNames, (params: EventParams) => void>;
+    for (const key in loggerContext.logger.DOMEvents) {
+      scheduledDomEvents[key as DOMEventNames] = (params: EventParams) => {
         return loggerContext._schedule(() =>
-          loggerContext.logger.events?.[key as keyof DOMEvents]?.(params, loggerContext._getContext()),
+          loggerContext.logger.DOMEvents?.[key as DOMEventNames]?.(params, loggerContext._getContext()),
         );
       };
     }
     return {
-      logger: {
-        init: loggerContext.logger.init,
-        send: loggerContext.logger.send,
-        setContext: loggerContext._setContext,
-        getContext: loggerContext._getContext,
-        ..._events,
-
+      init: loggerContext.logger.init,
+      send: loggerContext.logger.send,
+      setContext: loggerContext._setContext,
+      getContext: loggerContext._getContext,
+      events: {
+        ...scheduledDomEvents,
         onImpression: (params: ImpressionParams) => {
           return loggerContext._schedule(() =>
             loggerContext.logger.impression?.onImpression(params, loggerContext._getContext()),
@@ -109,17 +108,17 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
     );
   };
 
-  const Event = ({ children, type, params }: { children: ReactNode; type: keyof DOMEvents; params: EventParams }) => {
+  const DOMEvent = ({ children, type, params }: { children: ReactNode; type: DOMEventNames; params: EventParams }) => {
     const child = Children.only(children);
-    const { logger } = useLogger();
+    const logger = useLogger();
 
     return (
-      isValidElement<{ [key in keyof DOMEvents]?: (...args: any[]) => void }>(child) &&
+      isValidElement<{ [key in DOMEventNames]?: (...args: any[]) => void }>(child) &&
       cloneElement(child, {
         ...child.props,
         [type]: (...args: any[]) => {
-          if (logger?.[type] !== undefined) {
-            logger[type](params);
+          if (logger.events[type] !== undefined) {
+            logger.events[type](params);
           }
           if (child.props && typeof child.props?.[type] === "function") {
             return child.props[type]?.(...args);
@@ -131,9 +130,9 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
 
   const Click = ({ children, params }: { children: ReactNode; params: EventParams }) => {
     return (
-      <Event type="onClick" params={params}>
+      <DOMEvent type="onClick" params={params}>
         {children}
-      </Event>
+      </DOMEvent>
     );
   };
 
@@ -146,13 +145,13 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
     params: ImpressionParams;
     options?: ImpressionOptions;
   }) => {
-    const { logger } = useLogger();
+    const logger = useLogger();
 
     const { isIntersecting, ref: impressionRef } = useIntersectionObserver({
       ...(options ??
         config.impression?.options ?? {
-          threshold: 0.1,
-          freezeOnceVisible: false,
+          threshold: 0.2,
+          freezeOnceVisible: true,
           initialIsIntersecting: false,
         }),
     });
@@ -162,10 +161,10 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
     const ref = useMergeRefs<HTMLDivElement>(hasRef ? [(child as any).ref, impressionRef] : [impressionRef]);
 
     useEffect(() => {
-      if (!isIntersecting || logger.onImpression === undefined) {
+      if (!isIntersecting || logger.events.onImpression === undefined) {
         return;
       }
-      logger.onImpression?.(params);
+      logger.events.onImpression?.(params);
     }, [isIntersecting, logger, params]);
 
     return hasRef ? (
@@ -180,16 +179,16 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
     );
   };
 
-  const PageView = (params: PageViewParams) => {
-    const { logger } = useLogger();
+  const PageView = ({ params }: { params: PageViewParams }) => {
+    const logger = useLogger();
     useEffect(() => {
-      logger?.onPageView?.(params);
+      logger.events.onPageView?.(params);
     }, [logger, params]);
     return null;
   };
 
   const SetContext = ({ context }: { context: Context | ((prevContext: Context) => Context) }) => {
-    const { logger } = useLogger();
+    const logger = useLogger();
 
     useEffect(() => {
       if (typeof context === "function") {
@@ -204,7 +203,7 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
   return [
     {
       Provider,
-      Event,
+      DOMEvent,
       Click,
       Impression,
       PageView,

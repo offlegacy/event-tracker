@@ -1,15 +1,15 @@
 import { DOMAttributes } from "react";
-import { SchedulerConfig } from "../scheduler";
+import type { SchedulerConfig } from "../scheduler/types";
 
 export interface ImpressionOptions {
   /**
    * A threshold indicating the percentage of the target's visibility needed to trigger the callback
-   * @default 0.1
+   * @default 0.2
    */
   threshold?: number;
   /**
    * If true, freezes the intersection state once the element becomes visible.
-   * @default false
+   * @default true
    */
   freezeOnceVisible?: boolean;
   /**
@@ -22,24 +22,27 @@ export interface PageViewOptions {
   // TODO: add options
 }
 
-export type TaskReturnType = void | Promise<void | Param> | Param;
+export type TaskReturnType = void | EventResult | Promise<void | EventResult>;
 export type Task = (...args: any) => TaskReturnType;
 
 type InitFunction<C> = (initialContext: C) => void | Promise<void>;
 
 type SendFunction<P, C> = (params: P, context: C) => TaskReturnType;
 
-export type DOMEvents = Omit<DOMAttributes<HTMLDivElement>, "children" | "dangerouslySetInnerHTML">;
-type Events<P, C> = Partial<Record<keyof DOMEvents, EventFunction<P, C>>>;
-type EventFunction<P, C> = (params: P, context: C) => TaskReturnType;
+export type DOMEventNames = keyof Omit<DOMAttributes<HTMLDivElement>, "children" | "dangerouslySetInnerHTML">;
+export type DOMEvents<P, C> = Partial<Record<DOMEventNames, DOMEventFunction<P, C>>>;
+
+type DOMEventFunction<P, C> = (params: P, context: C) => TaskReturnType;
 
 type ImpressionFunction<P, C> = (params: P, context: C) => TaskReturnType;
 
 type PageViewFunction<P, C> = (params: P, context: C) => TaskReturnType;
 
-export type Param = Record<string, any>;
+export type EventResult<T = any> = Record<string, T>;
 
-export interface LoggerConfig<Context, SendParams, EventParams, ImpressionParams, PageViewParams> {
+export type EventNames = "onImpression" | "onPageView" | DOMEventNames;
+
+export interface LoggerConfig<Context, SendParams, DOMEventParams, ImpressionParams, PageViewParams> {
   /**
    * Initialize the logger with the given context.
    * @param initialContext - The initial context to use for the logger.
@@ -56,7 +59,7 @@ export interface LoggerConfig<Context, SendParams, EventParams, ImpressionParams
   /**
    * The events to listen to.
    */
-  readonly events?: Events<EventParams, Context>;
+  readonly DOMEvents?: DOMEvents<DOMEventParams, Context>;
   /**
    * The impression event to listen to.
    */

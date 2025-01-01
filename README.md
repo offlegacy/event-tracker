@@ -23,7 +23,7 @@ We often experience our main business logic and logging logic getting intertwine
 3. Clearly defines a layer for injecting dependencies related to event-tracking tools.
 4. Supports batching options for efficient and performant data transmission.
    
-## Installing
+## Install
 Using npm:
 
 ```bash
@@ -125,3 +125,9 @@ function App() {
 export default App;
 
 ```
+
+## Docs
+- [API](./docs/api.md)
+- [Components](./docs/components.md)
+- [Hook](./docs/hook.md)
+- [Batching](./docs/batching.md)
