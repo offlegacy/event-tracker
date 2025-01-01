@@ -3,7 +3,9 @@
 `useLog` is a hook that provides the functions given in `createLogger` config. It also provides the function to get and set the context.
 
 ```tsx
-import { useLog } from "@loggists/logger";
+import { createLogger } from "@loggists/logger";
+
+const [_, useLog] = createLogger({...})
 
 const { init, send, setContext, getContext, DOMevents, onImpression, onPageView } = useLog();
 ```
