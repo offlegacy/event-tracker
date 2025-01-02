@@ -51,13 +51,6 @@ export const [Log, useLog] = createLogger<GAContext, SendParams, EventParams, Im
   init: () => {
     ReactGA.initialize("(your-ga-id)");
   },
-  send: (params, context) => {
-    const { hitType, ...rest } = params;
-      ReactGA.send({
-        hitType,
-        ...rest,
-      });
-  },
   DOMEvents: {
     onClick: (params, context) => {
       ReactGA.event({

@@ -153,7 +153,7 @@ export class LogScheduler {
   }
 
   // Should this feature be served by the scheduler?
-  async flushDelayedTasks() {
+  async scheduleDelayedTasks() {
     for (const task of this.delayedTasks) {
       await this.schedule(task);
     }
@@ -162,6 +162,6 @@ export class LogScheduler {
 
   async startDelayedJobs() {
     this.listen();
-    await this.flushDelayedTasks();
+    await this.scheduleDelayedTasks();
   }
 }

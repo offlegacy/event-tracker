@@ -9,6 +9,7 @@ const clickFn = vi.fn();
 const focusFn = vi.fn();
 const impressionFn = vi.fn();
 const pageViewFn = vi.fn();
+const anyFn = expect.any(Function);
 
 const [Log, useLog] = createLogger({
   init: initFn,
@@ -58,8 +59,8 @@ describe("init", () => {
 
     await sleep(500);
 
-    expect(clickFn).toHaveBeenCalledWith(clickParams, context);
-    expect(pageViewFn).toHaveBeenCalledWith(pageViewParams, context);
+    expect(clickFn).toHaveBeenCalledWith(clickParams, context, anyFn);
+    expect(pageViewFn).toHaveBeenCalledWith(pageViewParams, context, anyFn);
   });
 });
 
@@ -77,7 +78,7 @@ describe("events", () => {
     );
 
     page.getByText("click").click();
-    expect(clickFn).toHaveBeenCalledWith(clickParams, context);
+    expect(clickFn).toHaveBeenCalledWith(clickParams, context, anyFn);
   });
 
   it("events.onClick can be called manually by using useLogger hook", () => {
@@ -102,7 +103,7 @@ describe("events", () => {
     );
 
     page.getByText("click").click();
-    expect(clickFn).toHaveBeenCalledWith(clickParams, context);
+    expect(clickFn).toHaveBeenCalledWith(clickParams, context, anyFn);
   });
 
   it("any DOM event such as onFoucs can be called declaratively using Logger.Event", () => {
@@ -118,7 +119,7 @@ describe("events", () => {
     );
 
     page.getByRole("textbox").focus();
-    expect(focusFn).toHaveBeenCalledWith(focusEventParams, context);
+    expect(focusFn).toHaveBeenCalledWith(focusEventParams, context, anyFn);
   });
 });
 
@@ -133,7 +134,7 @@ describe("page view", () => {
       </Log.Provider>,
     );
 
-    expect(pageViewFn).toHaveBeenCalledWith(pageViewParams, context);
+    expect(pageViewFn).toHaveBeenCalledWith(pageViewParams, context, anyFn);
   });
 });
 
@@ -161,7 +162,7 @@ describe("set context", () => {
     );
 
     page.getByText("click").click();
-    expect(pageViewFn).toHaveBeenNthCalledWith(1, pageViewParams, newContext);
+    expect(pageViewFn).toHaveBeenNthCalledWith(1, pageViewParams, newContext, anyFn);
   });
 
   it("Logger.SetContext can set new context using previous context", async () => {
@@ -184,7 +185,7 @@ describe("set context", () => {
     );
 
     page.getByText("click").click();
-    expect(clickFn).toHaveBeenNthCalledWith(1, clickParams, { ...context, test: true });
+    expect(clickFn).toHaveBeenNthCalledWith(1, clickParams, { ...context, test: true }, anyFn);
   });
 
   it("can set context using useLogger hook", () => {
@@ -198,6 +199,33 @@ describe("set context", () => {
 
     result.current.setContext(newContext);
     result.current.events.onClick(clickParams);
-    expect(clickFn).toHaveBeenNthCalledWith(1, clickParams, newContext);
+    expect(clickFn).toHaveBeenNthCalledWith(1, clickParams, newContext, anyFn);
+  });
+
+  it("can set context in init function", () => {
+    const context = { userId: "id", test: false };
+
+    clickFn.mockImplementationOnce((_, context) => {
+      return context;
+    });
+
+    pageViewFn.mockImplementationOnce((_, __, setContext) => {
+      setContext((prev: { userId: string; test: boolean }) => ({ ...prev, test: true }));
+    });
+
+    const page = render(
+      <Log.Provider initialContext={context}>
+        <Log.Click params={{ a: 1 }}>
+          <button type="button">click</button>
+        </Log.Click>
+        <Log.PageView params={{ b: 1 }} />
+      </Log.Provider>,
+    );
+
+    page.getByText("click").click();
+
+    expect(pageViewFn).toHaveBeenCalledWith({ b: 1 }, { userId: "id", test: false }, anyFn);
+    // expect context to have been updated in the pageViewFn
+    expect(clickFn).toHaveReturnedWith({ userId: "id", test: true });
   });
 });

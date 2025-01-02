@@ -7,13 +7,16 @@ import { sleep } from "./utils";
 const initFn = vi.fn();
 const clickFn = vi.fn();
 const flushFn = vi.fn();
-
+const pageViewFn = vi.fn();
 const FLUSH_INTERVAL = 500;
 
 const [Log] = createLogger({
   init: initFn,
   DOMEvents: {
     onClick: clickFn,
+  },
+  pageView: {
+    onPageView: pageViewFn,
   },
   batch: {
     enable: true,
@@ -137,7 +140,7 @@ describe("batching behavior", () => {
 
   it("should wait for init function to be resolved before interval starts", async () => {
     const clickParams = { a: 1 };
-    initFn.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 300)));
+    initFn.mockImplementationOnce(() => sleep(300));
 
     const page = render(
       <Log.Provider initialContext={{}}>
@@ -168,3 +171,30 @@ describe("batching behavior", () => {
     expect(flushFn).toHaveBeenCalled();
   });
 });
+
+// This test must pass before v1.0.0
+// describe("LogScheduler race condition", () => {
+//   it("should assure the event order when the event function's return value is a Promise", async () => {
+//     const event1 = () => sleep(1000);
+//     const event2 = () => sleep(500);
+
+//     pageViewFn.mockImplementationOnce(event1);
+//     clickFn.mockImplementationOnce(event2);
+
+//     const page = render(
+//       <Log.Provider initialContext={{}}>
+//         <Log.Click params={{ b: 1 }}>
+//           <button type="button">click</button>
+//         </Log.Click>
+//         <Log.PageView params={{ a: 1 }} />
+//       </Log.Provider>,
+//     );
+
+//     page.getByText("click").click();
+
+//     expect(clickFn).not.toHaveBeenCalled();
+
+//     await sleep(500);
+
+//     expect(clickFn).toHaveBeenCalledWith({ b: 1 }, {}, anyFn);
+//   });

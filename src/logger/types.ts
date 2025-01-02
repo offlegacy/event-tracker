@@ -22,21 +22,23 @@ export interface PageViewOptions {
   // TODO: add options
 }
 
-export type TaskReturnType = void | EventResult | Promise<void | EventResult>;
-export type Task = (...args: any) => TaskReturnType;
+export type SetContext<C = unknown> = (context: C | ((prevContext: C) => C)) => void;
 
-type InitFunction<C> = (initialContext: C) => void | Promise<void>;
+export type TaskReturnType<T = any> = void | EventResult<T> | Promise<void | EventResult<T>>;
+export type Task<T = any> = (...args: any) => TaskReturnType<T>;
 
-type SendFunction<P, C> = (params: P, context: C) => TaskReturnType;
+type InitFunction<C> = (initialContext: C, setContext: SetContext<C>) => void | Promise<void>;
+
+type SendFunction<P, C> = (params: P, context: C, setContext: SetContext<C>) => TaskReturnType;
 
 export type DOMEventNames = keyof Omit<DOMAttributes<HTMLDivElement>, "children" | "dangerouslySetInnerHTML">;
 export type DOMEvents<P, C> = Partial<Record<DOMEventNames, DOMEventFunction<P, C>>>;
 
-type DOMEventFunction<P, C> = (params: P, context: C) => TaskReturnType;
+type DOMEventFunction<P, C> = (params: P, context: C, setContext: SetContext<C>) => TaskReturnType;
 
-type ImpressionFunction<P, C> = (params: P, context: C) => TaskReturnType;
+type ImpressionFunction<P, C> = (params: P, context: C, setContext: SetContext<C>) => TaskReturnType;
 
-type PageViewFunction<P, C> = (params: P, context: C) => TaskReturnType;
+type PageViewFunction<P, C> = (params: P, context: C, setContext: SetContext<C>) => TaskReturnType;
 
 export type EventResult<T = any> = Record<string, T>;
 

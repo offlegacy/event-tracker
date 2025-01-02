@@ -30,25 +30,33 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
     for (const key in loggerContext.logger.DOMEvents) {
       scheduledDomEvents[key as DOMEventNames] = (params: EventParams) => {
         return loggerContext._schedule(() =>
-          loggerContext.logger.DOMEvents?.[key as DOMEventNames]?.(params, loggerContext._getContext()),
+          loggerContext.logger.DOMEvents?.[key as DOMEventNames]?.(
+            params,
+            loggerContext._getContext(),
+            loggerContext._setContext,
+          ),
         );
       };
     }
     return {
-      init: loggerContext.logger.init,
-      send: loggerContext.logger.send,
+      send: (params: SendParams) =>
+        loggerContext.logger.send?.(params, loggerContext._getContext(), loggerContext._setContext),
       setContext: loggerContext._setContext,
       getContext: loggerContext._getContext,
       events: {
         ...scheduledDomEvents,
         onImpression: (params: ImpressionParams) => {
           return loggerContext._schedule(() =>
-            loggerContext.logger.impression?.onImpression(params, loggerContext._getContext()),
+            loggerContext.logger.impression?.onImpression(
+              params,
+              loggerContext._getContext(),
+              loggerContext._setContext,
+            ),
           );
         },
         onPageView: (params: PageViewParams) => {
           return loggerContext._schedule(() =>
-            loggerContext.logger.pageView?.onPageView(params, loggerContext._getContext()),
+            loggerContext.logger.pageView?.onPageView(params, loggerContext._getContext(), loggerContext._setContext),
           );
         },
       },
@@ -64,8 +72,16 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
       }),
     );
 
+    const _setContext = (context: Context | ((prevContext: Context) => Context)) => {
+      if (typeof context === "function") {
+        contextRef.current = (context as (prevContext: Context) => Context)(contextRef.current);
+      } else {
+        contextRef.current = context;
+      }
+    };
+
     useEffect(() => {
-      const initialize = config.init?.(initialContext);
+      const initialize = config.init?.(initialContext, _setContext);
 
       if (initialize instanceof Promise) {
         initialize.then(() => {
@@ -90,13 +106,7 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
         value={useMemo(
           () => ({
             logger: config,
-            _setContext: (context: Context | ((prevContext: Context) => Context)) => {
-              if (typeof context === "function") {
-                contextRef.current = (context as (prevContext: Context) => Context)(contextRef.current);
-              } else {
-                contextRef.current = context;
-              }
-            },
+            _setContext,
             _getContext: () => contextRef.current,
             _schedule: schedulerRef.current.schedule,
           }),

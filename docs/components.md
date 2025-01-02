@@ -1,6 +1,6 @@
 ## Provider
 
-Use the `Provider` component to connect and provide a QueryClient to your application.
+Use the `Provider` component to connect and provide initial context to your application.
 
 ```tsx
 import { createLogger } from '@loggists/logger'

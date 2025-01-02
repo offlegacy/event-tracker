@@ -20,11 +20,11 @@ const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useLog] 
 
 ### Parameter1 (Config)
 
-- `init: (initialContext: Context) => void | Promise<void>`
+- `init: (initialContext: unknown, setContext: SetContext) => void | Promise<void>`
   - **optional**
   - The function that should be executed before any events happen.
   - If it returns a promise, the events will be delayed until the promise is resolved.
-- `send: (params: Params, context: Context) => TaskReturnType`
+- `send: (params: unknown, context: unknown, setContext: SetContext) => TaskReturnType`
   - **optional**
   - A standard function to send events.
   - If it returns a promise, the events will be delayed until the promise is resolved.
@@ -34,8 +34,9 @@ const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useLog] 
   - Supports standard React DOM events (`onClick`, `onMouseEnter`, etc.).
   - Each event handler is executed when that event occurs on a child for `<Log.DOMEvent type=[event type]>`.
   - If it returns a promise, the events will be delayed until the promise is resolved.
+    - `[DOMEventName]: (params: unknown, context: unknown, setContext: SetContext) => TaskReturnType`
 - `impression`
-  - `onImpression: (params: P, context: C) => TaskReturnType`
+  - `onImpression: (params: unknown, context: unknown, setContext: SetContext) => TaskReturnType`
     - **optional**
     - A function that is executed when impression occurs on a child for `<Log.Impression>`.
     - If it returns a promise, the events will be delayed until the promise is resolved.
@@ -54,7 +55,7 @@ const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useLog] 
       - defaults to `false`.
       - The initial state of the intersection.
 - `pageView`
-  - `onPageView: (params: P, context: C) => TaskReturnType`
+  - `onPageView: (params: unknown, context: unknown, setContext: SetContext) => TaskReturnType`
     - **optional**
     - The function that is executed when `<Log.PageView>`is mounted.
     - If it returns a promise, the events will be delayed until the promise is resolved.
@@ -72,7 +73,7 @@ const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useLog] 
     - **optional**
     - defaults to `25`.
     - The max size of the batch until it is flushed.
-  - `onFlush: (results: EventResults[], isBrowserClosing: boolean) => void | Promise<void>`
+  - `onFlush: (batch: Batch[], isBrowserClosing: boolean) => void | Promise<void>`
     - **required when `enable` is `true`**
     - The function to flush the event results.
     - The second parameter can be used to correctly handle situations when the browser is not visible or closing.

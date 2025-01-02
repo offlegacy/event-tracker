@@ -7,13 +7,12 @@ import { createLogger } from "@loggists/logger";
 
 const [_, useLog] = createLogger({...})
 
-const { init, send, setContext, getContext, DOMevents, onImpression, onPageView } = useLog();
+const { setContext, getContext, events, send } = useLog();
 ```
 
 ### Return Value
 
-- `init: (params: unknown) => void`
-- `send: (params: unknown) => void`
 - `setContext: (params: unknown) => void`
 - `getContext: () => unknown`
 - `events: Record<keyof EventNames, (params: unknown) => void>`
+- `send: (params: unknown) => void`
