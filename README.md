@@ -7,20 +7,21 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/loggists/logger/blob/main/LICENSE) 
 [![NPM badge](https://img.shields.io/npm/v/@loggists/logger?logo=npm)](https://www.npmjs.com/package/@loggists/logger) 
 
-This package provides a simple integration with your analytics tool(e.g. Google Analytics, Amplitude) designed to handle various types of events and context management in your React application. It is built with TypeScript, ensuring type safety and ease of integration.
+This package provides a simple integration with your analytics tool(e.g. Google Analytics, Amplitude) designed to handle various types of user events and context management in your React application. It is built with TypeScript, ensuring type safety and ease of integration.
+
+## Main Features
+1. Declarative user event tracking APIs
+2. Ensures execution order in asynchronous event operations.
+3. Batching options for efficient and performant data transmission.
+4. Decouples your React application from analyitics tool.
+
 
 ## Why logger?
 If you're developing a web service with various experiments and iterations, user event tracking and logging is essential. However, logging during frontend development can sometimes be a painful process.
 
-We often experience our main business logic and logging logic getting intertwined, making the code bloated and harder to read. We also have to go through numerous files just to add a new parameter to log.
+Maybe you have to create a custom hook, integrate your logging logic with your state management logic, and deal with all the hassle, making your code messy and hard to maintain.
 
 `logger` helps you track events with type-safe declarative APIs, and enhances your logging performance with batching.
-
-## Main Features
-1. Supports both declarative and imperative event tracking APIs, allowing developers to choose the style that best fits their needs.
-2. Offers type-safe React components and hooks through the `createConfig` function.
-3. Clearly defines a layer for injecting dependencies related to analytics tools.
-4. Supports batching options for efficient and performant data transmission.
    
 ## Install
 Using npm:
@@ -109,7 +110,7 @@ function App() {
       >
          <div>Good morning</div>
       </Log.Impression>
-      <Log.PageView page="/home" />
+      <Log.PageView params={{page: "/home"}} />
     </Log.Provider>
   );
 }
