@@ -13,7 +13,7 @@ This package provides a simple integration with your analytics tool(e.g. Google 
 1. Declarative user event tracking APIs
 2. Ensures execution order in asynchronous event operations.
 3. Batching options for efficient and performant data transmission.
-4. Decouples your React application from analyitics tool.
+4. Decouples your React application from analytics tool.
 
 
 ## Why logger?
