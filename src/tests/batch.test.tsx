@@ -2,7 +2,7 @@ import { render } from "@testing-library/react";
 
 import { createLogger } from "..";
 
-import { sleep } from "./utils";
+import { anyFn, sleep } from "./utils";
 
 const initFn = vi.fn();
 const clickFn = vi.fn();
@@ -37,7 +37,6 @@ describe("batching behavior", () => {
         </Log.Click>
       </Log.Provider>,
     );
-
     expect(flushFn).not.toHaveBeenCalled();
 
     clickFn.mockImplementation((params) => params);
@@ -52,6 +51,7 @@ describe("batching behavior", () => {
     button.click();
     button.click();
     button.click();
+    await sleep(1);
 
     expect(clickFn).toHaveBeenCalledTimes(5);
     expect(flushFn).toHaveBeenNthCalledWith(
@@ -108,12 +108,14 @@ describe("batching behavior", () => {
 
     expect(flushFn).not.toHaveBeenCalled();
 
+    await sleep(1);
+
     page.unmount();
 
     expect(flushFn).toHaveBeenNthCalledWith(1, [clickParams, clickParams], false);
   });
 
-  it("should flush the batch when the browser is closed", () => {
+  it("should flush the batch when the browser is closed", async () => {
     const clickParams = { a: 1 };
 
     const page = render(
@@ -130,6 +132,7 @@ describe("batching behavior", () => {
 
     button.click();
     button.click();
+    await sleep(1);
 
     expect(flushFn).not.toHaveBeenCalled();
 
@@ -172,29 +175,38 @@ describe("batching behavior", () => {
   });
 });
 
-// This test must pass before v1.0.0
-// describe("LogScheduler race condition", () => {
-//   it("should assure the event order when the event function's return value is a Promise", async () => {
-//     const event1 = () => sleep(1000);
-//     const event2 = () => sleep(500);
+describe("event function race condition", () => {
+  it("should assure the event function's order when the event function", async () => {
+    const event1 = () => sleep(500);
+    const event2 = () => sleep(300);
 
-//     pageViewFn.mockImplementationOnce(event1);
-//     clickFn.mockImplementationOnce(event2);
+    pageViewFn.mockImplementationOnce(event1);
+    clickFn.mockImplementationOnce(event2);
 
-//     const page = render(
-//       <Log.Provider initialContext={{}}>
-//         <Log.Click params={{ b: 1 }}>
-//           <button type="button">click</button>
-//         </Log.Click>
-//         <Log.PageView params={{ a: 1 }} />
-//       </Log.Provider>,
-//     );
+    const page = render(
+      <Log.Provider initialContext={{}}>
+        <Log.Click params={{ b: 1 }}>
+          <button type="button">click</button>
+        </Log.Click>
+        <Log.PageView params={{ a: 1 }} />
+      </Log.Provider>,
+    );
 
-//     page.getByText("click").click();
+    page.getByText("click").click();
+    await sleep(1);
 
-//     expect(clickFn).not.toHaveBeenCalled();
+    // pageViewFn is not resolved yet. So, clickFn is not called yet.
+    expect(pageViewFn).toHaveBeenCalled();
+    expect(pageViewFn).not.toHaveResolved();
+    expect(clickFn).not.toHaveBeenCalled();
 
-//     await sleep(500);
+    await sleep(500); // wait for pageViewFn to be resolved
+    // pageViewFn is resolved now. So, clickFn is called now.
+    expect(pageViewFn).toHaveResolved();
+    expect(clickFn).toHaveBeenCalledWith({ b: 1 }, {}, anyFn);
+    expect(clickFn).not.toHaveResolved();
 
-//     expect(clickFn).toHaveBeenCalledWith({ b: 1 }, {}, anyFn);
-//   });
+    await sleep(300); // wait for clickFn to be resolved
+    expect(clickFn).toHaveResolved();
+  });
+});

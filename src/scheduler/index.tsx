@@ -11,6 +11,8 @@ export class LogScheduler {
   delayedTasks: Task[] = [];
   batch: EventResult[] = [];
 
+  private taskPromiseChain: Promise<void | EventResult> = Promise.resolve();
+
   private isBatchEnabled: boolean;
   private isLoggerInitialized: () => boolean;
   private interval: number = DEFAULT_INTERVAL;
@@ -135,21 +137,30 @@ export class LogScheduler {
       return;
     }
 
-    if (this.isBatchEnabled) {
-      const result = task();
-      if (result instanceof Promise) {
-        await result;
-      }
-      if (typeof result === "object") {
-        // Should the timer reset when the batch is modified? I don't think so.
-        this.batch.push(result);
-      }
-      if (this.batch.length >= this.thresholdSize) {
-        this.flushTasks({ type: "batchFull" });
-      }
-    } else {
-      task();
-    }
+    this.taskPromiseChain = this.taskPromiseChain
+      .then(async () => {
+        const result = task();
+        if (this.isBatchEnabled) {
+          const resolvedResult = result instanceof Promise ? await result : result;
+          if (typeof resolvedResult === "object") {
+            this.batch.push(resolvedResult);
+            if (this.batch.length >= this.thresholdSize) {
+              await this.flushTasks({ type: "batchFull" });
+            }
+          }
+        } else {
+          if (result instanceof Promise) {
+            await result;
+          }
+        }
+      })
+      .catch((error) => {
+        if (error instanceof Error) {
+          this.onError?.(error);
+        } else {
+          throw error;
+        }
+      });
   }
 
   // Should this feature be served by the scheduler?

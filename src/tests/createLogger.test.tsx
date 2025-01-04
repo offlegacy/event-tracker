@@ -3,6 +3,8 @@ import { vi } from "vitest";
 
 import { createLogger } from "..";
 
+import { sleep } from "./utils";
+
 const initFn = vi.fn();
 const sendFn = vi.fn();
 const clickFn = vi.fn();
@@ -26,7 +28,7 @@ const [Log, useLog] = createLogger({
   },
 });
 
-describe("init", () => {
+describe("init", async () => {
   it("init function should be called when the Logger.Provider is mounted", () => {
     render(
       <Log.Provider initialContext={{}}>
@@ -65,7 +67,7 @@ describe("init", () => {
 });
 
 describe("events", () => {
-  it("events.onClick should be called when the element inside Logger.Click is clicked", () => {
+  it("events.onClick should be called when the element inside Logger.Click is clicked", async () => {
     const context = { userId: "id" };
     const clickParams = { a: 1 };
     const page = render(
@@ -78,10 +80,12 @@ describe("events", () => {
     );
 
     page.getByText("click").click();
+    await sleep(1);
+
     expect(clickFn).toHaveBeenCalledWith(clickParams, context, anyFn);
   });
 
-  it("events.onClick can be called manually by using useLogger hook", () => {
+  it("events.onClick can be called manually by using useLogger hook", async () => {
     const context = { userId: "id" };
     const clickParams = { a: 1 };
 
@@ -103,10 +107,12 @@ describe("events", () => {
     );
 
     page.getByText("click").click();
+    await sleep(1);
+
     expect(clickFn).toHaveBeenCalledWith(clickParams, context, anyFn);
   });
 
-  it("any DOM event such as onFoucs can be called declaratively using Logger.Event", () => {
+  it("any DOM event such as onFoucs can be called declaratively using Logger.Event", async () => {
     const context = { userId: "id" };
     const focusEventParams = { a: 1 };
     const page = render(
@@ -119,12 +125,14 @@ describe("events", () => {
     );
 
     page.getByRole("textbox").focus();
+    await sleep(1);
+
     expect(focusFn).toHaveBeenCalledWith(focusEventParams, context, anyFn);
   });
 });
 
 describe("page view", () => {
-  it("page view should be called when the page is loaded", () => {
+  it("page view should be called when the page is loaded", async () => {
     const context = { userId: "id" };
     const pageViewParams = { a: 1 };
     render(
@@ -134,15 +142,11 @@ describe("page view", () => {
       </Log.Provider>,
     );
 
+    await sleep(1);
+
     expect(pageViewFn).toHaveBeenCalledWith(pageViewParams, context, anyFn);
   });
 });
-
-export function sleep(timeout: number): Promise<void> {
-  return new Promise((resolve) => {
-    setTimeout(resolve, timeout);
-  });
-}
 
 describe("set context", () => {
   it("new context should be set when the Logger.SetContext is mounted", async () => {
@@ -162,6 +166,8 @@ describe("set context", () => {
     );
 
     page.getByText("click").click();
+    await sleep(1);
+
     expect(pageViewFn).toHaveBeenNthCalledWith(1, pageViewParams, newContext, anyFn);
   });
 
@@ -185,10 +191,12 @@ describe("set context", () => {
     );
 
     page.getByText("click").click();
+    await sleep(1);
+
     expect(clickFn).toHaveBeenNthCalledWith(1, clickParams, { ...context, test: true }, anyFn);
   });
 
-  it("can set context using useLogger hook", () => {
+  it("can set context using useLogger hook", async () => {
     const context = { userId: "id" };
     const newContext = { userId: "newId" };
     const clickParams = { a: 1 };
@@ -199,10 +207,12 @@ describe("set context", () => {
 
     result.current.setContext(newContext);
     result.current.events.onClick(clickParams);
+    await sleep(1);
+
     expect(clickFn).toHaveBeenNthCalledWith(1, clickParams, newContext, anyFn);
   });
 
-  it("can set context in init function", () => {
+  it("can set context in init function", async () => {
     const context = { userId: "id", test: false };
 
     clickFn.mockImplementationOnce((_, context) => {
@@ -223,6 +233,7 @@ describe("set context", () => {
     );
 
     page.getByText("click").click();
+    await sleep(1);
 
     expect(pageViewFn).toHaveBeenCalledWith({ b: 1 }, { userId: "id", test: false }, anyFn);
     // expect context to have been updated in the pageViewFn
