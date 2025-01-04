@@ -10,8 +10,8 @@
     "test": "vitest --run",
     "test:watch": "vitest",
     "lint": "eslint --cache .",
-    "prepare": "husky install",
-    "postinstall": "husky install",
+    "prepare": "husky",
+    "postinstall": "husky",
     "release": "pnpm build && npm publish"
   },
   "types": "./dist/types/index.d.ts",
