@@ -9,6 +9,9 @@
     "build:ts": "pnpm tsc --emitDeclarationOnly",
     "test": "vitest --run",
     "test:watch": "vitest",
+    "lint": "eslint --cache .",
+    "prepare": "husky install",
+    "postinstall": "husky install",
     "release": "pnpm build && npm publish"
   },
   "types": "./dist/types/index.d.ts",
@@ -41,7 +44,9 @@
     "eslint-import-resolver-typescript": "^3.7.0",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-react-hooks": "^5.1.0",
+    "husky": "^9.1.7",
     "jsdom": "^25.0.1",
+    "lint-staged": "^15.3.0",
     "prettier": "^3.4.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -69,6 +74,9 @@
     "analytics",
     "google-analytics",
     "amplitude",
-    "logger"
+    "logger",
+    "event tracking",
+    "tracker",
+    "tracking"
   ]
 }

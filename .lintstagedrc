@@ -1,0 +1,3 @@
+{
+  "*.{ts,tsx}": ["pnpm lint --fix", "prettier --write --ignore-unknown"]
+}

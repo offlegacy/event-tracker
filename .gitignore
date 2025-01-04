@@ -21,3 +21,5 @@ dist
 .DS_Store
 *.pem
 test.sh
+
+.eslintcache

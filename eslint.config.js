@@ -22,6 +22,7 @@ export default tseslint.config({
     "react-hooks/rules-of-hooks": "error",
     "@typescript-eslint/no-unused-vars": "error",
     "@typescript-eslint/consistent-type-imports": "error",
+    "@eslint-react/no-children-only": "off",
     "import/order": [
       "error",
       {
