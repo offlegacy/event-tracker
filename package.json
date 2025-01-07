@@ -1,6 +1,6 @@
 {
   "name": "@loggists/logger",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "The best solution for logging in React applications.",
   "scripts": {
     "clean": "rimraf dist",
