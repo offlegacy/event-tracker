@@ -191,9 +191,13 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
 
   const PageView = ({ params }: { params: PageViewParams }) => {
     const logger = useLogger();
+    const onPageViewRef = useRef<() => Promise<void>>(undefined);
+    onPageViewRef.current = () => logger.events.onPageView(params);
+
     useEffect(() => {
-      logger.events.onPageView?.(params);
-    }, [logger, params]);
+      onPageViewRef.current?.();
+    }, [onPageViewRef]);
+
     return null;
   };
 

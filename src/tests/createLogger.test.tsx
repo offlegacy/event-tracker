@@ -146,6 +146,27 @@ describe("page view", () => {
 
     expect(pageViewFn).toHaveBeenCalledWith(pageViewParams, context, anyFn);
   });
+  it("should not call onPageView again when the page rerenders", async () => {
+    const context = { userId: "id" };
+    const pageViewParams = { a: 1 };
+
+    const Page = () => {
+      return (
+        <Log.Provider initialContext={context}>
+          <div>test</div>
+          <Log.PageView params={pageViewParams} />
+        </Log.Provider>
+      );
+    };
+
+    const page = render(<Page />);
+
+    page.rerender(<Page />);
+
+    await sleep(1);
+
+    expect(pageViewFn).toHaveBeenCalledOnce();
+  });
 });
 
 describe("set context", () => {
