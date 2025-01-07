@@ -157,25 +157,21 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
   }) => {
     const logger = useLogger();
 
-    const { isIntersecting, ref: impressionRef } = useIntersectionObserver({
+    const { ref: impressionRef } = useIntersectionObserver({
       ...(options ??
         config.impression?.options ?? {
           threshold: 0.2,
           freezeOnceVisible: true,
           initialIsIntersecting: false,
         }),
+      onChange: (isIntersecting) => {
+        if (isIntersecting) logger.events.onImpression?.(params);
+      },
     });
 
     const child = Children.only(children);
     const hasRef = isValidElement(child) && (child as any)?.ref != null;
     const ref = useMergeRefs<HTMLDivElement>(hasRef ? [(child as any).ref, impressionRef] : [impressionRef]);
-
-    useEffect(() => {
-      if (!isIntersecting || logger.events.onImpression === undefined) {
-        return;
-      }
-      logger.events.onImpression?.(params);
-    }, [isIntersecting, logger, params]);
 
     return hasRef ? (
       cloneElement(child as any, {
