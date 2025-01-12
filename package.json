@@ -12,6 +12,7 @@
     "lint": "eslint --cache .",
     "prepare": "husky",
     "postinstall": "husky",
+    "changeset": "changeset",
     "release": "pnpm build && npm publish"
   },
   "types": "./dist/types/index.d.ts",
@@ -78,5 +79,8 @@
     "event tracking",
     "tracker",
     "tracking"
-  ]
+  ],
+  "dependencies": {
+    "@changesets/cli": "^2.27.11"
+  }
 }
