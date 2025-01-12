@@ -1,10 +1,10 @@
-import { LogScheduler } from "../scheduler";
+import { Scheduler } from "../scheduler";
 import { sleep } from "./utils";
 
-describe("LogScheduler", () => {
+describe("Scheduler", () => {
   it("should assure the task is executed in order when it returns a Promise", async () => {
-    const scheduler = new LogScheduler({
-      isLoggerInitialized: () => true,
+    const scheduler = new Scheduler({
+      isTrackerInitialized: () => true,
       batch: {
         enable: false,
       },

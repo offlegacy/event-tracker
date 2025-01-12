@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react";
 
-import { createLogger } from "..";
+import { createTracker } from "..";
 
 import { anyFn, sleep } from "./utils";
 
@@ -10,7 +10,7 @@ const flushFn = vi.fn();
 const pageViewFn = vi.fn();
 const FLUSH_INTERVAL = 500;
 
-const [Log] = createLogger({
+const [Track] = createTracker({
   init: initFn,
   DOMEvents: {
     onClick: clickFn,
@@ -31,11 +31,11 @@ describe("batching behavior", () => {
     const clickParams = { a: 1 };
 
     const page = render(
-      <Log.Provider initialContext={{}}>
-        <Log.Click params={clickParams}>
+      <Track.Provider initialContext={{}}>
+        <Track.Click params={clickParams}>
           <button type="button">click</button>
-        </Log.Click>
-      </Log.Provider>,
+        </Track.Click>
+      </Track.Provider>,
     );
     expect(flushFn).not.toHaveBeenCalled();
 
@@ -65,11 +65,11 @@ describe("batching behavior", () => {
     const clickParams = { a: 1 };
 
     const page = render(
-      <Log.Provider initialContext={{}}>
-        <Log.Click params={clickParams}>
+      <Track.Provider initialContext={{}}>
+        <Track.Click params={clickParams}>
           <button type="button">click</button>
-        </Log.Click>
-      </Log.Provider>,
+        </Track.Click>
+      </Track.Provider>,
     );
 
     clickFn.mockImplementation((params) => params);
@@ -92,11 +92,11 @@ describe("batching behavior", () => {
     const clickParams = { a: 1 };
 
     const page = render(
-      <Log.Provider initialContext={{}}>
-        <Log.Click params={clickParams}>
+      <Track.Provider initialContext={{}}>
+        <Track.Click params={clickParams}>
           <button type="button">click</button>
-        </Log.Click>
-      </Log.Provider>,
+        </Track.Click>
+      </Track.Provider>,
     );
 
     clickFn.mockImplementation((params) => params);
@@ -119,11 +119,11 @@ describe("batching behavior", () => {
     const clickParams = { a: 1 };
 
     const page = render(
-      <Log.Provider initialContext={{}}>
-        <Log.Click params={clickParams}>
+      <Track.Provider initialContext={{}}>
+        <Track.Click params={clickParams}>
           <button type="button">click</button>
-        </Log.Click>
-      </Log.Provider>,
+        </Track.Click>
+      </Track.Provider>,
     );
 
     clickFn.mockImplementation((params) => params);
@@ -146,11 +146,11 @@ describe("batching behavior", () => {
     initFn.mockImplementationOnce(() => sleep(300));
 
     const page = render(
-      <Log.Provider initialContext={{}}>
-        <Log.Click params={clickParams}>
+      <Track.Provider initialContext={{}}>
+        <Track.Click params={clickParams}>
           <button type="button">click</button>
-        </Log.Click>
-      </Log.Provider>,
+        </Track.Click>
+      </Track.Provider>,
     );
 
     const button = page.getByText("click");
@@ -184,12 +184,12 @@ describe("event function race condition", () => {
     clickFn.mockImplementationOnce(event2);
 
     const page = render(
-      <Log.Provider initialContext={{}}>
-        <Log.Click params={{ b: 1 }}>
+      <Track.Provider initialContext={{}}>
+        <Track.Click params={{ b: 1 }}>
           <button type="button">click</button>
-        </Log.Click>
-        <Log.PageView params={{ a: 1 }} />
-      </Log.Provider>,
+        </Track.Click>
+        <Track.PageView params={{ a: 1 }} />
+      </Track.Provider>,
     );
 
     page.getByText("click").click();

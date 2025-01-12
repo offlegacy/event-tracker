@@ -1,7 +1,7 @@
 import { render, renderHook } from "@testing-library/react";
 import { vi } from "vitest";
 
-import { createLogger } from "..";
+import { createTracker } from "..";
 
 import { sleep } from "./utils";
 
@@ -13,7 +13,7 @@ const impressionFn = vi.fn();
 const pageViewFn = vi.fn();
 const anyFn = expect.any(Function);
 
-const [Log, useLog] = createLogger({
+const [Log, useLog] = createTracker({
   init: initFn,
   send: sendFn,
   DOMEvents: {

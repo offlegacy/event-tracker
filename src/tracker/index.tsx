@@ -5,14 +5,14 @@ import { Children, cloneElement, createContext, isValidElement, useContext, useE
 
 import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
 import { useMergeRefs } from "../hooks/useMergeRefs";
-import { LogScheduler } from "../scheduler";
+import { Scheduler } from "../scheduler";
 
-import type { DOMEventNames, ImpressionOptions, LoggerConfig, LoggerContextProps } from "./types";
+import type { DOMEventNames, ImpressionOptions, TrackerConfig, TrackerContextProps } from "./types";
 
-export function createLogger<Context, SendParams, EventParams, ImpressionParams, PageViewParams>(
-  config: LoggerConfig<Context, SendParams, EventParams, ImpressionParams, PageViewParams>,
+export function createTracker<Context, SendParams, EventParams, ImpressionParams, PageViewParams>(
+  config: TrackerConfig<Context, SendParams, EventParams, ImpressionParams, PageViewParams>,
 ) {
-  const LoggerContext = createContext<null | LoggerContextProps<
+  const TrackerContext = createContext<null | TrackerContextProps<
     Context,
     SendParams,
     EventParams,
@@ -20,43 +20,47 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
     PageViewParams
   >>(null);
 
-  const useLogger = () => {
-    const loggerContext = useContext(LoggerContext);
-    if (loggerContext === null) {
-      throw new Error("useLogger must be used within a LoggerProvider");
+  const useTracker = () => {
+    const trackerContext = useContext(TrackerContext);
+    if (trackerContext === null) {
+      throw new Error("useTracker must be used within a TrackerProvider");
     }
 
     const scheduledDomEvents = {} as Record<DOMEventNames, (params: EventParams) => void>;
-    for (const key in loggerContext.logger.DOMEvents) {
+    for (const key in trackerContext.tracker.DOMEvents) {
       scheduledDomEvents[key as DOMEventNames] = (params: EventParams) => {
-        return loggerContext._schedule(() =>
-          loggerContext.logger.DOMEvents?.[key as DOMEventNames]?.(
+        return trackerContext._schedule(() =>
+          trackerContext.tracker.DOMEvents?.[key as DOMEventNames]?.(
             params,
-            loggerContext._getContext(),
-            loggerContext._setContext,
+            trackerContext._getContext(),
+            trackerContext._setContext,
           ),
         );
       };
     }
     return {
       send: (params: SendParams) =>
-        loggerContext.logger.send?.(params, loggerContext._getContext(), loggerContext._setContext),
-      setContext: loggerContext._setContext,
-      getContext: loggerContext._getContext,
+        trackerContext.tracker.send?.(params, trackerContext._getContext(), trackerContext._setContext),
+      setContext: trackerContext._setContext,
+      getContext: trackerContext._getContext,
       events: {
         ...scheduledDomEvents,
         onImpression: (params: ImpressionParams) => {
-          return loggerContext._schedule(() =>
-            loggerContext.logger.impression?.onImpression(
+          return trackerContext._schedule(() =>
+            trackerContext.tracker.impression?.onImpression(
               params,
-              loggerContext._getContext(),
-              loggerContext._setContext,
+              trackerContext._getContext(),
+              trackerContext._setContext,
             ),
           );
         },
         onPageView: (params: PageViewParams) => {
-          return loggerContext._schedule(() =>
-            loggerContext.logger.pageView?.onPageView(params, loggerContext._getContext(), loggerContext._setContext),
+          return trackerContext._schedule(() =>
+            trackerContext.tracker.pageView?.onPageView(
+              params,
+              trackerContext._getContext(),
+              trackerContext._setContext,
+            ),
           );
         },
       },
@@ -65,9 +69,9 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
   const Provider = ({ children, initialContext }: { children: ReactNode; initialContext: Context }) => {
     const contextRef = useRef<Context>(initialContext);
     const isInitializedRef = useRef(false);
-    const schedulerRef = useRef<LogScheduler>(
-      new LogScheduler({
-        isLoggerInitialized: () => isInitializedRef.current,
+    const schedulerRef = useRef<Scheduler>(
+      new Scheduler({
+        isTrackerInitialized: () => isInitializedRef.current,
         batch: config.batch ?? { enable: false },
       }),
     );
@@ -102,10 +106,10 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
     }, [initialContext]);
 
     return (
-      <LoggerContext.Provider
+      <TrackerContext.Provider
         value={useMemo(
           () => ({
-            logger: config,
+            tracker: config,
             _setContext,
             _getContext: () => contextRef.current,
             _schedule: schedulerRef.current.schedule,
@@ -114,21 +118,21 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
         )}
       >
         {children}
-      </LoggerContext.Provider>
+      </TrackerContext.Provider>
     );
   };
 
   const DOMEvent = ({ children, type, params }: { children: ReactNode; type: DOMEventNames; params: EventParams }) => {
     const child = Children.only(children);
-    const logger = useLogger();
+    const tracker = useTracker();
 
     return (
       isValidElement<{ [key in DOMEventNames]?: (...args: any[]) => void }>(child) &&
       cloneElement(child, {
         ...child.props,
         [type]: (...args: any[]) => {
-          if (logger.events[type] !== undefined) {
-            logger.events[type](params);
+          if (tracker.events[type] !== undefined) {
+            tracker.events[type](params);
           }
           if (child.props && typeof child.props?.[type] === "function") {
             return child.props[type]?.(...args);
@@ -155,7 +159,7 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
     params: ImpressionParams;
     options?: ImpressionOptions;
   }) => {
-    const logger = useLogger();
+    const tracker = useTracker();
 
     const { ref: impressionRef } = useIntersectionObserver({
       ...(options ??
@@ -165,7 +169,7 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
           initialIsIntersecting: false,
         }),
       onChange: (isIntersecting) => {
-        if (isIntersecting) logger.events.onImpression?.(params);
+        if (isIntersecting) tracker.events.onImpression?.(params);
       },
     });
 
@@ -186,9 +190,9 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
   };
 
   const PageView = ({ params }: { params: PageViewParams }) => {
-    const logger = useLogger();
+    const tracker = useTracker();
     const onPageViewRef = useRef<() => Promise<void>>(undefined);
-    onPageViewRef.current = () => logger.events.onPageView(params);
+    onPageViewRef.current = () => tracker.events.onPageView(params);
 
     useEffect(() => {
       onPageViewRef.current?.();
@@ -198,15 +202,15 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
   };
 
   const SetContext = ({ context }: { context: Context | ((prevContext: Context) => Context) }) => {
-    const logger = useLogger();
+    const tracker = useTracker();
 
     useEffect(() => {
       if (typeof context === "function") {
-        logger.setContext((context as (prevContext: Context) => Context)(logger.getContext()));
+        tracker.setContext((context as (prevContext: Context) => Context)(tracker.getContext()));
       } else {
-        logger.setContext(context);
+        tracker.setContext(context);
       }
-    }, [logger, context]);
+    }, [tracker, context]);
     return null;
   };
 
@@ -219,6 +223,6 @@ export function createLogger<Context, SendParams, EventParams, ImpressionParams,
       PageView,
       SetContext,
     },
-    useLogger,
+    useTracker,
   ] as const;
 }

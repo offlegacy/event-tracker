@@ -44,10 +44,10 @@ export type EventResult<T = any> = Record<string, T>;
 
 export type EventNames = "onImpression" | "onPageView" | DOMEventNames;
 
-export interface LoggerConfig<Context, SendParams, DOMEventParams, ImpressionParams, PageViewParams> {
+export interface TrackerConfig<Context, SendParams, DOMEventParams, ImpressionParams, PageViewParams> {
   /**
-   * Initialize the logger with the given context.
-   * @param initialContext - The initial context to use for the logger.
+   * Initialize the tracker with the given context.
+   * @param initialContext - The initial context to use for the tracker.
    * @returns void
    */
   readonly init?: InitFunction<Context>;
@@ -82,8 +82,8 @@ export interface LoggerConfig<Context, SendParams, DOMEventParams, ImpressionPar
   batch?: SchedulerConfig["batch"];
 }
 
-export interface LoggerContextProps<Context, SendParams, EventParams, ImpressionParams, PageTrackParams> {
-  logger: LoggerConfig<Context, SendParams, EventParams, ImpressionParams, PageTrackParams>;
+export interface TrackerContextProps<Context, SendParams, EventParams, ImpressionParams, PageTrackParams> {
+  tracker: TrackerConfig<Context, SendParams, EventParams, ImpressionParams, PageTrackParams>;
   _setContext: (context: Context | ((prevContext: Context) => Context)) => void;
   _getContext: () => Context;
   _schedule: (task: Task) => Promise<void>;

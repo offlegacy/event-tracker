@@ -1,7 +1,7 @@
 {
-  "name": "@loggists/logger",
-  "version": "0.3.2",
-  "description": "The best solution for logging in React applications.",
+  "name": "@loggists/event-tracker",
+  "version": "0.4.0",
+  "description": "The best solution for event tracking in React applications.",
   "scripts": {
     "clean": "rimraf dist",
     "build": "pnpm clean && pnpm build:js && pnpm build:ts",
@@ -56,19 +56,19 @@
     "vitest": "^2.1.8"
   },
   "peerDependencies": {
-    "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
-    "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0"
+    "react": "^16.8.0 || ^17.0.0 || ^18.0. || ^19.0.0",
+    "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/loggists/logger.git"
+    "url": "git+https://github.com/loggists/event-tracker.git"
   },
-  "author": "stakbucks",
+  "author": "@stakbucks <Hwang Taehwan>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/loggists/logger/issues"
+    "url": "https://github.com/loggists/event-tracker/issues"
   },
-  "homepage": "https://github.com/loggists/logger#readme",
+  "homepage": "https://github.com/loggists/event-tracker#readme",
   "keywords": [
     "react",
     "analytics",

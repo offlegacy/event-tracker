@@ -1,4 +1,4 @@
-import type { EventResult } from "../logger/types";
+import type { EventResult } from "../tracker/types";
 
 export type Batch<T = any> = EventResult<T>[];
 
@@ -8,7 +8,7 @@ export type OnError = (error: Error) => void | Promise<void>;
 export type FlushType = "interval" | "batchFull" | "pageLeave" | "unknown";
 
 export interface SchedulerConfig {
-  isLoggerInitialized: () => boolean;
+  isTrackerInitialized: () => boolean;
   batch:
     | {
         enable: false;

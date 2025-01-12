@@ -1,11 +1,11 @@
-import type { EventResult, Task } from "../logger/types";
+import type { EventResult, Task } from "../tracker/types";
 
 import type { FlushType, OnError, OnFlush, SchedulerConfig } from "./types";
 
 const DEFAULT_INTERVAL = 3000;
 const DEFAULT_THRESHOLD_SIZE = 25;
 
-export class LogScheduler {
+export class Scheduler {
   onFlush?: OnFlush;
   onError?: OnError;
   delayedTasks: Task[] = [];
@@ -14,7 +14,7 @@ export class LogScheduler {
   private taskPromiseChain: Promise<void | EventResult> = Promise.resolve();
 
   private isBatchEnabled: boolean;
-  private isLoggerInitialized: () => boolean;
+  private isTrackerInitialized: () => boolean;
   private interval: number = DEFAULT_INTERVAL;
   private thresholdSize: number = DEFAULT_THRESHOLD_SIZE;
 
@@ -31,7 +31,7 @@ export class LogScheduler {
       this.thresholdSize = config.batch?.thresholdSize ?? DEFAULT_THRESHOLD_SIZE;
     }
     this.isBatchEnabled = config.batch?.enable;
-    this.isLoggerInitialized = config.isLoggerInitialized;
+    this.isTrackerInitialized = config.isTrackerInitialized;
 
     // NOTE: bind 'this' to public properties in order to maintain the reference when called in closures.
     this.schedule = this.schedule.bind(this);
@@ -64,7 +64,7 @@ export class LogScheduler {
   }
 
   private startTimer() {
-    if (this.isBatchEnabled && this.timer == null && this.isLoggerInitialized()) {
+    if (this.isBatchEnabled && this.timer == null && this.isTrackerInitialized()) {
       this.timer = setTimeout(() => this.flushTasks({ type: "interval" }), this.interval);
     }
   }
@@ -82,7 +82,7 @@ export class LogScheduler {
   private addLeavePageListeners() {
     if (
       this.isBatchEnabled &&
-      this.isLoggerInitialized() &&
+      this.isTrackerInitialized() &&
       this.visibilityChangeEventListener == null &&
       this.beforeUnloadEventListener == null &&
       this.pageHideEventListener == null
@@ -120,7 +120,7 @@ export class LogScheduler {
   }
 
   listen() {
-    if (this.isLoggerInitialized()) {
+    if (this.isTrackerInitialized()) {
       this.startTimer();
       this.addLeavePageListeners();
     }
@@ -132,7 +132,7 @@ export class LogScheduler {
   }
 
   async schedule(task: Task) {
-    if (!this.isLoggerInitialized()) {
+    if (!this.isTrackerInitialized()) {
       this.delayedTasks.push(task);
       return;
     }
