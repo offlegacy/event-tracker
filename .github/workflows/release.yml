@@ -15,10 +15,17 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v3
 
+      - uses: pnpm/action-setup@v3
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: 9
+
       - name: Setup Node.js 20.x
         uses: actions/setup-node@v3
         with:
           node-version: 20.x
+          cache: "pnpm"
 
       - name: Install Dependencies
         run: pnpm install
