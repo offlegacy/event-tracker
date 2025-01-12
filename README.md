@@ -3,52 +3,57 @@
 </p>
 
 
-# logger
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/loggists/logger/blob/main/LICENSE) 
-[![NPM badge](https://img.shields.io/npm/v/@loggists/logger?logo=npm)](https://www.npmjs.com/package/@loggists/logger) 
+# event-tracker
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/loggists/event-tracker/blob/main/LICENSE) 
+[![NPM badge](https://img.shields.io/npm/v/@loggists/event-tracker?logo=npm)](https://www.npmjs.com/package/@loggists/event-tracker) 
 
-This package provides a simple integration with your analytics tool(e.g. Google Analytics, Amplitude) designed to handle various types of user events and context management in your React application. It is built with TypeScript, ensuring type safety and ease of integration.
+A lightweight, type-safe event tracking library for React applications that simplifies analytics integration while maintaining clean code and optimal performance.
 
-## Main Features
-1. Declarative user event tracking APIs
-2. Ensures execution order in asynchronous event operations.
-3. Batching options for efficient and performant data transmission.
-4. Decouples your React application from analytics tool.
+## Key Features
+- 🎯 Declarative event tracking with type-safe APIs
+- ⚡️ Optimized performance with event batching
+- 🔄 Guaranteed execution order for async operations  
+- 🔌 Analytics tool agnostic - works with any provider
+- 🧩 Clean separation of tracking logic from business logic
 
 
-## Why logger?
-If you're developing a web service with various experiments and iterations, user event tracking and logging is essential. However, logging during frontend development can sometimes be a painful process.
+## Why event-tracker?
+Event tracking is essential for modern web applications, but implementing it cleanly can be challenging. Common pain points include:
 
-Maybe you have to create a custom hook, integrate your logging logic with your state management logic, and deal with all the hassle, making your code messy and hard to maintain.
+- Mixing tracking logic with business logic
+- Managing complex tracking state
+- Ensuring reliable event delivery
+- Maintaining type safety
+- Performance overhead
 
-`logger` helps you track events with type-safe declarative APIs, and enhances your logging performance with batching.
+`event-tracker` solves these problems with a declarative API that keeps your code clean and performant.
    
 ## Install
 Using npm:
 
 ```bash
-$ npm install @loggists/logger
+$ npm install @loggists/event-tracker
 ```
 
 Using yarn:
 ```bash
-$ yarn add @loggists/logger
+$ yarn add @loggists/event-tracker
 ```
 
 Using pnpm:
 ```bash
-$ pnpm add @loggists/logger
+$ pnpm add @loggists/event-tracker
 ```
 
 ## Example with react-ga4
 
-#### logger.ts
+#### tracker.ts
 ```tsx
 import ReactGA from "react-ga4";
-import { createLogger } from "@loggists/logger";
+import { createTracker } from "@loggists/event-tracker";
 import { SendParams, EventParams, GAContext, ImpressionParams, PageViewParams } from "./types";
 
-export const [Log, useLog] = createLogger<GAContext, SendParams, EventParams, ImpressionParams, PageViewParams>({
+export const [Track, useTracker] = createTracker<GAContext, SendParams, EventParams, ImpressionParams, PageViewParams>({
   init: () => {
     ReactGA.initialize("(your-ga-id)");
   },
@@ -86,32 +91,32 @@ export const [Log, useLog] = createLogger<GAContext, SendParams, EventParams, Im
 #### App.tsx
 ```tsx
 import { useState } from "react";
-import { Log } from "./logger";
+import { Track } from "./tracker";
 
 function App() {
   const [count, setCount] = useState(0);
 
   return (
-    <Log.Provider
+    <Track.Provider
       initialContext={{ userId: "USERID", clientId: "CLIENTID" }}
     >
-      <h1>Logger</h1>
+      <h1>Event Tracker</h1>
       <div className="card">
-        <Log.Click
+        <Track.Click
           params={{ category: "button", label: "count", value: count + 1 }}
         >
           <button onClick={() => setCount((count) => count + 1)} >
             count is {count}
           </button>
-        </Log.Click>
+        </Track.Click>
       </div>
-      <Log.Impression
+      <Track.Impression
         params={{ category: "text", label: "Good morning" }}
       >
          <div>Good morning</div>
-      </Log.Impression>
-      <Log.PageView params={{page: "/home"}} />
-    </Log.Provider>
+      </Track.Impression>
+      <Track.PageView params={{page: "/home"}} />
+    </Track.Provider>
   );
 }
 

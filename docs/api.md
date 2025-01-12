@@ -1,9 +1,9 @@
 # API
 
-## createLogger(config)
+## createTracker(config)
 
 ```tsx
-const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useLog] = createLogger({
+const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useTracker] = createTracker({
   init,
   send,
   DOMEvents,
@@ -32,14 +32,14 @@ const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useLog] 
   - **optional**
   - A collection of DOM event handlers.
   - Supports standard React DOM events (`onClick`, `onMouseEnter`, etc.).
-  - Each event handler is executed when that event occurs on a child for `<Log.DOMEvent type=[event type]>`.
-  - If it returns a promise, the events will be delayed until the promise is resolved.
+  - Each event handler is executed when that event occurs on a child for `<Track.DOMEvent type=[event type]>`.
+  - If it returns a promise, the event callbacks triggered after will be delayed until the promise is resolved.
     - `[DOMEventName]: (params: unknown, context: unknown, setContext: SetContext) => TaskReturnType`
 - `impression`
   - `onImpression: (params: unknown, context: unknown, setContext: SetContext) => TaskReturnType`
     - **optional**
-    - A function that is executed when impression occurs on a child for `<Log.Impression>`.
-    - If it returns a promise, the events will be delayed until the promise is resolved.
+    - A function that is executed when impression occurs on a child for `<Track.Impression>`.
+    - If it returns a promise, the event callbacks triggered after will be delayed until the promise is resolved.
   - `options: ImpressionOptions`
     - **optional**
     - `threshold: number`
@@ -57,7 +57,7 @@ const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useLog] 
 - `pageView`
   - `onPageView: (params: unknown, context: unknown, setContext: SetContext) => TaskReturnType`
     - **optional**
-    - The function that is executed when `<Log.PageView>`is mounted.
+    - The function that is executed when `<Track.PageView>`is mounted.
     - If it returns a promise, the events will be delayed until the promise is resolved.
 - `batch: SchedulerConfig["batch"]`
   - **optional**
@@ -92,4 +92,4 @@ const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useLog] 
 
 ### Return Array Value2
 
-- [`useLog`](./hook.md)
+- [`useTracker`](./hook.md)

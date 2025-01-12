@@ -1,13 +1,13 @@
-## useLog
+## useTracker
 
-`useLog` is a hook that provides the functions given in `createLogger` config. It also provides the function to get and set the context.
+`useTracker` is a hook that provides the functions given in `createTracker` config. It also provides the function to get and set the context.
 
 ```tsx
-import { createLogger } from "@loggists/logger";
+import { createTracker } from "@loggists/event-tracker";
 
-const [_, useLog] = createLogger({...})
+const [_, useTracker] = createTracker({...})
 
-const { setContext, getContext, events, send } = useLog();
+const { setContext, getContext, events, send } = useTracker();
 ```
 
 ### Return Value

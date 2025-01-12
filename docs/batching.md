@@ -1,13 +1,13 @@
 # Batching
 
-If you are using analytics tools like `@amplitude/analytics-browser` or `react-ga4`, you don't need to think much about performance because they have their own mechanisms to guarantee request orders and performance.
+If you are integrating with analytics tools like `@amplitude/analytics-browser` or `react-ga4`, you don't need to think much about performance because they have their own mechanisms to guarantee request orders and performance.
 
-If not, you might need to think about the performance issues since each event logging will probably cost an HTTP request.
+If not, you might need to think about the performance issues since each event sending will probably cost an HTTP request.
 
 To solve this issue, you can use the `batch` option. It will batch the parameters returned by the event functions in memory and provide the batch at the right time so you can handle them at once.
 
 ```tsx
-const [Log, useLog] = createLogger({
+const [Track, useTracker] = createTracker({
   // ...
   DOMEvents:{
     onClick:(clickParams: ClickParams, context: Context)=>{
@@ -31,11 +31,11 @@ const [Log, useLog] = createLogger({
 
 function App() {
   return (
-    <Log.Provider initialContext={{ deviceId: 'deviceId' }}>
-      <Log.Click params={{ target: 'button', text: 'Click Me' }}>
+    <Track.Provider initialContext={{ deviceId: 'deviceId' }}>
+      <Track.Click params={{ target: 'button', text: 'Click Me' }}>
         <button>Click Me</button>
-      </Log.Click>
-    </Log.Provider>
+      </Track.Click>
+    </Track.Provider>
   );
 }
 
@@ -47,7 +47,7 @@ For example, let's see what happens with the code above:
 - The `DOMEvents.onClick` function runs each time with the parameters and context passed. It returns an object with the parameters ready to be sent. The object is stored in the batch queue.
 - 2 seconds later, the onFlush function is run with the batch which is an array with 5 items. Each of which is an object returned from the `DOMEvents.onClick` function.
 
-#### To use batching, it is essential to return a certain value in each event functions. The event function is not batched. It is the **_return value_** of the event function that is batched.
+#### To use batching, it is essential to return a certain value in each event functions. The event callback is not batched. It is the **_return value_** of the event callback that is batched.
 
 The flushing occurs in three situations:
 
