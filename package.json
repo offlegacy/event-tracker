@@ -1,6 +1,6 @@
 {
   "name": "@loggists/event-tracker",
-  "version": "0.4.0",
+  "version": "1.0.0",
   "description": "The best solution for event tracking in React applications.",
   "scripts": {
     "clean": "rimraf dist",
