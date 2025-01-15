@@ -1,6 +1,6 @@
 {
   "name": "@loggists/event-tracker",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "The best solution for event tracking in React applications.",
   "scripts": {
     "clean": "rimraf dist",
@@ -11,7 +11,6 @@
     "test:watch": "vitest",
     "lint": "eslint --cache .",
     "prepare": "husky",
-    "postinstall": "husky",
     "changeset": "changeset",
     "release": "pnpm build && npm publish"
   },
