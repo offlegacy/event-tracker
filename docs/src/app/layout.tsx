@@ -19,13 +19,10 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="en"
-      dir="ltr"
-      // Suggested by `next-themes` package https://github.com/pacocoursey/next-themes#with-app
-      suppressHydrationWarning
-    >
-      <Head></Head>
+    <html lang="en" dir="ltr" suppressHydrationWarning>
+      <Head>
+        <link rel="icon" href="/logo.jpg" type="image/jpg" />
+      </Head>
       <body>
         <Layout
           navbar={navbar}
