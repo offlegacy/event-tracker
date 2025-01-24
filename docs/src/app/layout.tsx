@@ -13,11 +13,7 @@ export const metadata = {
 const navbar = <Navbar logo={<b>event-tracker</b>} />;
 const footer = <Footer>MIT {new Date().getFullYear()} © loggists</Footer>;
 
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <Head>

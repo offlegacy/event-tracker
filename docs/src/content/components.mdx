@@ -106,10 +106,7 @@ const [Track] = createTracker({
 function App() {
   return (
     <Track.Provider initialContext={{}}>
-      <Track.Impression
-        params={{ elementId: "hero" }}
-        options={{ threshold: 0.8 }}
-      >
+      <Track.Impression params={{ elementId: "hero" }} options={{ threshold: 0.8 }}>
         <div>Tracked content</div>
       </Track.Impression>
     </Track.Provider>

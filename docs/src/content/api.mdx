@@ -5,10 +5,7 @@
 The main function to create a tracker instance with your desired configuration.
 
 ```tsx
-const [
-  { Provider, DOMEvent, Click, Impression, PageView, SetContext },
-  useTracker,
-] = createTracker({
+const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useTracker] = createTracker({
   init,
   send,
   DOMEvents,
