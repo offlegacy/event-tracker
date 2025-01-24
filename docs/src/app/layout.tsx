@@ -2,6 +2,7 @@ import { Footer, Layout, Navbar } from "nextra-theme-docs";
 import { Head } from "nextra/components";
 import { getPageMap } from "nextra/page-map";
 import "nextra-theme-docs/style-prefixed.css";
+import "./globals.css";
 
 export const metadata = {
   title: {
@@ -31,6 +32,7 @@ export default async function RootLayout({
           pageMap={await getPageMap()}
           docsRepositoryBase="https://github.com/loggists/event-tracker/tree/main/docs"
           footer={footer}
+          darkMode
         >
           {children}
         </Layout>

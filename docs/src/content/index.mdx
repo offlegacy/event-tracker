@@ -1,3 +1,74 @@
-# Welcome to Nextra
+# Introduction
 
-Hello, world!
+## Installation
+
+Using npm:
+
+```bash
+npm install @loggists/event-tracker
+```
+
+Using yarn:
+
+```bash
+yarn add @loggists/event-tracker
+```
+
+Using pnpm:
+
+```bash
+pnpm add @loggists/event-tracker
+```
+
+## Quick Start
+
+Here's a simple example of how to use event-tracker:
+
+```tsx
+import { createTracker } from "@loggists/event-tracker";
+
+// Create a tracker instance
+const [Track, useTracker] = createTracker({
+  DOMEvents: {
+    onClick: (params, context) => {
+      console.log("Click event:", params, context);
+    },
+  },
+});
+
+// Use in your app
+function App() {
+  return (
+    <Track.Provider initialContext={{ userId: "user-123" }}>
+      <Track.Click params={{ buttonId: "submit" }}>
+        <button>Submit</button>
+      </Track.Click>
+    </Track.Provider>
+  );
+}
+```
+
+## Key Features
+
+- 🎯 **Type-safe APIs**: Declarative event tracking with complete type safety
+- ⚡️ **Optimized Performance**: Enhanced performance through event batching
+- 🔄 **Guaranteed Order**: Guaranteed execution order for async operations
+- 🔌 **Analytics Agnostic**: Works with any analytics provider of your choice
+- 🧩 **Clean Separation**: Keeps tracking logic separate from business logic
+- 📦 **Lightweight**: Minimal bundle size impact on your application
+
+## Basic Concepts
+
+event-tracker is built around a few core concepts:
+
+1. **Tracker Creation**: Use `createTracker` to create a tracker instance with your desired configuration
+2. **Provider**: Wrap your app with `Track.Provider` to provide context
+3. **Event Components**: Use components like `Track.Click` or `Track.Impression` to track events
+4. **Hooks**: Use the `useTracker` hook to access tracking functionality in your components
+
+Check out the other sections for detailed documentation on each feature:
+
+- [API Reference](/docs/api) - Detailed API documentation
+- [Components](/docs/components) - Available tracking components
+- [Hooks](/docs/hooks) - Using the useTracker hook
+- [Batching](/docs/batching) - Optimizing performance with event batching
