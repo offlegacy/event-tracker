@@ -22,7 +22,7 @@ const navbar = (
 );
 const footer = (
   <TrackImpression params={{ target: "footer" }}>
-    <Footer>MIT {new Date().getFullYear()} © loggists</Footer>
+    <Footer>MIT {new Date().getFullYear()} © OffLegacy</Footer>
   </TrackImpression>
 );
 
