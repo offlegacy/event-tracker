@@ -4,8 +4,8 @@
 
 
 # event-tracker
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/loggists/event-tracker/blob/main/LICENSE) 
-[![NPM badge](https://img.shields.io/npm/v/@loggists/event-tracker?logo=npm)](https://www.npmjs.com/package/@loggists/event-tracker) 
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/offlegacy/event-tracker/blob/main/LICENSE) 
+[![NPM badge](https://img.shields.io/npm/v/@offlegacy/event-tracker?logo=npm)](https://www.npmjs.com/package/@offlegacy/event-tracker) 
 
 A lightweight, type-safe event tracking library for React applications that simplifies analytics integration while maintaining clean code and optimal performance.
 
@@ -32,17 +32,17 @@ Event tracking is essential for modern web applications, but implementing it cle
 Using npm:
 
 ```bash
-$ npm install @loggists/event-tracker
+$ npm install @offlegacy/event-tracker
 ```
 
 Using yarn:
 ```bash
-$ yarn add @loggists/event-tracker
+$ yarn add @offlegacy/event-tracker
 ```
 
 Using pnpm:
 ```bash
-$ pnpm add @loggists/event-tracker
+$ pnpm add @offlegacy/event-tracker
 ```
 
 ## Example with react-ga4
@@ -50,7 +50,7 @@ $ pnpm add @loggists/event-tracker
 #### tracker.ts
 ```tsx
 import ReactGA from "react-ga4";
-import { createTracker } from "@loggists/event-tracker";
+import { createTracker } from "@offlegacy/event-tracker";
 import { SendParams, EventParams, GAContext, ImpressionParams, PageViewParams } from "./types";
 
 export const [Track, useTracker] = createTracker<GAContext, SendParams, EventParams, ImpressionParams, PageViewParams>({
