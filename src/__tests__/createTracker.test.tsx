@@ -13,7 +13,7 @@ const impressionFn = vi.fn();
 const pageViewFn = vi.fn();
 const anyFn = expect.any(Function);
 
-const [Log, useLog] = createTracker({
+const [Track, useTracker] = createTracker({
   init: initFn,
   send: sendFn,
   DOMEvents: {
@@ -29,11 +29,11 @@ const [Log, useLog] = createTracker({
 });
 
 describe("init", async () => {
-  it("init function should be called when the Logger.Provider is mounted", () => {
+  it("init function should be called when the Tracker.Provider is mounted", () => {
     render(
-      <Log.Provider initialContext={{}}>
+      <Track.Provider initialContext={{}}>
         <div>test</div>
-      </Log.Provider>,
+      </Track.Provider>,
     );
 
     expect(initFn).toHaveBeenCalledOnce();
@@ -46,13 +46,13 @@ describe("init", async () => {
     const pageViewParams = { page: "/home" };
 
     const page = render(
-      <Log.Provider initialContext={context}>
+      <Track.Provider initialContext={context}>
         <div>test</div>
-        <Log.Click params={clickParams}>
+        <Track.Click params={clickParams}>
           <button type="button">click</button>
-        </Log.Click>
-        <Log.PageView params={pageViewParams} />
-      </Log.Provider>,
+        </Track.Click>
+        <Track.PageView params={pageViewParams} />
+      </Track.Provider>,
     );
 
     page.getByText("click").click();
@@ -67,16 +67,16 @@ describe("init", async () => {
 });
 
 describe("events", () => {
-  it("events.onClick should be called when the element inside Logger.Click is clicked", async () => {
+  it("events.onClick should be called when the element inside Track.Click is clicked", async () => {
     const context = { userId: "id" };
     const clickParams = { a: 1 };
     const page = render(
-      <Log.Provider initialContext={context}>
+      <Track.Provider initialContext={context}>
         <div>test</div>
-        <Log.Click params={clickParams}>
+        <Track.Click params={clickParams}>
           <button type="button">click</button>
-        </Log.Click>
-      </Log.Provider>,
+        </Track.Click>
+      </Track.Provider>,
     );
 
     page.getByText("click").click();
@@ -85,25 +85,25 @@ describe("events", () => {
     expect(clickFn).toHaveBeenCalledWith(clickParams, context, anyFn);
   });
 
-  it("events.onClick can be called manually by using useLogger hook", async () => {
+  it("events.onClick can be called manually by using useTracker hook", async () => {
     const context = { userId: "id" };
     const clickParams = { a: 1 };
 
-    const ButtonWithLogger = () => {
-      const logger = useLog();
+    const ButtonWithTracker = () => {
+      const tracker = useTracker();
 
       return (
-        <button type="button" onClick={() => logger.events.onClick(clickParams)}>
+        <button type="button" onClick={() => tracker.events.onClick(clickParams)}>
           click
         </button>
       );
     };
 
     const page = render(
-      <Log.Provider initialContext={context}>
+      <Track.Provider initialContext={context}>
         <div>test</div>
-        <ButtonWithLogger />
-      </Log.Provider>,
+        <ButtonWithTracker />
+      </Track.Provider>,
     );
 
     page.getByText("click").click();
@@ -112,16 +112,16 @@ describe("events", () => {
     expect(clickFn).toHaveBeenCalledWith(clickParams, context, anyFn);
   });
 
-  it("any DOM event such as onFoucs can be called declaratively using Logger.Event", async () => {
+  it("any DOM event such as onFoucs can be called declaratively using Tracker.Event", async () => {
     const context = { userId: "id" };
     const focusEventParams = { a: 1 };
     const page = render(
-      <Log.Provider initialContext={context}>
+      <Track.Provider initialContext={context}>
         <div>test</div>
-        <Log.DOMEvent type="onFocus" params={focusEventParams}>
+        <Track.DOMEvent type="onFocus" params={focusEventParams}>
           <input />
-        </Log.DOMEvent>
-      </Log.Provider>,
+        </Track.DOMEvent>
+      </Track.Provider>,
     );
 
     page.getByRole("textbox").focus();
@@ -136,10 +136,10 @@ describe("page view", () => {
     const context = { userId: "id" };
     const pageViewParams = { a: 1 };
     render(
-      <Log.Provider initialContext={context}>
+      <Track.Provider initialContext={context}>
         <div>test</div>
-        <Log.PageView params={pageViewParams} />
-      </Log.Provider>,
+        <Track.PageView params={pageViewParams} />
+      </Track.Provider>,
     );
 
     await sleep(1);
@@ -152,10 +152,10 @@ describe("page view", () => {
 
     const Page = () => {
       return (
-        <Log.Provider initialContext={context}>
+        <Track.Provider initialContext={context}>
           <div>test</div>
-          <Log.PageView params={pageViewParams} />
-        </Log.Provider>
+          <Track.PageView params={pageViewParams} />
+        </Track.Provider>
       );
     };
 
@@ -170,20 +170,20 @@ describe("page view", () => {
 });
 
 describe("set context", () => {
-  it("new context should be set when the Logger.SetContext is mounted", async () => {
+  it("new context should be set when the Tracker.SetContext is mounted", async () => {
     const context = { userId: "id" };
     const newContext = { userId: "newId" };
     const clickParams = { a: 1 };
     const pageViewParams = { a: 1 };
     const page = render(
-      <Log.Provider initialContext={context}>
+      <Track.Provider initialContext={context}>
         <div>test</div>
-        <Log.SetContext context={newContext} />
-        <Log.Click params={clickParams}>
+        <Track.SetContext context={newContext} />
+        <Track.Click params={clickParams}>
           <button type="button">click</button>
-        </Log.Click>
-        <Log.PageView params={pageViewParams} />
-      </Log.Provider>,
+        </Track.Click>
+        <Track.PageView params={pageViewParams} />
+      </Track.Provider>,
     );
 
     page.getByText("click").click();
@@ -192,23 +192,23 @@ describe("set context", () => {
     expect(pageViewFn).toHaveBeenNthCalledWith(1, pageViewParams, newContext, anyFn);
   });
 
-  it("Logger.SetContext can set new context using previous context", async () => {
+  it("Track.SetContext can set new context using previous context", async () => {
     const context = { userId: "id" };
     const clickParams = { a: 1 };
 
     const page = render(
-      <Log.Provider initialContext={context}>
+      <Track.Provider initialContext={context}>
         <div>test</div>
-        <Log.Click params={clickParams}>
+        <Track.Click params={clickParams}>
           <button type="button">click</button>
-        </Log.Click>
-        <Log.SetContext
+        </Track.Click>
+        <Track.SetContext
           context={(prev: { userId: string }) => ({
             ...prev,
             test: true,
           })}
         />
-      </Log.Provider>,
+      </Track.Provider>,
     );
 
     page.getByText("click").click();
@@ -217,13 +217,13 @@ describe("set context", () => {
     expect(clickFn).toHaveBeenNthCalledWith(1, clickParams, { ...context, test: true }, anyFn);
   });
 
-  it("can set context using useLogger hook", async () => {
+  it("can set context using useTracker hook", async () => {
     const context = { userId: "id" };
     const newContext = { userId: "newId" };
     const clickParams = { a: 1 };
 
-    const { result } = renderHook(() => useLog(), {
-      wrapper: ({ children }) => <Log.Provider initialContext={context}>{children}</Log.Provider>,
+    const { result } = renderHook(() => useTracker(), {
+      wrapper: ({ children }) => <Track.Provider initialContext={context}>{children}</Track.Provider>,
     });
 
     result.current.setContext(newContext);
@@ -245,12 +245,12 @@ describe("set context", () => {
     });
 
     const page = render(
-      <Log.Provider initialContext={context}>
-        <Log.Click params={{ a: 1 }}>
+      <Track.Provider initialContext={context}>
+        <Track.Click params={{ a: 1 }}>
           <button type="button">click</button>
-        </Log.Click>
-        <Log.PageView params={{ b: 1 }} />
-      </Log.Provider>,
+        </Track.Click>
+        <Track.PageView params={{ b: 1 }} />
+      </Track.Provider>,
     );
 
     page.getByText("click").click();

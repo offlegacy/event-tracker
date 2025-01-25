@@ -3,7 +3,7 @@
 Use the `Provider` component to connect and provide initial context to your application.
 
 ```tsx
-import { createTracker } from '@loggists/event-tracker'
+import { createTracker } from '@offlegacy/event-tracker'
 
 const [Track] = createTracker({...})
 
@@ -22,7 +22,7 @@ function App() {
 `DOMEvent` is used for tracking events with DOM elements. It wraps a single child component and fires the function specified for the event in `createTracker` config.
 
 ```tsx
-import { createTracker } from '@loggists/event-tracker'
+import { createTracker } from '@offlegacy/event-tracker'
 
 const [Track] = createTracker({
   DOMEvents:{
@@ -53,7 +53,7 @@ function App() {
 `Click` is the same as `DomEvent` with `type="onClick`.
 
 ```tsx
-import { createTracker } from '@loggists/event-tracker'
+import { createTracker } from '@offlegacy/event-tracker'
 
 const [Track] = createTracker({
   DOMEvents:{
@@ -82,7 +82,7 @@ function App() {
 `Impression` is used for tracking impression events. It wraps a single child component and fires the `onImpression` function specified in `createTracker` config.
 
 ```tsx
-import { createTracker } from '@loggists/event-tracker'
+import { createTracker } from '@offlegacy/event-tracker'
 
 const [Track] = createTracker({
   impression:{
@@ -115,7 +115,7 @@ function App() {
 `PageView` is used for tracking page view events. It fires the `onPageView` function specified in `createTracker` config when mounted.
 
 ```tsx
-import { createTracker } from '@loggists/event-tracker'
+import { createTracker } from '@offlegacy/event-tracker'
 
 const [Track] = createTracker({
   pageView:{
@@ -142,7 +142,7 @@ function App() {
 `SetContext` is used to set or change the context. It will set the context when mounted.
 
 ```tsx
-import { createTracker } from '@loggists/event-tracker'
+import { createTracker } from '@offlegacy/event-tracker'
 
 const [Track] = createTracker({...})
 
