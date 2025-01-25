@@ -1,4 +1,4 @@
-# @loggists/event-tracker
+# @offlegacy/event-tracker
 
 ## 1.0.0
 
