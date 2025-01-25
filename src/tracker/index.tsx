@@ -1,5 +1,3 @@
-"use client";
-
 import type { ReactNode } from "react";
 import { Children, cloneElement, createContext, isValidElement, useContext, useEffect, useMemo, useRef } from "react";
 
