@@ -3,7 +3,7 @@ import { Head } from "nextra/components";
 import { getPageMap } from "nextra/page-map";
 import "nextra-theme-docs/style-prefixed.css";
 import "./globals.css";
-import { TrackProvider } from "@/tracker";
+import { TrackClick, TrackImpression, TrackProvider } from "@/tracker";
 
 export const metadata = {
   title: {
@@ -11,8 +11,20 @@ export const metadata = {
   },
 };
 
-const navbar = <Navbar logo={<b>event-tracker</b>} />;
-const footer = <Footer>MIT {new Date().getFullYear()} © loggists</Footer>;
+const navbar = (
+  <Navbar
+    logo={
+      <TrackClick params={{ target: "logo" }}>
+        <b>event-tracker</b>
+      </TrackClick>
+    }
+  />
+);
+const footer = (
+  <TrackImpression params={{ target: "footer" }}>
+    <Footer>MIT {new Date().getFullYear()} © loggists</Footer>
+  </TrackImpression>
+);
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   return (
