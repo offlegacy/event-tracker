@@ -1,4 +1,4 @@
-# API Reference
+# API
 
 ## createTracker(config)
 
@@ -39,9 +39,8 @@ const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useTrack
 #### DOMEvents
 
 - Type: `DOMEvents`
-- Optional\*\*\*\*
-- Collection of DOM event handlers
-- Supports standard React DOM events (`onClick`, `onMouseEnter`, etc.)
+- Optional
+- Collection of standard React DOM events (`onClick`, `onMouseEnter`, etc.)
 - Each handler is executed when that event occurs on a `<Track.DOMEvent type=[event type]>`
 - If a handler returns a promise, subsequent event callbacks will be delayed until it resolves
 
@@ -49,21 +48,20 @@ const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useTrack
 
 Configuration for impression tracking:
 
-##### onImpression
+- onImpression
 
-- Type: `(params: unknown, context: unknown, setContext: SetContext) => TaskReturnType`
-- Optional
-- Executed when impression occurs on a `<Track.Impression>` child
-- Promise return value will delay subsequent callbacks
+  - Type: `(params: unknown, context: unknown, setContext: SetContext) => TaskReturnType`
+  - Optional
+  - Executed when impression occurs on a `<Track.Impression>` child
+  - Promise return value will delay subsequent callbacks
 
-##### options
-
-- Type: `ImpressionOptions`
-- Optional
-- Configuration options for impression tracking:
-  - `threshold`: Percentage of visibility needed (default: 0.2)
-  - `freezeOnceVisible`: Freeze intersection state after visibility (default: true)
-  - `initialIsIntersecting`: Initial intersection state (default: false)
+- options
+  - Type: `ImpressionOptions`
+  - Optional
+  - Configuration options for impression tracking:
+    - `threshold`: Percentage of visibility needed (default: 0.2)
+    - `freezeOnceVisible`: Freeze intersection state after visibility (default: true)
+    - `initialIsIntersecting`: Initial intersection state (default: false)
 
 #### pageView
 

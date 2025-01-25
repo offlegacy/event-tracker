@@ -2,14 +2,14 @@ import { MetaRecord } from "nextra";
 
 const meta: MetaRecord = {
   index: {
-    title: "Introduction",
+    title: "Getting Started",
     theme: {
       toc: true,
       layout: "default",
     },
   },
   api: {
-    title: "API Reference",
+    title: "API",
     theme: {
       toc: true,
       layout: "default",
