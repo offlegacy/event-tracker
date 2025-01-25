@@ -1,0 +1,148 @@
+# Hooks
+
+## useTracker
+
+The `useTracker` hook provides access to tracking functionality and context management within your components.
+
+```tsx
+import { createTracker } from "@offlegacy/event-tracker";
+
+const [Track, useTracker] = createTracker({...})
+
+function MyComponent() {
+  const { setContext, getContext, events, send } = useTracker();
+
+  return (
+    // Your component content
+  );
+}
+```
+
+### Return Value
+
+The hook returns an object with the following properties:
+
+#### setContext
+
+- Type: `(params: unknown) => void`
+- Sets or updates the current tracking context
+- Can be used to update user information, session data, etc.
+
+```tsx
+const { setContext } = useTracker();
+
+// Set new context
+setContext({ userId: "user-123" });
+
+// Update context based on previous value
+setContext((prev) => ({
+  ...prev,
+  lastActive: new Date(),
+}));
+```
+
+#### getContext
+
+- Type: `() => unknown`
+- Returns the current tracking context
+- Useful for accessing current tracking state
+
+```tsx
+const { getContext } = useTracker();
+
+const currentContext = getContext();
+console.log("Current user:", currentContext.userId);
+```
+
+#### events
+
+- Type: `Record<keyof EventNames, (params: unknown) => void>`
+- Object containing all configured event tracking functions
+- Keys match the event names defined in your tracker configuration
+
+```tsx
+const { events } = useTracker();
+
+// Track a click event
+events.onClick({ buttonId: "submit" });
+
+// Track an impression
+events.onImpression({ elementId: "hero" });
+```
+
+#### send
+
+- Type: `(params: unknown) => void`
+- Generic event sending function
+- Uses the `send` function configured in `createTracker`
+
+```tsx
+const { send } = useTracker();
+
+// Send a custom event
+send({
+  eventType: "custom_action",
+  data: {
+    /* ... */
+  },
+});
+```
+
+### Example Usage
+
+Here's a complete example showing how to use the `useTracker` hook:
+
+```tsx
+import { createTracker } from "@offlegacy/event-tracker";
+
+const [Track, useTracker] = createTracker({
+  send: (params) => {
+    // Send event to analytics service
+    analytics.track(params);
+  },
+});
+
+function UserProfile({ userId }) {
+  const { setContext, events, send } = useTracker();
+
+  useEffect(() => {
+    // Update context when user ID changes
+    setContext({ userId });
+
+    // Track page view
+    events.onPageView({ page: "profile" });
+  }, [userId]);
+
+  const handleSettingsClick = () => {
+    // Track custom event
+    send({
+      eventType: "open_settings",
+      userId,
+    });
+  };
+
+  return (
+    <div>
+      <h1>User Profile</h1>
+      <button onClick={handleSettingsClick}>Settings</button>
+    </div>
+  );
+}
+```
+
+### Best Practices
+
+1. **Context Updates**
+
+   - Use `setContext` for global state that affects multiple events
+   - Consider using the function form of `setContext` for updates based on previous state
+
+2. **Event Tracking**
+
+   - Use the specific event functions from `events` when possible
+   - Fall back to `send` for custom or one-off events
+
+3. **Performance**
+   - Avoid calling tracking functions in render
+   - Use callbacks or effects for tracking
+   - Consider using [batching](/docs/batching) for better performance

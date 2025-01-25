@@ -1,12 +1,13 @@
 {
   "name": "@offlegacy/event-tracker",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "The best solution for event tracking in React applications.",
   "scripts": {
     "clean": "rimraf dist",
     "build": "pnpm clean && pnpm build:js && pnpm build:ts",
     "build:js": "node scripts/build.js",
     "build:ts": "pnpm tsc --emitDeclarationOnly",
+    "dev:docs": "cd docs && pnpm dev",
     "test": "vitest --run",
     "test:watch": "vitest",
     "lint": "eslint --cache .",
