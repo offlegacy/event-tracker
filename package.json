@@ -2,11 +2,43 @@
   "name": "@offlegacy/event-tracker",
   "version": "1.0.3",
   "description": "The best solution for event tracking in React applications.",
+  "keywords": [
+    "react",
+    "analytics",
+    "google-analytics",
+    "amplitude",
+    "logger",
+    "event tracking",
+    "tracker",
+    "tracking"
+  ],
+  "homepage": "https://github.com/offlegacy/event-tracker#readme",
+  "bugs": "https://github.com/offlegacy/event-tracker/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/offlegacy/event-tracker.git"
+  },
+  "license": "MIT",
+  "author": "@stakbucks <Hwang Taehwan>",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "type": "module",
   "scripts": {
     "clean": "rimraf dist",
-    "build": "pnpm clean && pnpm build:js && pnpm build:ts",
-    "build:js": "node scripts/build.js",
-    "build:ts": "pnpm tsc --emitDeclarationOnly",
+    "dev": "tsup --watch",
+    "build": "tsup",
     "dev:docs": "cd docs && pnpm dev",
     "test": "vitest --run",
     "test:watch": "vitest",
@@ -15,21 +47,12 @@
     "prepare": "husky",
     "release": "pnpm build && npm publish"
   },
-  "types": "./dist/types/index.d.ts",
-  "main": "./dist/cjs/index.js",
-  "module": "./dist/esm/index.js",
-  "exports": {
-    ".": {
-      "types": "./dist/types/index.d.ts",
-      "require": "./dist/cjs/index.js",
-      "import": "./dist/esm/index.js"
-    }
-  },
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
-  "type": "module",
-  "packageManager": "pnpm@9.14.2",
   "devDependencies": {
     "@cspell/eslint-plugin": "^8.17.1",
     "@eslint-react/eslint-plugin": "^1.22.1",
@@ -52,6 +75,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "rimraf": "^6.0.1",
+    "tsup": "^8.3.5",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.18.2",
     "vitest": "^2.1.8"
@@ -60,24 +84,8 @@
     "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
     "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/offlegacy/event-tracker.git"
+  "publishConfig": {
+    "access": "public"
   },
-  "author": "@stakbucks <Hwang Taehwan>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/offlegacy/event-tracker/issues"
-  },
-  "homepage": "https://github.com/offlegacy/event-tracker#readme",
-  "keywords": [
-    "react",
-    "analytics",
-    "google-analytics",
-    "amplitude",
-    "logger",
-    "event tracking",
-    "tracker",
-    "tracking"
-  ]
+  "packageManager": "pnpm@9.14.2"
 }
