@@ -28,8 +28,6 @@ describe("Scheduler", () => {
 
     // task1 not resolved yet
     expect(task1).not.toHaveResolved();
-    // expect(task2).not.toHaveBeenCalled();
-    // expect(task3).not.toHaveBeenCalled();
 
     await sleep(1); // wait for execution context to be finished
 
