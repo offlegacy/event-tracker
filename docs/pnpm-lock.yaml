@@ -8,6 +8,12 @@ importers:
 
   .:
     dependencies:
+      '@amplitude/analytics-browser':
+        specifier: ^2.11.11
+        version: 2.11.11
+      '@loggists/event-tracker':
+        specifier: ^1.0.2
+        version: 1.0.2(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       next:
         specifier: 15.1.6
         version: 15.1.6(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -60,6 +66,33 @@ packages:
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
+
+  '@amplitude/analytics-browser@2.11.11':
+    resolution: {integrity: sha512-AdpNNPwoNPezojeeU2ITcyqKcrrW8edVBHlCEvDNIXYkf5Y0i5Blbes3x6rgONsOeV2hx85trTXhhVkilWgHcg==}
+
+  '@amplitude/analytics-client-common@2.3.7':
+    resolution: {integrity: sha512-HuwP2MFoeCTZWFIxkeYZOy5GP9ydjRO+n2KUMhHXTXGUx1M9vxIx1BUHsHKOZ4BZ5qEUTacgmznyc6uJJUiCWg==}
+
+  '@amplitude/analytics-connector@1.6.2':
+    resolution: {integrity: sha512-9bk2IjyV3VgUdbI3ounKUuP+4u4ABftDWGdOKxshEQrHg6WhgC8V4hdhSHv9wOHebGTvZntRKM5LlSXUyDYBpw==}
+
+  '@amplitude/analytics-core@2.5.5':
+    resolution: {integrity: sha512-OSB1WSD6qYoHyHliZaSujyatik2SP+vtoy8Y0vgRdYIpbE24F2q+SwBF3X5A1IeUqZ5fdpz+BNMwwUVl0Z4Ykg==}
+
+  '@amplitude/analytics-remote-config@0.4.1':
+    resolution: {integrity: sha512-BYl6kQ9qjztrCACsugpxO+foLaQIC0aSEzoXEAb/gwOzInmqkyyI+Ub+aWTBih4xgB/lhWlOcidWHAmNiTJTNw==}
+
+  '@amplitude/analytics-types@2.8.4':
+    resolution: {integrity: sha512-jQ8WY1aPbpBshl0L/0YEeQn/wZlBr8Jlqc20qf8nbuDuimFy8RqAkE+BVaMI86FCkr3AJ7PjMXkGwCSbUx88CA==}
+
+  '@amplitude/experiment-core@0.10.1':
+    resolution: {integrity: sha512-2h0vqOaHoACmNiliGT78hnu9K/tmb7pWU1xw1KitlTtxK6wQqsY/IZPLMwBMG5MLp/AOzNEA/uelODfhBC5+SQ==}
+
+  '@amplitude/plugin-autocapture-browser@1.0.4':
+    resolution: {integrity: sha512-+aUSsH4hRX4bWtSL90S3Irb3JctvIM+6aQ/wRSo1bYtnpXp7JQjWKzTYVxKx41b92Cb5DCBvmYgcWyg75BKi9Q==}
+
+  '@amplitude/plugin-page-view-tracking-browser@2.3.7':
+    resolution: {integrity: sha512-9LEzU33vpQ1OdPwVn0nwcCqPLkfK3P19hLmFTflx+aBM70TH9xCwvJL6nJ5eyc4kkmE9x7r0mRVnQIxaHfTxGg==}
 
   '@antfu/install-pkg@0.4.1':
     resolution: {integrity: sha512-T7yB5QNG29afhWVkVq7XeIMBa5U/vs9mX69YqayXypPRmYzUmzwnYltplHmPtZ4HPCn+sQKeXW8I47wCbuBOjw==}
@@ -305,6 +338,12 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
+
+  '@loggists/event-tracker@1.0.2':
+    resolution: {integrity: sha512-P5LGs+ReoqOfqv6MXH4eT9C0sj2ja4gMmHyX0JULfjInfU48LeI2q+pYYw5NkLSPNj4IVnT001xfyiPSAXWj8Q==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   '@mdx-js/mdx@3.1.0':
     resolution: {integrity: sha512-/QxEhPAvGwbQmy1Px8F899L5Uc2KZ6JtXwlCgJmjSTBedwOZkByYcBG4GceIGPXRDsmfxhHazuS+hlOShRLeDw==}
@@ -1897,6 +1936,9 @@ packages:
     resolution: {integrity: sha512-/imKNG4EbWNrVjoNC/1H5/9GFy+tqjGBHCaSsN+P2RnPqjsLmv6UD3Ej+Kj8nBWaRAwyk7kK5ZUc+OEatnTR3A==}
     hasBin: true
 
+  js-base64@3.7.7:
+    resolution: {integrity: sha512-7rCnleh0z2CkXhH67J8K1Ytz0b2Y+yxTPL+/KOJoa20hfnVQ/3/T6W/KflYI4bRHRagNeXeU2bkNGI3v1oS/lw==}
+
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
@@ -2695,6 +2737,9 @@ packages:
   rw@1.3.3:
     resolution: {integrity: sha512-PdhdWy89SiZogBLaw42zdeqtRJ//zFd2PgQavcICDUgJT5oW10QCRKbJ6bg4r0/UY2M6BWd5tkxuGFRvCkgfHQ==}
 
+  rxjs@7.8.1:
+    resolution: {integrity: sha512-AA3TVj+0A2iuIoQkWEK/tqFjBq2j+6PO6Y0zJcvzLAFhEFIO3HL0vls9hWLncZbAAbK0mar7oZ4V079I/qPMxg==}
+
   safe-array-concat@1.1.3:
     resolution: {integrity: sha512-AURm5f0jYEOydBj7VQlVvDrjeFgthDdEF5H1dP+6mNpoXOMo1quQqJ4wvJDyRZ9+pO3kGWoOdmV08cSv2aJV6Q==}
     engines: {node: '>=0.4'}
@@ -3159,6 +3204,58 @@ snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
 
+  '@amplitude/analytics-browser@2.11.11':
+    dependencies:
+      '@amplitude/analytics-client-common': 2.3.7
+      '@amplitude/analytics-core': 2.5.5
+      '@amplitude/analytics-remote-config': 0.4.1
+      '@amplitude/analytics-types': 2.8.4
+      '@amplitude/plugin-autocapture-browser': 1.0.4
+      '@amplitude/plugin-page-view-tracking-browser': 2.3.7
+      tslib: 2.8.1
+
+  '@amplitude/analytics-client-common@2.3.7':
+    dependencies:
+      '@amplitude/analytics-connector': 1.6.2
+      '@amplitude/analytics-core': 2.5.5
+      '@amplitude/analytics-types': 2.8.4
+      tslib: 2.8.1
+
+  '@amplitude/analytics-connector@1.6.2':
+    dependencies:
+      '@amplitude/experiment-core': 0.10.1
+
+  '@amplitude/analytics-core@2.5.5':
+    dependencies:
+      '@amplitude/analytics-types': 2.8.4
+      tslib: 2.8.1
+
+  '@amplitude/analytics-remote-config@0.4.1':
+    dependencies:
+      '@amplitude/analytics-client-common': 2.3.7
+      '@amplitude/analytics-core': 2.5.5
+      '@amplitude/analytics-types': 2.8.4
+      tslib: 2.8.1
+
+  '@amplitude/analytics-types@2.8.4': {}
+
+  '@amplitude/experiment-core@0.10.1':
+    dependencies:
+      js-base64: 3.7.7
+
+  '@amplitude/plugin-autocapture-browser@1.0.4':
+    dependencies:
+      '@amplitude/analytics-client-common': 2.3.7
+      '@amplitude/analytics-types': 2.8.4
+      rxjs: 7.8.1
+      tslib: 2.8.1
+
+  '@amplitude/plugin-page-view-tracking-browser@2.3.7':
+    dependencies:
+      '@amplitude/analytics-client-common': 2.3.7
+      '@amplitude/analytics-types': 2.8.4
+      tslib: 2.8.1
+
   '@antfu/install-pkg@0.4.1':
     dependencies:
       package-manager-detector: 0.2.8
@@ -3398,6 +3495,11 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
+
+  '@loggists/event-tracker@1.0.2(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
 
   '@mdx-js/mdx@3.1.0(acorn@8.14.0)':
     dependencies:
@@ -5350,6 +5452,8 @@ snapshots:
 
   jiti@1.21.7: {}
 
+  js-base64@3.7.7: {}
+
   js-tokens@4.0.0: {}
 
   js-yaml@4.1.0:
@@ -6569,6 +6673,10 @@ snapshots:
       queue-microtask: 1.2.3
 
   rw@1.3.3: {}
+
+  rxjs@7.8.1:
+    dependencies:
+      tslib: 2.8.1
 
   safe-array-concat@1.1.3:
     dependencies:

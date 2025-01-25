@@ -1,5 +1,6 @@
 import { generateStaticParamsFor, importPage } from "nextra/pages";
 import { useMDXComponents } from "../../../../mdx-components";
+import { TrackPageView } from "@/tracker";
 
 export const generateStaticParams = generateStaticParamsFor("mdxPath");
 
@@ -18,8 +19,11 @@ export default async function Page(props: { params: Promise<{ mdxPath: string[] 
   const { default: MDXContent, toc, metadata } = result;
 
   return (
-    <Wrapper toc={toc} metadata={metadata}>
-      <MDXContent {...props} params={params} />
-    </Wrapper>
+    <>
+      <Wrapper toc={toc} metadata={metadata}>
+        <MDXContent {...props} params={params} />
+      </Wrapper>
+      <TrackPageView params={{ title: metadata.title }} />
+    </>
   );
 }

@@ -3,6 +3,7 @@ import { Head } from "nextra/components";
 import { getPageMap } from "nextra/page-map";
 import "nextra-theme-docs/style-prefixed.css";
 import "./globals.css";
+import { TrackProvider } from "@/tracker";
 
 export const metadata = {
   title: {
@@ -20,15 +21,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="icon" href="/logo.jpg" type="image/jpg" />
       </Head>
       <body>
-        <Layout
-          navbar={navbar}
-          pageMap={await getPageMap()}
-          docsRepositoryBase="https://github.com/loggists/event-tracker/tree/main/docs"
-          footer={footer}
-          darkMode
-        >
-          {children}
-        </Layout>
+        <TrackProvider initialContext={{ referrer: typeof window !== "undefined" ? document.referrer : "" }}>
+          <Layout
+            navbar={navbar}
+            pageMap={await getPageMap()}
+            docsRepositoryBase="https://github.com/loggists/event-tracker/tree/main/docs"
+            footer={footer}
+            darkMode
+          >
+            {children}
+          </Layout>
+        </TrackProvider>
       </body>
     </html>
   );
