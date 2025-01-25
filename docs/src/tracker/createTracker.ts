@@ -1,4 +1,5 @@
-import { createTracker } from "@loggists/event-tracker";
+import { createTracker } from "@offlegacy/event-tracker";
+
 import * as amplitude from "@amplitude/analytics-browser";
 
 const API_KEY = process.env.NEXT_PUBLIC_AMPLITUDE_API_KEY;

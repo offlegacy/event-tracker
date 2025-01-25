@@ -7,7 +7,7 @@ event-tracker provides several components for tracking different types of events
 The `Provider` component connects and provides initial context to your application.
 
 ```tsx
-import { createTracker } from '@loggists/event-tracker'
+import { createTracker } from '@offlegacy/event-tracker'
 
 const [Track] = createTracker({...})
 
@@ -29,7 +29,7 @@ function App() {
 Used for tracking DOM events. Wraps a child component and fires the specified event handler.
 
 ```tsx
-import { createTracker } from "@loggists/event-tracker";
+import { createTracker } from "@offlegacy/event-tracker";
 
 const [Track] = createTracker({
   DOMEvents: {
@@ -60,7 +60,7 @@ function App() {
 A specialized version of `DOMEvent` for click events (`type="onClick"`).
 
 ```tsx
-import { createTracker } from "@loggists/event-tracker";
+import { createTracker } from "@offlegacy/event-tracker";
 
 const [Track] = createTracker({
   DOMEvents: {
@@ -90,7 +90,7 @@ function App() {
 Tracks impression events using the Intersection Observer API.
 
 ```tsx
-import { createTracker } from "@loggists/event-tracker";
+import { createTracker } from "@offlegacy/event-tracker";
 
 const [Track] = createTracker({
   impression: {
@@ -124,7 +124,7 @@ function App() {
 Tracks page view events on component mount.
 
 ```tsx
-import { createTracker } from "@loggists/event-tracker";
+import { createTracker } from "@offlegacy/event-tracker";
 
 const [Track] = createTracker({
   pageView: {
@@ -152,7 +152,7 @@ function App() {
 Sets or updates the tracking context.
 
 ```tsx
-import { createTracker } from '@loggists/event-tracker'
+import { createTracker } from '@offlegacy/event-tracker'
 
 const [Track] = createTracker({...})
 

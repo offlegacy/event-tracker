@@ -16,11 +16,11 @@ export default function Page() {
             while maintaining clean code and optimal performance.
           </p>
           <div className="mb-8 flex gap-4">
-            <a href="https://github.com/loggists/event-tracker/blob/main/LICENSE" target="_blank" rel="noopener">
+            <a href="https://github.com/offlegacy/event-tracker/blob/main/LICENSE" target="_blank" rel="noopener">
               <Image src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License" />
             </a>
-            <a href="https://www.npmjs.com/package/@loggists/event-tracker" target="_blank" rel="noopener">
-              <Image src="https://img.shields.io/npm/v/@loggists/event-tracker?logo=npm" alt="NPM Version" />
+            <a href="https://www.npmjs.com/package/@offlegacy/event-tracker" target="_blank" rel="noopener">
+              <Image src="https://img.shields.io/npm/v/@offlegacy/event-tracker?logo=npm" alt="NPM Version" />
             </a>
           </div>
           <TrackClick params={{ target: "Get Started button" }}>
