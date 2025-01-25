@@ -10,6 +10,7 @@
     "test": "vitest --run",
     "test:watch": "vitest",
     "lint": "eslint --cache .",
+    "prepack": "pnpm build",
     "prepare": "husky",
     "changeset": "changeset",
     "release": "pnpm build && npm publish"
