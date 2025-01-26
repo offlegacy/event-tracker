@@ -136,7 +136,7 @@ export function createTracker<Context, SendParams, EventParams, ImpressionParams
     const tracker = useTracker();
 
     return (
-      <PrimitiveDOMEvent eventName={eventName} type={type} onEventOccur={() => tracker.events[type]?.(params)}>
+      <PrimitiveDOMEvent eventName={eventName} type={type} onTrigger={() => tracker.events[type]?.(params)}>
         {children}
       </PrimitiveDOMEvent>
     );

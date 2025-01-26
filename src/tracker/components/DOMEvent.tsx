@@ -6,11 +6,11 @@ import type { DOMEventNames } from "../types";
 export interface DOMEventProps {
   type: DOMEventNames;
   children: ReactNode;
-  onEventOccur: () => Promise<void> | void;
+  onTrigger: () => Promise<void> | void;
   eventName?: string;
 }
 
-export const DOMEvent = ({ children, type, onEventOccur, eventName = type }: DOMEventProps) => {
+export const DOMEvent = ({ children, type, onTrigger, eventName = type }: DOMEventProps) => {
   const child = Children.only(children);
 
   return (
@@ -18,7 +18,7 @@ export const DOMEvent = ({ children, type, onEventOccur, eventName = type }: DOM
     cloneElement(child, {
       ...child.props,
       [eventName]: (...args: any[]) => {
-        onEventOccur?.();
+        onTrigger?.();
         if (child.props && typeof child.props?.[eventName] === "function") {
           return child.props[type]?.(...args);
         }
