@@ -1,0 +1,27 @@
+# PageView
+
+Tracks page view events on component mount.
+
+```tsx
+import { createTracker } from "@offlegacy/event-tracker";
+
+const [Track] = createTracker({
+  pageView: {
+    onPageView: (params, context) => {
+      // Handle page view event
+    },
+  },
+});
+
+function App() {
+  return (
+    <Track.Provider initialContext={{}}>
+      <Track.PageView params={{ page: "/home" }} />
+    </Track.Provider>
+  );
+}
+```
+
+### Props
+
+- `params: unknown` - Page view event parameters

@@ -1,4 +1,4 @@
-# Getting Started
+# Introduction
 
 ## Motivation
 
@@ -94,7 +94,7 @@ const Counter = () => {
 
 Using `event-tracker` allows for declarative event tracking, which improves code readability and reduces complexity. This helps developers understand and use event tracking more easily.  
 Your `handleIncrement` function is now only responsible for incrementing the count, and the event tracking is handled by the `<Track.Click />` component.  
-This declarative approach makes the developer focus on **'what to track'** and not **'how to track'.**
+**This declarative approach makes the developer focus on _'what to track'_ and not _'how to track'._**
 How to track should be defined outside of the React app.
 
 ### Improve code cohesion outside your application.
@@ -127,54 +127,6 @@ const [Track] = createTracker({
 Your instructions for **'how to track'** is now separated from your business logic.  
 It's located outside your application, so you can change your event tracking provider without having to change your application code.
 
-## Installation
-
-Using npm:
-
-```bash
-npm install @offlegacy/event-tracker
-```
-
-Using yarn:
-
-```bash
-yarn add @offlegacy/event-tracker
-```
-
-Using pnpm:
-
-```bash
-pnpm add @offlegacy/event-tracker
-```
-
-## Quick Start
-
-Here's a simple example of how to use event-tracker:
-
-```tsx
-import { createTracker } from "@offlegacy/event-tracker";
-
-// Create a tracker instance
-const [Track, useTracker] = createTracker({
-  DOMEvents: {
-    onClick: (params, context) => {
-      console.log("Click event:", params, context);
-    },
-  },
-});
-
-// Use in your app
-function App() {
-  return (
-    <Track.Provider initialContext={{ userId: "user-123" }}>
-      <Track.Click params={{ buttonId: "submit" }}>
-        <button>Submit</button>
-      </Track.Click>
-    </Track.Provider>
-  );
-}
-```
-
 ## Key Features
 
 - 🎯 **Type-safe APIs**: Declarative event tracking with complete type safety
@@ -195,7 +147,7 @@ function App() {
 
 Check out the other sections for detailed documentation on each feature:
 
-- [API Reference](/docs/api) - Detailed API documentation
-- [Components](/docs/components) - Available tracking components
-- [Hooks](/docs/hooks) - Using the useTracker hook
+- [createTracker](/docs/create-tracker) - Detailed API documentation on `createTracker`
+- [components](/docs/components) - Available tracking components
+- [hook](/docs/hook) - Track using the hook
 - [Batching](/docs/batching) - Optimizing performance with event batching

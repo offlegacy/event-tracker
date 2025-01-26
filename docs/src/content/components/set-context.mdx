@@ -1,0 +1,23 @@
+# SetContext
+
+Sets or updates the tracking context.
+
+```tsx
+import { createTracker } from '@offlegacy/event-tracker'
+
+const [Track] = createTracker({...})
+
+function App() {
+  return (
+    <Track.Provider initialContext={{ userId: 'user-1' }}>
+      <Track.SetContext
+        context={{ lastActive: new Date() }}
+      />
+    </Track.Provider>
+  )
+}
+```
+
+### Props
+
+- `context: unknown | ((prevContext: unknown) => unknown)` - New context value or update function

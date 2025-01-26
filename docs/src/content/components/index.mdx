@@ -1,0 +1,21 @@
+# Provider
+
+The `Provider` component connects and provides initial context to your application.
+
+```tsx
+import { createTracker } from '@offlegacy/event-tracker'
+
+const [Track] = createTracker({...})
+
+function App() {
+  return (
+    <Track.Provider initialContext={{}}>
+      {/* Your app content */}
+    </Track.Provider>
+  )
+}
+```
+
+### Props
+
+- `initialContext: unknown` - Initial context value

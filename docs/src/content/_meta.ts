@@ -1,33 +1,59 @@
 import { MetaRecord } from "nextra";
 
 const meta: MetaRecord = {
-  index: {
+  "getting-started-separator": {
+    type: "separator",
     title: "Getting Started",
+  },
+  index: {
+    title: "Introduction",
     theme: {
       toc: true,
       layout: "default",
     },
   },
-  api: {
-    title: "API",
+  installation: {
+    title: "Installation",
+    theme: {
+      toc: true,
+      layout: "default",
+    },
+  },
+  "quick-start": {
+    title: "Quick Start",
+    theme: {
+      toc: true,
+      layout: "default",
+    },
+  },
+  "api-separator": {
+    title: "API Reference",
+    type: "separator",
+  },
+  "create-tracker": {
+    title: "createTracker",
     theme: {
       toc: true,
       layout: "default",
     },
   },
   components: {
-    title: "Components",
+    title: "components",
     theme: {
       toc: true,
       layout: "default",
     },
   },
-  hooks: {
-    title: "Hooks",
+  hook: {
+    title: "hook",
     theme: {
       toc: true,
       layout: "default",
     },
+  },
+  "advanced-separator": {
+    title: "Advanced",
+    type: "separator",
   },
   batching: {
     title: "Batching",
