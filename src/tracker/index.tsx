@@ -160,7 +160,7 @@ export function createTracker<Context, SendParams, EventParams, ImpressionParams
     const tracker = useTracker();
 
     return (
-      <PrimitiveImpression options={options} onImpression={() => tracker.events.onImpression(params)}>
+      <PrimitiveImpression options={options} onImpression={() => tracker.events.onImpression?.(params)}>
         {children}
       </PrimitiveImpression>
     );
