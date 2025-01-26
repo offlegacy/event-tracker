@@ -4,6 +4,7 @@ import { getPageMap } from "nextra/page-map";
 import "nextra-theme-docs/style-prefixed.css";
 import "./globals.css";
 import { TrackClick, TrackImpression, TrackProvider } from "@/tracker";
+import { Logo } from "@/logo";
 
 export const metadata = {
   title: {
@@ -15,9 +16,13 @@ const navbar = (
   <Navbar
     logo={
       <TrackClick params={{ target: "logo" }}>
-        <b>event-tracker</b>
+        <div className="flex items-center gap-2">
+          <Logo />
+          <b>event-tracker</b>
+        </div>
       </TrackClick>
     }
+    projectLink="https://github.com/offlegacy/event-tracker"
   />
 );
 const footer = (

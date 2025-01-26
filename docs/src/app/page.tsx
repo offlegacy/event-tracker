@@ -1,6 +1,7 @@
 import { Image } from "nextra/components";
 import Link from "next/link";
 import { TrackClick, TrackPageView } from "@/tracker";
+import { Logo } from "@/logo";
 
 export const metadata = {};
 
@@ -9,7 +10,7 @@ export default function Page() {
     <>
       <div className="mx-auto flex min-h-screen max-w-6xl flex-col items-center px-6 py-16">
         <div className="mb-16 flex flex-col items-center text-center">
-          <Image src="/logo.jpg" alt="event-tracker logo" width={200} height={200} className="mb-8" />
+          <Logo size={200} />
           <h1 className="mb-6 text-5xl font-bold">event-tracker</h1>
           <p className="mb-6 max-w-2xl text-xl text-gray-600 dark:text-gray-300">
             A lightweight, type-safe event tracking library for React applications that simplifies analytics integration
