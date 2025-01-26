@@ -169,7 +169,7 @@ export function createTracker<Context, SendParams, EventParams, ImpressionParams
   const PageView = ({ params }: { params: PageViewParams }) => {
     const tracker = useTracker();
 
-    return <PrimitivePageView onPageView={() => tracker.events.onPageView(params)} />;
+    return <PrimitivePageView onPageView={() => tracker.events.onPageView?.(params)} />;
   };
 
   const SetContext = ({ context }: { context: Context | ((prevContext: Context) => Context) }) => {
