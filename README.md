@@ -119,11 +119,3 @@ function App() {
     </Track.Provider>
   );
 }
-
-```
-
-## Docs
-- [API](./docs/api.md)
-- [Components](./docs/components.md)
-- [Hook](./docs/hook.md)
-- [Batching](./docs/batching.md)
