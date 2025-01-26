@@ -26,7 +26,7 @@ export function createTracker<Context, SendParams, EventParams, ImpressionParams
       throw new Error("useTracker must be used within a TrackerProvider");
     }
 
-    const scheduledDomEvents = {} as Partial<Record<DOMEventNames, (params: EventParams) => void>>;
+    const scheduledDomEvents = {} as Record<DOMEventNames, (params: EventParams) => void>;
     for (const key in trackerContext.tracker.DOMEvents) {
       scheduledDomEvents[key as DOMEventNames] = (params: EventParams) => {
         return trackerContext._schedule(() =>
