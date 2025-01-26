@@ -1,10 +1,12 @@
 import type { ReactNode } from "react";
-import { Children, cloneElement, createContext, isValidElement, useContext, useEffect, useMemo, useRef } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef } from "react";
 
-import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
-import { useMergeRefs } from "../hooks/useMergeRefs";
 import { Scheduler } from "../scheduler";
 
+import { Click as PrimitiveClick } from "./components/Click";
+import { DOMEvent as PrimitiveDOMEvent } from "./components/DOMEvent";
+import { Impression as PrimitiveImpression } from "./components/Impression";
+import { PageView as PrimitivePageView } from "./components/PageView";
 import type { DOMEventNames, ImpressionOptions, TrackerConfig, TrackerContextProps } from "./types";
 
 export function createTracker<Context, SendParams, EventParams, ImpressionParams, PageViewParams>(
@@ -24,7 +26,7 @@ export function createTracker<Context, SendParams, EventParams, ImpressionParams
       throw new Error("useTracker must be used within a TrackerProvider");
     }
 
-    const scheduledDomEvents = {} as Record<DOMEventNames, (params: EventParams) => void>;
+    const scheduledDomEvents = {} as Partial<Record<DOMEventNames, (params: EventParams) => void>>;
     for (const key in trackerContext.tracker.DOMEvents) {
       scheduledDomEvents[key as DOMEventNames] = (params: EventParams) => {
         return trackerContext._schedule(() =>
@@ -120,32 +122,30 @@ export function createTracker<Context, SendParams, EventParams, ImpressionParams
     );
   };
 
-  const DOMEvent = ({ children, type, params }: { children: ReactNode; type: DOMEventNames; params: EventParams }) => {
-    const child = Children.only(children);
+  const DOMEvent = ({
+    children,
+    type,
+    params,
+    eventName,
+  }: {
+    children: ReactNode;
+    type: DOMEventNames;
+    params: EventParams;
+    eventName?: string;
+  }) => {
     const tracker = useTracker();
 
     return (
-      isValidElement<{ [key in DOMEventNames]?: (...args: any[]) => void }>(child) &&
-      cloneElement(child, {
-        ...child.props,
-        [type]: (...args: any[]) => {
-          if (tracker.events[type] !== undefined) {
-            tracker.events[type](params);
-          }
-          if (child.props && typeof child.props?.[type] === "function") {
-            return child.props[type]?.(...args);
-          }
-        },
-      })
+      <PrimitiveDOMEvent eventName={eventName} type={type} onEventOccur={() => tracker.events[type]?.(params)}>
+        {children}
+      </PrimitiveDOMEvent>
     );
   };
 
   const Click = ({ children, params }: { children: ReactNode; params: EventParams }) => {
-    return (
-      <DOMEvent type="onClick" params={params}>
-        {children}
-      </DOMEvent>
-    );
+    const tracker = useTracker();
+
+    return <PrimitiveClick onClick={() => tracker.events.onClick?.(params)}>{children}</PrimitiveClick>;
   };
 
   const Impression = ({
@@ -159,44 +159,17 @@ export function createTracker<Context, SendParams, EventParams, ImpressionParams
   }) => {
     const tracker = useTracker();
 
-    const { ref: impressionRef } = useIntersectionObserver({
-      ...(options ??
-        config.impression?.options ?? {
-          threshold: 0.2,
-          freezeOnceVisible: true,
-          initialIsIntersecting: false,
-        }),
-      onChange: (isIntersecting) => {
-        if (isIntersecting) tracker.events.onImpression?.(params);
-      },
-    });
-
-    const child = Children.only(children);
-    const hasRef = isValidElement(child) && (child as any)?.ref != null;
-    const ref = useMergeRefs<HTMLDivElement>(hasRef ? [(child as any).ref, impressionRef] : [impressionRef]);
-
-    return hasRef ? (
-      cloneElement(child as any, {
-        ref,
-      })
-    ) : (
-      // FIXME: not a good solution since it can cause style issues
-      <div aria-hidden ref={ref}>
-        {child}
-      </div>
+    return (
+      <PrimitiveImpression options={options} onImpression={() => tracker.events.onImpression(params)}>
+        {children}
+      </PrimitiveImpression>
     );
   };
 
   const PageView = ({ params }: { params: PageViewParams }) => {
     const tracker = useTracker();
-    const onPageViewRef = useRef<() => Promise<void>>(undefined);
-    onPageViewRef.current = () => tracker.events.onPageView(params);
 
-    useEffect(() => {
-      onPageViewRef.current?.();
-    }, [onPageViewRef]);
-
-    return null;
+    return <PrimitivePageView onPageView={() => tracker.events.onPageView(params)} />;
   };
 
   const SetContext = ({ context }: { context: Context | ((prevContext: Context) => Context) }) => {
