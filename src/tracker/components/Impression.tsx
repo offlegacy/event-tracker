@@ -7,7 +7,7 @@ import type { ImpressionOptions } from "../types";
 
 export interface ImpressionProps {
   children: ReactNode;
-  onImpression: () => Promise<void>;
+  onImpression: () => Promise<void> | void;
   options?: ImpressionOptions;
 }
 
