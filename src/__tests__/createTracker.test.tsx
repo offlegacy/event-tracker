@@ -129,6 +129,28 @@ describe("events", () => {
 
     expect(focusFn).toHaveBeenCalledWith(focusEventParams, context, anyFn);
   });
+
+  it("DOMEvent's event name can be changed using eventName prop", async () => {
+    const context = { userId: "id" };
+    const focusEventParams = { a: 1 };
+    const CustomInput = ({ onInputFocus }: { onInputFocus?: () => void }) => {
+      return <input onFocus={onInputFocus} />;
+    };
+
+    const page = render(
+      <Track.Provider initialContext={context}>
+        <div>test</div>
+        <Track.DOMEvent type="onFocus" params={focusEventParams} eventName="onInputFocus">
+          <CustomInput />
+        </Track.DOMEvent>
+      </Track.Provider>,
+    );
+
+    page.getByRole("textbox").focus();
+    await sleep(1);
+
+    expect(focusFn).toHaveBeenCalledWith(focusEventParams, context, anyFn);
+  });
 });
 
 describe("page view", () => {
