@@ -2,22 +2,20 @@
 <img src='https://github.com/user-attachments/assets/1e417f4e-0f3a-4b56-8f6c-68188572421d' width=340 height=340 />
 </p>
 
-
-# event-tracker
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/offlegacy/event-tracker/blob/main/LICENSE) 
-[![NPM badge](https://img.shields.io/npm/v/@offlegacy/event-tracker?logo=npm)](https://www.npmjs.com/package/@offlegacy/event-tracker) 
+# event-tracker &middot; [![MIT License](https://img.shields.io/github/license/offlegacy/event-tracker?color=blue)](https://github.com/offlegacy/event-tracker/blob/main/LICENSE) [![NPM badge](https://img.shields.io/npm/v/@offlegacy/event-tracker?logo=npm)](https://www.npmjs.com/package/@offlegacy/event-tracker)
 
 A lightweight, type-safe event tracking library for React applications that simplifies analytics integration while maintaining clean code and optimal performance.
 
 ## Key Features
+
 - 🎯 Declarative event tracking with type-safe APIs
 - ⚡️ Optimized performance with event batching
-- 🔄 Guaranteed execution order for async operations  
+- 🔄 Guaranteed execution order for async operations
 - 🔌 Analytics tool agnostic - works with any provider
 - 🧩 Clean separation of tracking logic from business logic
 
-
 ## Why event-tracker?
+
 Event tracking is essential for modern web applications, but implementing it cleanly can be challenging. Common pain points include:
 
 - Mixing tracking logic with business logic
@@ -27,96 +25,31 @@ Event tracking is essential for modern web applications, but implementing it cle
 - Performance overhead
 
 `event-tracker` solves these problems with a declarative API that keeps your code clean and performant.
-   
-## Install
-Using npm:
 
-```bash
-$ npm install @offlegacy/event-tracker
-```
+## Official Documentation
 
-Using yarn:
-```bash
-$ yarn add @offlegacy/event-tracker
-```
+Visit the [official documentation](https://event-tracker.offlegacy.org/) for detailed information on installation, usage, and more.
 
-Using pnpm:
-```bash
-$ pnpm add @offlegacy/event-tracker
-```
+## Contributing
 
-## Example with react-ga4
+We welcome contribution from everyone in the community. Read below for detailed contribution guide.
 
-#### tracker.ts
-```tsx
-import ReactGA from "react-ga4";
-import { createTracker } from "@offlegacy/event-tracker";
-import { SendParams, EventParams, GAContext, ImpressionParams, PageViewParams } from "./types";
+[CONTRIBUTING.md](https://github.com/offlegacy/event-tracker/blob/main/CONTRIBUTING.md)
 
-export const [Track, useTracker] = createTracker<GAContext, SendParams, EventParams, ImpressionParams, PageViewParams>({
-  init: () => {
-    ReactGA.initialize("(your-ga-id)");
-  },
-  DOMEvents: {
-    onClick: (params, context) => {
-      ReactGA.event({
-        ...params,
-        ...context,
-        action: "click",
-      });
-    },
-  },
-  impression: {
-    onImpression: (params, context) => {
-      ReactGA.event({
-        ...params,
-        ...context,
-        action: "impression",
-      });
-    },
-  },
-  pageView: {
-    onView: ({ page }) => {
-      ReactGA.send({
-        hitType: "pageview",
-        page,
-      });
-    },
-  },
-});
+### Contributors
 
-```
+[![contributors](https://contrib.rocks/image?repo=offlegacy/event-tracker)](https://github.com/offlegacy/event-tracker/contributors)
 
+## License
 
-#### App.tsx
-```tsx
-import { useState } from "react";
-import { Track } from "./tracker";
+See [LICENSE](https://github.com/offlegacy/event-tracker/blob/main/LICENSE) for more information.
 
-function App() {
-  const [count, setCount] = useState(0);
+MIT © [OffLegacy](https://github.com/offlegacy)
 
-  return (
-    <Track.Provider
-      initialContext={{ userId: "USERID", clientId: "CLIENTID" }}
-    >
-      <h1>Event Tracker</h1>
-      <div className="card">
-        <Track.Click
-          params={{ category: "button", label: "count", value: count + 1 }}
-        >
-          <button onClick={() => setCount((count) => count + 1)} >
-            count is {count}
-          </button>
-        </Track.Click>
-      </div>
-      <Track.Impression
-        params={{ category: "text", label: "Good morning" }}
-      >
-         <div>Good morning</div>
-      </Track.Impression>
-      <Track.PageView params={{page: "/home"}} />
-    </Track.Provider>
-  );
-}
-```
+## About OffLegacy
+
+<img align="left" height="88" src="https://static.offlegacy.org/logo.svg"/>
+
+**Open-source Development Team in South Korea 🇰🇷**
+
+We believe that open source is the fastest way to change the world with software. Through open source, we aim to contribute to building a better technological ecosystem.
