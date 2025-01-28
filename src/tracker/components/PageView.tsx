@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 
 export interface PageViewProps {
-  onPageView: () => Promise<void>;
+  onPageView: () => Promise<void> | void;
 }
 
 export const PageView = ({ onPageView }: PageViewProps) => {
