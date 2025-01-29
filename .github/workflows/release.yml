@@ -37,8 +37,8 @@ jobs:
           git config --local user.email "dhassidu11@gmail.com"
           git config --local user.name "stakbucks"
           npm version ${{ github.event.inputs.version }} -m "Release v%s"
-          git push
-          git push --tags
+          git push --force
+          git push --force --tags
 
       - name: Build Package
         run: pnpm build
