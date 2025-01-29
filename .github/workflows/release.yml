@@ -37,8 +37,8 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           npm version ${{ github.event.inputs.version }} -m "Release v%s"
-          git checkout -b release/%s
-          git push
+          git checkout -b release/${{ github.event.inputs.version }}
+          git push --set-upstream origin release/${{ github.event.inputs.version }}
           git push --tags
 
       - name: Build Package
