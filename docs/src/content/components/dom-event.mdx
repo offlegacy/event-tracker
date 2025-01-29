@@ -27,7 +27,7 @@ function App() {
 ### Props
 
 - `type: DOMEventNames` - Event name (e.g., onClick, onFocus)
-- `params: unknown` - Event parameters
+- `params: EventParams | (context: Context) => EventParams` - Event parameters
 
 ## Handling Renamed Event Props
 

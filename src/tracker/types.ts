@@ -1,5 +1,5 @@
 import { DOMAttributes } from "react";
-import type { SchedulerConfig } from "../scheduler/types";
+import type { BatchConfig, SchedulerConfig } from "../scheduler/types";
 
 export interface ImpressionOptions {
   /**
@@ -29,22 +29,16 @@ export type Task<T = any> = (...args: any) => TaskReturnType<T>;
 
 type InitFunction<C> = (initialContext: C, setContext: SetContext<C>) => void | Promise<void>;
 
-type SendFunction<P, C> = (params: P, context: C, setContext: SetContext<C>) => TaskReturnType;
-
 export type DOMEventNames = keyof Omit<DOMAttributes<HTMLDivElement>, "children" | "dangerouslySetInnerHTML">;
-export type DOMEvents<P, C> = Partial<Record<DOMEventNames, DOMEventFunction<P, C>>>;
+export type DOMEvents<P, C> = Partial<Record<DOMEventNames, EventFunction<P, C>>>;
 
-type DOMEventFunction<P, C> = (params: P, context: C, setContext: SetContext<C>) => TaskReturnType;
-
-type ImpressionFunction<P, C> = (params: P, context: C, setContext: SetContext<C>) => TaskReturnType;
-
-type PageViewFunction<P, C> = (params: P, context: C, setContext: SetContext<C>) => TaskReturnType;
+type EventFunction<P, C> = (params: P, context: C, setContext: SetContext<C>) => TaskReturnType;
 
 export type EventResult<T = any> = Record<string, T>;
 
 export type EventNames = "onImpression" | "onPageView" | DOMEventNames;
 
-export interface TrackerConfig<Context, SendParams, DOMEventParams, ImpressionParams, PageViewParams> {
+export interface TrackerConfig<Context, EventParams> {
   /**
    * Initialize the tracker with the given context.
    * @param initialContext - The initial context to use for the tracker.
@@ -57,33 +51,33 @@ export interface TrackerConfig<Context, SendParams, DOMEventParams, ImpressionPa
    * @param context - The context to send.
    * @returns void
    */
-  readonly send?: SendFunction<SendParams, Context>;
+  readonly send?: EventFunction<EventParams, Context>;
   /**
    * The events to listen to.
    */
-  readonly DOMEvents?: DOMEvents<DOMEventParams, Context>;
+  readonly DOMEvents?: DOMEvents<EventParams, Context>;
   /**
    * The impression event to listen to.
    */
   impression?: {
-    onImpression: ImpressionFunction<ImpressionParams, Context>;
+    onImpression: EventFunction<EventParams, Context>;
     options?: ImpressionOptions;
   };
   /**
    * The page track event to listen to.
    */
   pageView?: {
-    onPageView: PageViewFunction<PageViewParams, Context>;
+    onPageView: EventFunction<EventParams, Context>;
     /**
      * TODO: add options
      */
     // options?: PageViewOptions;
   };
-  batch?: SchedulerConfig["batch"];
+  batch?: BatchConfig;
 }
 
-export interface TrackerContextProps<Context, SendParams, EventParams, ImpressionParams, PageTrackParams> {
-  tracker: TrackerConfig<Context, SendParams, EventParams, ImpressionParams, PageTrackParams>;
+export interface TrackerContextProps<Context, EventParams> {
+  tracker: TrackerConfig<Context, EventParams>;
   _setContext: (context: Context | ((prevContext: Context) => Context)) => void;
   _getContext: () => Context;
   _schedule: (task: Task) => Promise<void>;

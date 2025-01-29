@@ -9,16 +9,10 @@ import { Impression as PrimitiveImpression } from "./components/Impression";
 import { PageView as PrimitivePageView } from "./components/PageView";
 import type { DOMEventNames, ImpressionOptions, TrackerConfig, TrackerContextProps } from "./types";
 
-export function createTracker<Context, SendParams, EventParams, ImpressionParams, PageViewParams>(
-  config: TrackerConfig<Context, SendParams, EventParams, ImpressionParams, PageViewParams>,
-) {
-  const TrackerContext = createContext<null | TrackerContextProps<
-    Context,
-    SendParams,
-    EventParams,
-    ImpressionParams,
-    PageViewParams
-  >>(null);
+export function createTracker<Context, EventParams>(config: TrackerConfig<Context, EventParams>) {
+  const TrackerContext = createContext<null | TrackerContextProps<Context, EventParams>>(null);
+
+  type EventParamsWithContext = EventParams | ((context: Context) => EventParams);
 
   const useTracker = () => {
     const trackerContext = useContext(TrackerContext);
@@ -26,12 +20,14 @@ export function createTracker<Context, SendParams, EventParams, ImpressionParams
       throw new Error("useTracker must be used within a TrackerProvider");
     }
 
-    const scheduledDomEvents = {} as Record<DOMEventNames, (params: EventParams) => void>;
+    const scheduledDomEvents = {} as Record<DOMEventNames, (params: EventParamsWithContext) => void>;
     for (const key in trackerContext.tracker.DOMEvents) {
-      scheduledDomEvents[key as DOMEventNames] = (params: EventParams) => {
+      scheduledDomEvents[key as DOMEventNames] = (params: EventParamsWithContext) => {
         return trackerContext._schedule(() =>
           trackerContext.tracker.DOMEvents?.[key as DOMEventNames]?.(
-            params,
+            typeof params === "function"
+              ? (params as (context: Context) => EventParams)(trackerContext._getContext())
+              : params,
             trackerContext._getContext(),
             trackerContext._setContext,
           ),
@@ -39,25 +35,36 @@ export function createTracker<Context, SendParams, EventParams, ImpressionParams
       };
     }
     return {
-      send: (params: SendParams) =>
-        trackerContext.tracker.send?.(params, trackerContext._getContext(), trackerContext._setContext),
+      // FIXME: this function is probably useless
+      send: (params: EventParamsWithContext) =>
+        trackerContext.tracker.send?.(
+          typeof params === "function"
+            ? (params as (context: Context) => EventParams)(trackerContext._getContext())
+            : params,
+          trackerContext._getContext(),
+          trackerContext._setContext,
+        ),
       setContext: trackerContext._setContext,
       getContext: trackerContext._getContext,
-      events: {
+      track: {
         ...scheduledDomEvents,
-        onImpression: (params: ImpressionParams) => {
+        onImpression: (params: EventParamsWithContext) => {
           return trackerContext._schedule(() =>
             trackerContext.tracker.impression?.onImpression(
-              params,
+              typeof params === "function"
+                ? (params as (context: Context) => EventParams)(trackerContext._getContext())
+                : params,
               trackerContext._getContext(),
               trackerContext._setContext,
             ),
           );
         },
-        onPageView: (params: PageViewParams) => {
+        onPageView: (params: EventParamsWithContext) => {
           return trackerContext._schedule(() =>
             trackerContext.tracker.pageView?.onPageView(
-              params,
+              typeof params === "function"
+                ? (params as (context: Context) => EventParams)(trackerContext._getContext())
+                : params,
               trackerContext._getContext(),
               trackerContext._setContext,
             ),
@@ -66,8 +73,8 @@ export function createTracker<Context, SendParams, EventParams, ImpressionParams
       },
     };
   };
-  const Provider = ({ children, initialContext }: { children: ReactNode; initialContext: Context }) => {
-    const contextRef = useRef<Context>(initialContext);
+  const Provider = ({ children, initialContext }: { children: ReactNode; initialContext?: Context }) => {
+    const contextRef = useRef<Context>(initialContext ?? ({} as Context));
     const isInitializedRef = useRef(false);
     const schedulerRef = useRef<Scheduler>(
       new Scheduler({
@@ -85,7 +92,7 @@ export function createTracker<Context, SendParams, EventParams, ImpressionParams
     };
 
     useEffect(() => {
-      const initialize = config.init?.(initialContext, _setContext);
+      const initialize = config.init?.(contextRef.current, _setContext);
 
       if (initialize instanceof Promise) {
         initialize.then(() => {
@@ -130,13 +137,13 @@ export function createTracker<Context, SendParams, EventParams, ImpressionParams
   }: {
     children: ReactNode;
     type: DOMEventNames;
-    params: EventParams;
+    params: EventParamsWithContext;
     eventName?: string;
   }) => {
     const tracker = useTracker();
 
     return (
-      <PrimitiveDOMEvent eventName={eventName} type={type} onTrigger={() => tracker.events[type]?.(params)}>
+      <PrimitiveDOMEvent eventName={eventName} type={type} onTrigger={() => tracker.track[type]?.(params)}>
         {children}
       </PrimitiveDOMEvent>
     );
@@ -145,7 +152,7 @@ export function createTracker<Context, SendParams, EventParams, ImpressionParams
   const Click = ({ children, params }: { children: ReactNode; params: EventParams }) => {
     const tracker = useTracker();
 
-    return <PrimitiveClick onClick={() => tracker.events.onClick?.(params)}>{children}</PrimitiveClick>;
+    return <PrimitiveClick onClick={() => tracker.track.onClick?.(params)}>{children}</PrimitiveClick>;
   };
 
   const Impression = ({
@@ -154,22 +161,22 @@ export function createTracker<Context, SendParams, EventParams, ImpressionParams
     options,
   }: {
     children: ReactNode;
-    params: ImpressionParams;
+    params: EventParamsWithContext;
     options?: ImpressionOptions;
   }) => {
     const tracker = useTracker();
 
     return (
-      <PrimitiveImpression options={options} onImpression={() => tracker.events.onImpression?.(params)}>
+      <PrimitiveImpression options={options} onImpression={() => tracker.track.onImpression?.(params)}>
         {children}
       </PrimitiveImpression>
     );
   };
 
-  const PageView = ({ params }: { params: PageViewParams }) => {
+  const PageView = ({ params }: { params: EventParamsWithContext }) => {
     const tracker = useTracker();
 
-    return <PrimitivePageView onPageView={() => tracker.events.onPageView?.(params)} />;
+    return <PrimitivePageView onPageView={() => tracker.track.onPageView?.(params)} />;
   };
 
   const SetContext = ({ context }: { context: Context | ((prevContext: Context) => Context) }) => {

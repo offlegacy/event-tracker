@@ -29,5 +29,5 @@ function App() {
 
 ### Props
 
-- `params: unknown` - Impression event parameters
+- `params: EventParams | (context: Context) => EventParams` - Impression event parameters
 - `options?: ImpressionOptions` - Optional configuration (overrides global options)

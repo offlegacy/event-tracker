@@ -1,7 +1,8 @@
 "use client";
 
-import { useTheme } from "nextra-theme-docs";
 import Image from "next/image";
+import { useTheme } from "nextra-theme-docs";
+
 import { useSystemDarkMode } from "./useSystemDarkMode";
 
 interface LogoProps {

@@ -22,14 +22,14 @@ const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useTrack
 
 #### init
 
-- Type: `(initialContext: unknown, setContext: SetContext) => void | Promise<void>`
+- Type: `(initialContext: Context, setContext: SetContext) => void | Promise<void>`
 - Optional
 - Function executed before any events happen
 - If it returns a promise, events will be delayed until the promise resolves
 
 #### send
 
-- Type: `(params: unknown, context: unknown, setContext: SetContext) => TaskReturnType`
+- Type: `(params: EventParams | (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType`
 - Optional
 - Standard function to send events
 - If it returns a promise, events will be delayed until the promise resolves
@@ -48,7 +48,7 @@ Configuration for impression tracking:
 
 - onImpression
 
-  - Type: `(params: unknown, context: unknown, setContext: SetContext) => TaskReturnType`
+  - Type: `(params: EventParams | (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType`
   - Optional
   - Executed when impression occurs on a `<Track.Impression>` child
   - Promise return value will delay subsequent callbacks
@@ -67,7 +67,7 @@ Configuration for page view tracking:
 
 ##### onPageView
 
-- Type: `(params: unknown, context: unknown, setContext: SetContext) => TaskReturnType`
+- Type: `(params: EventParams | (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType`
 - Optional
 - Executed when `<Track.PageView>` is mounted
 - Promise return value will delay subsequent events
@@ -76,7 +76,7 @@ Configuration for page view tracking:
 
 Configuration for event batching:
 
-- Type: `SchedulerConfig["batch"]`
+- Type: `BatchConfig`
 - Optional
 - Properties:
   - `enable`: Enable batching (default: false)
