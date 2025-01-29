@@ -1,5 +1,5 @@
 import { DOMAttributes } from "react";
-import type { SchedulerConfig } from "../scheduler/types";
+import type { BatchConfig, SchedulerConfig } from "../scheduler/types";
 
 export interface ImpressionOptions {
   /**
@@ -73,7 +73,7 @@ export interface TrackerConfig<Context, EventParams> {
      */
     // options?: PageViewOptions;
   };
-  batch?: SchedulerConfig["batch"];
+  batch?: BatchConfig;
 }
 
 export interface TrackerContextProps<Context, EventParams> {

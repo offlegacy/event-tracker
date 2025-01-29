@@ -41,7 +41,7 @@
     "dev:docs": "cd docs && pnpm dev",
     "test": "vitest --run",
     "test:watch": "vitest",
-    "lint": "eslint --cache .",
+    "lint": "eslint --cache --ignore-pattern=docs/** .",
     "prepack": "pnpm build",
     "prepare": "husky",
     "release": "pnpm build && npm publish"
