@@ -251,12 +251,11 @@ describe("set context", () => {
   });
 
   it("can set context using useTracker hook", async () => {
-    const context = { userId: "id" };
     const newContext = { userId: "newId" };
     const clickParams = { a: 1 };
 
     const { result } = renderHook(() => useTracker(), {
-      wrapper: ({ children }) => <Track.Provider initialContext={context}>{children}</Track.Provider>,
+      wrapper: ({ children }) => <Track.Provider>{children}</Track.Provider>,
     });
 
     result.current.setContext(newContext);

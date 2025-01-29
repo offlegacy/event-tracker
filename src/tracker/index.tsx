@@ -73,8 +73,8 @@ export function createTracker<Context, EventParams>(config: TrackerConfig<Contex
       },
     };
   };
-  const Provider = ({ children, initialContext }: { children: ReactNode; initialContext: Context }) => {
-    const contextRef = useRef<Context>(initialContext);
+  const Provider = ({ children, initialContext }: { children: ReactNode; initialContext?: Context }) => {
+    const contextRef = useRef<Context>(initialContext ?? ({} as Context));
     const isInitializedRef = useRef(false);
     const schedulerRef = useRef<Scheduler>(
       new Scheduler({
@@ -92,7 +92,7 @@ export function createTracker<Context, EventParams>(config: TrackerConfig<Contex
     };
 
     useEffect(() => {
-      const initialize = config.init?.(initialContext, _setContext);
+      const initialize = config.init?.(contextRef.current, _setContext);
 
       if (initialize instanceof Promise) {
         initialize.then(() => {
