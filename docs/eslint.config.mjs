@@ -1,14 +1,42 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+import pluginReact from "@eslint-react/eslint-plugin";
+import pluginReactHooks from "eslint-plugin-react-hooks";
+import tseslint from "typescript-eslint";
+import importPlugin from "eslint-plugin-import";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
+export default tseslint.config({
+  files: ["**/*.tsx"],
+  extends: [importPlugin.flatConfigs.recommended, pluginReact.configs.recommended],
+  plugins: {
+    "@typescript-eslint": tseslint.plugin,
+    "react-hooks": pluginReactHooks,
+  },
+  languageOptions: {
+    parser: tseslint.parser,
+    parserOptions: {
+      projectService: true,
+    },
+  },
+  rules: {
+    "@eslint-react/no-clone-element": "off",
+    "react-hooks/exhaustive-deps": "error",
+    "react-hooks/rules-of-hooks": "error",
+    "@typescript-eslint/no-unused-vars": "error",
+    "@typescript-eslint/consistent-type-imports": "error",
+    "@eslint-react/no-children-only": "off",
+    "import/order": [
+      "error",
+      {
+        alphabetize: {
+          order: "asc",
+          caseInsensitive: true,
+        },
+        "newlines-between": "always",
+      },
+    ],
+  },
+  settings: {
+    "import/resolver": {
+      typescript: {},
+    },
+  },
 });
-
-const eslintConfig = [...compat.extends("next/core-web-vitals", "next/typescript")];
-
-export default eslintConfig;

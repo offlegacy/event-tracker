@@ -1,10 +1,11 @@
-import { Footer, Layout, Navbar } from "nextra-theme-docs";
 import { Head } from "nextra/components";
 import { getPageMap } from "nextra/page-map";
+import { Footer, Layout, Navbar } from "nextra-theme-docs";
+
 import "nextra-theme-docs/style-prefixed.css";
 import "./globals.css";
-import { TrackClick, TrackImpression, TrackProvider } from "@/tracker";
 import { Logo } from "@/logo";
+import { TrackClick, TrackImpression, TrackProvider } from "@/tracker";
 
 export const metadata = {
   title: {

@@ -1,7 +1,8 @@
-import { Image } from "nextra/components";
 import Link from "next/link";
-import { TrackClick, TrackPageView } from "@/tracker";
+import { Image } from "nextra/components";
+
 import { Logo } from "@/logo";
+import { TrackClick, TrackPageView } from "@/tracker";
 
 export const metadata = {};
 
