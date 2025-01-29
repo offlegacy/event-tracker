@@ -34,9 +34,12 @@ jobs:
 
       - name: Update Version
         run: |
-          git config --local user.email "dhassidu11@gmail.com"
-          git config --local user.name "stakbucks"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
           npm version ${{ github.event.inputs.version }} -m "Release v%s"
+          git checkout -b release/%s
+          git push
+          git push --tags
 
       - name: Build Package
         run: pnpm build
