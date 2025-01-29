@@ -66,7 +66,7 @@ describe("init", async () => {
   });
 });
 
-describe("events", () => {
+describe("DOMEvents", () => {
   it("events.onClick should be called when the element inside Track.Click is clicked", async () => {
     const context = { userId: "id" };
     const clickParams = { a: 1 };
@@ -86,14 +86,23 @@ describe("events", () => {
   });
 
   it("events.onClick can be called manually by using useTracker hook", async () => {
-    const context = { userId: "id" };
+    type Context = { userId: string };
+    const context: Context = { userId: "id" };
     const clickParams = { a: 1 };
 
     const ButtonWithTracker = () => {
       const tracker = useTracker();
 
       return (
-        <button type="button" onClick={() => tracker.events.onClick(clickParams)}>
+        <button
+          type="button"
+          onClick={() =>
+            tracker.track.onClick((context: Context) => ({
+              ...clickParams,
+              ...context,
+            }))
+          }
+        >
           click
         </button>
       );
@@ -109,16 +118,17 @@ describe("events", () => {
     page.getByText("click").click();
     await sleep(1);
 
-    expect(clickFn).toHaveBeenCalledWith(clickParams, context, anyFn);
+    expect(clickFn).toHaveBeenCalledWith({ ...clickParams, ...context }, context, anyFn);
   });
 
-  it("any DOM event such as onFoucs can be called declaratively using Tracker.Event", async () => {
-    const context = { userId: "id" };
+  it("any DOM event such as onFoucs can be called declaratively using Tracker.DOMEvent", async () => {
+    type Context = { userId: string };
+    const context: Context = { userId: "id" };
     const focusEventParams = { a: 1 };
     const page = render(
       <Track.Provider initialContext={context}>
         <div>test</div>
-        <Track.DOMEvent type="onFocus" params={focusEventParams}>
+        <Track.DOMEvent type="onFocus" params={(context: Context) => ({ ...context, ...focusEventParams })}>
           <input />
         </Track.DOMEvent>
       </Track.Provider>,
@@ -127,7 +137,7 @@ describe("events", () => {
     page.getByRole("textbox").focus();
     await sleep(1);
 
-    expect(focusFn).toHaveBeenCalledWith(focusEventParams, context, anyFn);
+    expect(focusFn).toHaveBeenCalledWith({ ...context, ...focusEventParams }, context, anyFn);
   });
 
   it("DOMEvent's event name can be changed using eventName prop", async () => {
@@ -155,18 +165,19 @@ describe("events", () => {
 
 describe("page view", () => {
   it("page view should be called when the page is loaded", async () => {
-    const context = { userId: "id" };
+    type Context = { userId: string };
+    const context: Context = { userId: "id" };
     const pageViewParams = { a: 1 };
     render(
       <Track.Provider initialContext={context}>
         <div>test</div>
-        <Track.PageView params={pageViewParams} />
+        <Track.PageView params={(context: Context) => ({ ...context, ...pageViewParams })} />
       </Track.Provider>,
     );
 
     await sleep(1);
 
-    expect(pageViewFn).toHaveBeenCalledWith(pageViewParams, context, anyFn);
+    expect(pageViewFn).toHaveBeenCalledWith({ ...context, ...pageViewParams }, context, anyFn);
   });
   it("should not call onPageView again when the page rerenders", async () => {
     const context = { userId: "id" };
@@ -249,7 +260,7 @@ describe("set context", () => {
     });
 
     result.current.setContext(newContext);
-    result.current.events.onClick(clickParams);
+    result.current.track.onClick(clickParams);
     await sleep(1);
 
     expect(clickFn).toHaveBeenNthCalledWith(1, clickParams, newContext, anyFn);
