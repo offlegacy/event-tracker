@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      zod:
+        specifier: ^3.20.0
+        version: 3.24.1
     devDependencies:
       '@cspell/eslint-plugin':
         specifier: ^8.17.1
@@ -77,9 +81,6 @@ importers:
       vitest:
         specifier: ^2.1.8
         version: 2.1.8(@vitest/ui@2.1.8)(jsdom@25.0.1)
-      zod:
-        specifier: ^3.24.1
-        version: 3.24.1
 
 packages:
 
