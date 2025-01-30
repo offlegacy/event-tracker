@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { createContext, useContext, useEffect, useMemo, useRef } from "react";
-import type { ZodObject } from "zod";
 import { z } from "zod";
 
 import { isEventPropsWithSchema } from "../helpers/isEventPropsWithSchema";
@@ -19,16 +18,15 @@ import type {
   TrackerConfig,
   TrackerContextProps,
   UnionPropsWithAndWithoutSchema,
-  UnknownContext,
+  AnyContext,
+  AnySchemas,
+  AnyEventParams,
 } from "./types";
 
 export function createTracker<
-  Context extends UnknownContext = UnknownContext,
-  EventParams extends Record<string, any> = Record<string, any>,
-  Schemas extends Record<string, ZodObject<Record<keyof EventParams, any>>> = Record<
-    string,
-    ZodObject<Record<keyof EventParams, any>>
-  >,
+  Context extends AnyContext = AnyContext,
+  EventParams extends AnyEventParams = AnyEventParams,
+  Schemas extends AnySchemas = AnySchemas,
 >(config: TrackerConfig<Context, EventParams, Schemas>) {
   const TrackerContext = createContext<null | TrackerContextProps<Context, EventParams, Schemas>>(null);
 
