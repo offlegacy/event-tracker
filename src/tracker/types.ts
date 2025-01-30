@@ -2,8 +2,8 @@ import type { DOMAttributes } from "react";
 import type { BatchConfig } from "../scheduler/types";
 import { type z } from "zod";
 
-export type UnknownContext = Record<string, unknown>;
-export type UnknownEventParams = Record<string, unknown>;
+export type AnyContext = Record<string, any>;
+export type AnyEventParams = Record<string, any>;
 export type AnySchemas = Record<string, z.ZodObject<any>>;
 
 export type SchemaParams<Schemas extends AnySchemas = AnySchemas, T extends keyof Schemas = keyof Schemas> = z.infer<
@@ -52,7 +52,7 @@ export type EventParamsWithContext<EventParams, Context> = EventParams | ((conte
 export type EventParamsWithSchema<
   Schemas extends AnySchemas = AnySchemas,
   T extends keyof Schemas = keyof Schemas,
-  Context extends UnknownContext = UnknownContext,
+  Context extends AnyContext = AnyContext,
 > = {
   schema: T;
   params: ((context: Context) => SchemaParams<Schemas, T>) | SchemaParams<Schemas, T>;
@@ -67,22 +67,22 @@ export type SchemaConfig<Schemas extends AnySchemas> = {
 export type UnionPropsWithAndWithoutSchema<
   T extends keyof Schemas,
   Schemas extends AnySchemas = AnySchemas,
-  EventParams extends UnknownEventParams = UnknownEventParams,
-  Context extends UnknownContext = UnknownContext,
+  EventParams extends AnyEventParams = AnyEventParams,
+  Context extends AnyContext = AnyContext,
 > = PropsWithSchema<T, Schemas, Context> | PropsWithoutSchema<EventParams, Context>;
 
 export type PropsWithSchema<
   T extends keyof Schemas,
   Schemas extends AnySchemas = AnySchemas,
-  Context extends UnknownContext = UnknownContext,
+  Context extends AnyContext = AnyContext,
 > = {
   schema: T;
   params: ((context: Context) => SchemaParams<Schemas, T>) | SchemaParams<Schemas, T>;
 };
 
 export type PropsWithoutSchema<
-  EventParams extends UnknownEventParams = UnknownEventParams,
-  Context extends UnknownContext = UnknownContext,
+  EventParams extends AnyEventParams = AnyEventParams,
+  Context extends AnyContext = AnyContext,
 > = {
   schema?: undefined;
   params: EventParamsWithContext<EventParams, Context>;

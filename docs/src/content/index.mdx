@@ -135,17 +135,28 @@ It's located outside your application, so you can change your event tracking pro
 import { z } from "zod";
 import { createTracker } from "@offlegacy/event-tracker";
 
-// Define Schemas
-const page_view = z.object({
-  title: z.string(),
-});
+interface Context {
+  // ...
+}
 
-const click_button = z.object({
-  target: z.string(),
-});
+interface Params {
+  // ...
+}
+
+// Define Schemas
+const schemas = {
+  page_view: z.object({
+    title: z.string(),
+  }),
+  click_button: z.object({
+    target: z.string(),
+  }),
+};
 
 // Configure Tracker
-const [Track] = createTracker({
+const [Track] = createTracker<Context, Params, typeof schemas>({
+  // other configurations...
+
   schema: {
     schemas: {
       page_view,
@@ -156,7 +167,6 @@ const [Track] = createTracker({
     },
     abortOnError: true,
   },
-  // other configurations...
 });
 
 // Use the schemas
