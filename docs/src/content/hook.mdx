@@ -9,7 +9,7 @@ import { createTracker } from "@offlegacy/event-tracker";
 const [Track, useTracker] = createTracker({...})
 
 function MyComponent() {
-  const { setContext, getContext, events, send } = useTracker();
+  const { setContext, getContext, track, trackWithSchema } = useTracker();
 
   return (
     // Your component content
@@ -23,7 +23,7 @@ The hook returns an object with the following properties:
 
 #### setContext
 
-- Type: `(params: unknown) => void`
+- Type: `(context: Context) => void`
 - Sets or updates the current tracking context
 - Can be used to update user information, session data, etc.
 
@@ -42,7 +42,7 @@ setContext((prev) => ({
 
 #### getContext
 
-- Type: `() => unknown`
+- Type: `() => Context`
 - Returns the current tracking context
 - Useful for accessing current tracking state
 
@@ -53,38 +53,36 @@ const currentContext = getContext();
 console.log("Current user:", currentContext.userId);
 ```
 
-#### events
+#### track
 
-- Type: `Record<keyof EventNames, (params: unknown) => void>`
+- Type: `Record<keyof EventNames, (params: EventParams) => void>`
 - Object containing all configured event tracking functions
 - Keys match the event names defined in your tracker configuration
 
 ```tsx
-const { events } = useTracker();
+const { track } = useTracker();
 
 // Track a click event
-events.onClick({ buttonId: "submit" });
+track.onClick({ buttonId: "submit" });
 
 // Track an impression
-events.onImpression({ elementId: "hero" });
+track.onImpression({ elementId: "hero" });
 ```
 
-#### send
+#### trackWithSchema
 
-- Type: `(params: unknown) => void`
-- Generic event sending function
-- Uses the `send` function configured in `createTracker`
+- Type: `Record<keyof Schemas, (params: SchemaParams) => void>`
+- Object containing all configured event tracking functions
+- Keys match the event names defined in your tracker configuration
 
 ```tsx
-const { send } = useTracker();
+const { trackWithSchema } = useTracker();
 
-// Send a custom event
-send({
-  eventType: "custom_action",
-  data: {
-    /* ... */
-  },
-});
+// Track a click event
+trackWithSchema.onClick({ schema: "click", params: { buttonId: "submit" } });
+
+// Track an impression
+trackWithSchema.onImpression({ schema: "impression", params: { elementId: "hero" } });
 ```
 
 ### Example Usage
@@ -95,29 +93,32 @@ Here's a complete example showing how to use the custom hook:
 import { createTracker } from "@offlegacy/event-tracker";
 
 const [Track, useTracker] = createTracker({
-  send: (params) => {
+  onClick: (params) => {
     // Send event to analytics service
     analytics.track(params);
+  },
+  pageView: {
+    onPageView: (params) => {
+      // Send event to analytics service
+      analytics.pageView(params);
+    },
   },
 });
 
 function UserProfile({ userId }) {
-  const { setContext, events, send } = useTracker();
+  const { setContext, track, trackWithSchema } = useTracker();
 
   useEffect(() => {
     // Update context when user ID changes
     setContext({ userId });
 
     // Track page view
-    events.onPageView({ page: "profile" });
+    track.onPageView({ page: "profile" });
   }, [userId]);
 
   const handleSettingsClick = () => {
     // Track custom event
-    send({
-      eventType: "open_settings",
-      userId,
-    });
+    trackWithSchema.onClick({ schema: "settings", params: { userId } });
   };
 
   return (
@@ -138,10 +139,10 @@ function UserProfile({ userId }) {
 
 2. **Event Tracking**
 
-   - Use the specific event functions from `events` when possible
-   - Fall back to `send` for custom or one-off events
+   - Use the specific event functions from `track` or `trackWithSchema` when possible
 
 3. **Performance**
    - Avoid calling tracking functions in render
    - Use callbacks or effects for tracking
    - Consider using [batching](/docs/batching) for better performance
+   - Consider using [data type validation](/docs/data-type-validation) for data type safety

@@ -26,7 +26,11 @@ function App() {
 
 ### Props
 
-- `params: EventParams | (context: Context) => EventParams` - Click event parameters
+- With schema
+  - `params: SchemaParams | (context: Context) => SchemaParams` - Click event parameters based on schema
+  - `schema: string` - A name of schema that will be used to validate the event parameters
+- Without schema
+  - `params: EventParams | (context: Context) => EventParams` - Click event parameters
 
 ## Handling Renamed Click Event Prop
 

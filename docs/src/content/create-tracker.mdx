@@ -15,6 +15,7 @@ const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useTrack
     onPageView,
   },
   batch,
+  schemas,
 });
 ```
 
@@ -84,6 +85,17 @@ Configuration for event batching:
   - `thresholdSize`: Max batch size (default: 25)
   - `onFlush`: Function to handle batch flush (required if enabled)
   - `onError`: Error handler (optional)
+
+#### schemas
+
+Configuration for data type validation:
+
+- Type: `SchemaConfig`
+- Optional
+- Properties:
+  - `schemas`: A record of [Zod](https://zod.dev/) schemas
+  - `onSchemaError`?: Function to handle schema validation errors
+  - `abortOnError`?: Whether to abort event tracking if a schema validation error occurs (default: false)
 
 ### Return Value
 

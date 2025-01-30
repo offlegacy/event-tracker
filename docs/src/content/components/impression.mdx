@@ -29,5 +29,9 @@ function App() {
 
 ### Props
 
-- `params: EventParams | (context: Context) => EventParams` - Impression event parameters
 - `options?: ImpressionOptions` - Optional configuration (overrides global options)
+- With schema
+  - `params: SchemaParams | (context: Context) => SchemaParams` - Impression event parameters based on schema
+  - `schema: string` - A name of schema that will be used to validate the event parameters
+- Without schema
+  - `params: EventParams | (context: Context) => EventParams` - Impression event parameters

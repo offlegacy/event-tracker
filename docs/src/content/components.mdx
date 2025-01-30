@@ -53,8 +53,11 @@ function App() {
 ### Props
 
 - `type: DOMEventNames` - Event name (e.g., onClick, onFocus)
-- `params: unknown` - Event parameters
-- `eventName?: string` - A name for the event that will be used to trigger the event handler
+- (With schema)
+  - `params: SchemaParams | (context: Context) => SchemaParams` - Event parameters
+  - `schema?: string` - A name of schema that will be used to validate the event parameters
+- (Without schema)
+  - `params: EventParams | (context: Context) => EventParams` - Event parameters
 
 ## Click
 
@@ -84,8 +87,11 @@ function App() {
 
 ### Props
 
-- `params: unknown` - Click event parameters
-- `eventName?: string` - A name for the event that will be used to trigger the event handler
+- With schema
+  - `params: SchemaParams | (context: Context) => SchemaParams` - Click event parameters
+  - `schema?: string` - A name of schema that will be used to validate the event parameters
+- Without schema
+  - `params: EventParams | (context: Context) => EventParams` - Click event parameters
 
 ## Impression
 
@@ -118,8 +124,13 @@ function App() {
 
 ### Props
 
-- `params: unknown` - Impression event parameters
-- `options?: ImpressionOptions` - Optional configuration (overrides global options)
+- Without schema
+  - `params:  EventParams | (context: Context) => EventParams` - Impression event parameters
+  - `options?: ImpressionOptions` - Optional configuration (overrides global options)
+- With schema
+  - `params: SchemaParams | (context: Context) => SchemaParams` - Impression event parameters
+  - `schema?: string` - A name of schema that will be used to validate the event parameters
+  - `options?: ImpressionOptions` - Optional configuration (overrides global options)
 
 ## PageView
 
@@ -147,7 +158,11 @@ function App() {
 
 ### Props
 
-- `params: unknown` - Page view event parameters
+- With schema
+  - `params: SchemaParams | (context: Context) => SchemaParams` - Page view event parameters
+  - `schema?: string` - A name of schema that will be used to validate the event parameters
+- Without schema
+  - `params: EventParams | (context: Context) => EventParams` - Page view event parameters
 
 ## SetContext
 

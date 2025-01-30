@@ -9,10 +9,12 @@ A lightweight, type-safe event tracking library for React applications that simp
 ## Key Features
 
 - 🎯 Declarative event tracking with type-safe APIs
+- 🛡️ Data type validation with schemas
 - ⚡️ Optimized performance with event batching
 - 🔄 Guaranteed execution order for async operations
 - 🔌 Analytics tool agnostic - works with any provider
 - 🧩 Clean separation of tracking logic from business logic
+- 📦 Lightweight - minimal bundle size impact on your application
 
 ## Why event-tracker?
 
@@ -20,7 +22,7 @@ Event tracking is essential for modern web applications, but implementing it cle
 
 - Mixing tracking logic with business logic
 - Managing complex tracking state
-- Ensuring reliable event delivery
+- Ensuring reliable event delivery with data type validation
 - Maintaining type safety
 - Performance overhead
 
