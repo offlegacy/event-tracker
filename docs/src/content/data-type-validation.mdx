@@ -38,12 +38,14 @@ To configure data type validation in `event-tracker`, you need to define your sc
    ```tsx
    import { createTracker } from "@offlegacy/event-tracker";
 
-   const [Track] = createTracker({
+   type schemas = {
+     page_view;
+     clic_button;
+   };
+
+   const [Track] = createTracker<{}, {}, typeof schemas>({
      schema: {
-       schemas: {
-         page_view,
-         click_button,
-       },
+       schemas,
        onSchemaError: (error) => {
          console.error("Schema validation error:", error);
        },
@@ -62,5 +64,6 @@ To configure data type validation in `event-tracker`, you need to define your sc
 ## Important Notes
 
 - Zod schemas are by default validated with [`.parse()`](https://zod.dev/?id=parse).
+- We recommend defining schemas outside of `createTracker` function, then assigning `typeof schemas` in the third generic type argument of `createTracker` for smooth type inference.
 
 _We plan to support other schema validation libraries in the future._

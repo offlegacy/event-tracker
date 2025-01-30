@@ -9,16 +9,9 @@ interface Context {
   referrer?: string;
 }
 
-interface PageViewParams {
-  title: string;
-}
-
-interface ClickParams {
-  target: string;
-}
-
-interface ImpressionParams {
-  target: string;
+interface EventParams {
+  title?: string;
+  target?: string;
 }
 
 const track = isDev ? console.log : amplitude.track;
@@ -34,12 +27,12 @@ export const [Track] = createTracker({
       });
   },
   pageView: {
-    onPageView: (params: PageViewParams, context: Context) => {
+    onPageView: (params: EventParams, context: Context) => {
       track("pageView", { ...params, referrer: context.referrer });
     },
   },
   DOMEvents: {
-    onClick: (params: ClickParams, context: Context) => {
+    onClick: (params: EventParams, context: Context) => {
       track("click", {
         ...params,
         referrer: context.referrer,
@@ -47,7 +40,7 @@ export const [Track] = createTracker({
     },
   },
   impression: {
-    onImpression: (params: ImpressionParams, context: Context) => {
+    onImpression: (params: EventParams, context: Context) => {
       track("impression", {
         ...params,
         referrer: context.referrer,
