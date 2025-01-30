@@ -39,10 +39,8 @@ export function createTracker<
       return params;
     }
     try {
-      schema.strict().parse(params);
-      console.log("params", params);
+      schema.parse(params);
     } catch (error) {
-      console.log("ERROR", error);
       if (error instanceof z.ZodError) {
         config.schema?.onSchemaError?.(error);
         if (config.schema?.abortOnError) {

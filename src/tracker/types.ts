@@ -6,6 +6,10 @@ export type UnknownContext = Record<string, unknown>;
 export type UnknownEventParams = Record<string, unknown>;
 export type AnySchemas = Record<string, z.ZodObject<any>>;
 
+export type SchemaParams<Schemas extends AnySchemas = AnySchemas, T extends keyof Schemas = keyof Schemas> = z.infer<
+  Schemas[T]
+>;
+
 export interface ImpressionOptions {
   /**
    * A threshold indicating the percentage of the target's visibility needed to trigger the callback
@@ -51,12 +55,10 @@ export type EventParamsWithSchema<
   Context extends UnknownContext = UnknownContext,
 > = {
   schema: T;
-  params: ((context: Context) => z.infer<Schemas[T]>) | z.infer<Schemas[T]>;
+  params: ((context: Context) => SchemaParams<Schemas, T>) | SchemaParams<Schemas, T>;
 };
 
-export type Schemas = Record<string, z.ZodObject<any>>;
-
-export type SchemaConfig<Schemas> = {
+export type SchemaConfig<Schemas extends AnySchemas> = {
   schemas: Schemas;
   onSchemaError?: (error: z.ZodError) => void;
   abortOnError?: boolean;
@@ -75,7 +77,7 @@ export type PropsWithSchema<
   Context extends UnknownContext = UnknownContext,
 > = {
   schema: T;
-  params: ((context: Context) => z.infer<Schemas[T]>) | z.infer<Schemas[T]>;
+  params: ((context: Context) => SchemaParams<Schemas, T>) | SchemaParams<Schemas, T>;
 };
 
 export type PropsWithoutSchema<
@@ -86,7 +88,7 @@ export type PropsWithoutSchema<
   params: EventParamsWithContext<EventParams, Context>;
 };
 
-export interface TrackerConfig<Context, EventParams, Schemas extends Record<string, z.ZodObject<any>>> {
+export interface TrackerConfig<Context, EventParams, Schemas extends AnySchemas> {
   /**
    * Initialize the tracker with the given context.
    * @param initialContext - The initial context to use for the tracker.
@@ -99,23 +101,23 @@ export interface TrackerConfig<Context, EventParams, Schemas extends Record<stri
    * @param context - The context to send.
    * @returns void
    */
-  readonly send?: EventFunction<EventParams | z.infer<Schemas[keyof Schemas]>, Context>;
+  readonly send?: EventFunction<EventParams | SchemaParams<Schemas, keyof Schemas>, Context>;
   /**
    * The events to listen to.
    */
-  readonly DOMEvents?: DOMEvents<EventParams | z.infer<Schemas[keyof Schemas]>, Context>;
+  readonly DOMEvents?: DOMEvents<EventParams | SchemaParams<Schemas, keyof Schemas>, Context>;
   /**
    * The impression event to listen to.
    */
   impression?: {
-    onImpression: EventFunction<EventParams | z.infer<Schemas[keyof Schemas]>, Context>;
+    onImpression: EventFunction<EventParams | SchemaParams<Schemas, keyof Schemas>, Context>;
     options?: ImpressionOptions;
   };
   /**
    * The page track event to listen to.
    */
   pageView?: {
-    onPageView: EventFunction<EventParams | z.infer<Schemas[keyof Schemas]>, Context>;
+    onPageView: EventFunction<EventParams | SchemaParams<Schemas, keyof Schemas>, Context>;
     /**
      * TODO: add options
      */
@@ -125,7 +127,7 @@ export interface TrackerConfig<Context, EventParams, Schemas extends Record<stri
   schema?: SchemaConfig<Schemas>;
 }
 
-export interface TrackerContextProps<Context, EventParams, Schemas extends Record<string, z.ZodObject<any>>> {
+export interface TrackerContextProps<Context, EventParams, Schemas extends AnySchemas> {
   tracker: TrackerConfig<Context, EventParams, Schemas>;
   _setContext: (context: Context | ((prevContext: Context) => Context)) => void;
   _getContext: () => Context;

@@ -127,9 +127,47 @@ const [Track] = createTracker({
 Your instructions for **'how to track'** is now separated from your business logic.  
 It's located outside your application, so you can change your event tracking provider without having to change your application code.
 
+### Data Type Validation
+
+`event-tracker` provides built-in schema validation using [Zod](https://zod.dev/), a TypeScript-first schema validation library.
+
+```tsx
+import { z } from "zod";
+import { createTracker } from "@offlegacy/event-tracker";
+
+// Define Schemas
+const page_view = z.object({
+  title: z.string(),
+});
+
+const click_button = z.object({
+  target: z.string(),
+});
+
+// Configure Tracker
+const [Track] = createTracker({
+  schema: {
+    schemas: {
+      page_view,
+      click_button,
+    },
+    onSchemaError: (error) => {
+      console.error("Schema validation error:", error);
+    },
+    abortOnError: true,
+  },
+  // other configurations...
+});
+
+// Use the schemas
+<Track.PageView schema="page_view" params={{ title: "Home Page" }} />;
+<Track.Click schema="click_button" params={{ target: "submit-button" }} />;
+```
+
 ## Key Features
 
 - 🎯 **Type-safe APIs**: Declarative event tracking with complete type safety
+- 🛡️ **Data Type Validation**: Ensures data type safety and consistency using schemas
 - ⚡️ **Optimized Performance**: Enhanced performance through event batching
 - 🔄 **Guaranteed Order**: Guaranteed execution order for async operations
 - 🔌 **Analytics Agnostic**: Works with any analytics provider of your choice
@@ -151,3 +189,4 @@ Check out the other sections for detailed documentation on each feature:
 - [components](/docs/components) - Available tracking components
 - [hook](/docs/hook) - Track using the hook
 - [Batching](/docs/batching) - Optimizing performance with event batching
+- [Data Type Validation](/docs/data-type-validation) - Ensuring data type safety and consistency using schemas

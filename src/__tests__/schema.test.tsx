@@ -19,9 +19,11 @@ const [Track, useTracker] = createTracker({
   },
   schema: {
     schemas: {
-      test_button_click: z.object({
-        text: z.string(),
-      }),
+      test_button_click: z
+        .object({
+          text: z.string(),
+        })
+        .strict(),
     },
     onSchemaError: schemaErrorFn,
   },

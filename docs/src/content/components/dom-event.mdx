@@ -27,7 +27,11 @@ function App() {
 ### Props
 
 - `type: DOMEventNames` - Event name (e.g., onClick, onFocus)
-- `params: EventParams | (context: Context) => EventParams` - Event parameters
+- With schema
+  - `params: SchemaParams | (context: Context) => SchemaParams` - Parameters based on schema
+  - `schema: string` - A name of schema that will be used to validate the event parameters
+- Without schema
+  - `params: EventParams | (context: Context) => EventParams` - Event parameters
 
 ## Handling Renamed Event Props
 

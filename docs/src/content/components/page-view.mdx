@@ -24,4 +24,8 @@ function App() {
 
 ### Props
 
-- `params: EventParams | (context: Context) => EventParams` - Page view event parameters
+- With schema
+  - `params: SchemaParams | (context: Context) => SchemaParams` - Page view event parameters based on schema
+  - `schema: string` - A name of schema that will be used to validate the event parameters
+- Without schema
+  - `params: EventParams | (context: Context) => EventParams` - Page view event parameters
