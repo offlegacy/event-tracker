@@ -28,7 +28,7 @@ export const Impression = ({ children, onImpression, options }: ImpressionProps)
       ref,
     })
   ) : (
-    // FIXME: not a good solution since it can cause style issues
+    // FIXME: not a good solution since it can cause style & a11y issues
     <div aria-hidden ref={ref}>
       {child}
     </div>
