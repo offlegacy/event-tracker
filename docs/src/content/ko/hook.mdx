@@ -1,0 +1,148 @@
+# hook
+
+A custom React hook returned as the second array item from [`createTracker`](/docs/create-tracker).  
+It provides access to tracking functionality and context management within your components.
+
+```tsx
+import { createTracker } from "@offlegacy/event-tracker";
+
+const [Track, useTracker] = createTracker({...})
+
+function MyComponent() {
+  const { setContext, getContext, track, trackWithSchema } = useTracker();
+
+  return (
+    // Your component content
+  );
+}
+```
+
+### Return Value
+
+The hook returns an object with the following properties:
+
+#### setContext
+
+- Type: `(context: Context) => void`
+- Sets or updates the current tracking context
+- Can be used to update user information, session data, etc.
+
+```tsx
+const { setContext } = useTracker();
+
+// Set new context
+setContext({ userId: "user-123" });
+
+// Update context based on previous value
+setContext((prev) => ({
+  ...prev,
+  lastActive: new Date(),
+}));
+```
+
+#### getContext
+
+- Type: `() => Context`
+- Returns the current tracking context
+- Useful for accessing current tracking state
+
+```tsx
+const { getContext } = useTracker();
+
+const currentContext = getContext();
+console.log("Current user:", currentContext.userId);
+```
+
+#### track
+
+- Type: `Record<keyof EventNames, (params: EventParams) => void>`
+- Object containing all configured event tracking functions
+- Keys match the event names defined in your tracker configuration
+
+```tsx
+const { track } = useTracker();
+
+// Track a click event
+track.onClick({ buttonId: "submit" });
+
+// Track an impression
+track.onImpression({ elementId: "hero" });
+```
+
+#### trackWithSchema
+
+- Type: `Record<keyof Schemas, (params: SchemaParams) => void>`
+- Object containing all configured event tracking functions
+- Keys match the event names defined in your tracker configuration
+
+```tsx
+const { trackWithSchema } = useTracker();
+
+// Track a click event
+trackWithSchema.onClick({ schema: "click", params: { buttonId: "submit" } });
+
+// Track an impression
+trackWithSchema.onImpression({ schema: "impression", params: { elementId: "hero" } });
+```
+
+### Example Usage
+
+Here's a complete example showing how to use the custom hook:
+
+```tsx
+import { createTracker } from "@offlegacy/event-tracker";
+
+const [Track, useTracker] = createTracker({
+  onClick: (params) => {
+    // Send event to analytics service
+    analytics.track(params);
+  },
+  pageView: {
+    onPageView: (params) => {
+      // Send event to analytics service
+      analytics.pageView(params);
+    },
+  },
+});
+
+function UserProfile({ userId }) {
+  const { setContext, track, trackWithSchema } = useTracker();
+
+  useEffect(() => {
+    // Update context when user ID changes
+    setContext({ userId });
+
+    // Track page view
+    track.onPageView({ page: "profile" });
+  }, [userId]);
+
+  const handleSettingsClick = () => {
+    // Track custom event
+    trackWithSchema.onClick({ schema: "settings", params: { userId } });
+  };
+
+  return (
+    <div>
+      <h1>User Profile</h1>
+      <button onClick={handleSettingsClick}>Settings</button>
+    </div>
+  );
+}
+```
+
+### Best Practices
+
+1. **Context Updates**
+
+   - Use `setContext` for global state that affects multiple events
+   - Consider using the function form of `setContext` for updates based on previous state
+
+2. **Event Tracking**
+
+   - Use the specific event functions from `track` or `trackWithSchema` when possible
+
+3. **Performance**
+   - Avoid calling tracking functions in render
+   - Use callbacks or effects for tracking
+   - Consider using [batching](/docs/batching) for better performance
+   - Consider using [data type validation](/docs/data-type-validation) for data type safety

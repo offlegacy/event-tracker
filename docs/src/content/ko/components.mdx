@@ -1,0 +1,189 @@
+# Components
+
+event-tracker provides several components for tracking different types of events. Each component is designed to be easy to use while maintaining type safety and performance.
+
+## Provider
+
+The `Provider` component connects and provides initial context to your application.
+
+```tsx
+import { createTracker } from '@offlegacy/event-tracker'
+
+const [Track] = createTracker({...})
+
+function App() {
+  return (
+    <Track.Provider initialContext={{}}>
+      {/* Your app content */}
+    </Track.Provider>
+  )
+}
+```
+
+### Props
+
+- `initialContext: unknown` - Initial context value
+
+## DOMEvent
+
+Used for tracking DOM events. Wraps a child component and fires the specified event handler.
+
+```tsx
+import { createTracker } from "@offlegacy/event-tracker";
+
+const [Track] = createTracker({
+  DOMEvents: {
+    onFocus: (params, context) => {
+      // Handle focus event
+    },
+  },
+});
+
+function App() {
+  return (
+    <Track.Provider initialContext={{}}>
+      <Track.DOMEvent type="onFocus" params={{}}>
+        <input />
+      </Track.DOMEvent>
+    </Track.Provider>
+  );
+}
+```
+
+### Props
+
+- `type: DOMEventNames` - Event name (e.g., onClick, onFocus)
+- (With schema)
+  - `params: SchemaParams | (context: Context) => SchemaParams` - Event parameters
+  - `schema?: string` - A name of schema that will be used to validate the event parameters
+- (Without schema)
+  - `params: EventParams | (context: Context) => EventParams` - Event parameters
+
+## Click
+
+A specialized version of `DOMEvent` for click events (`type="onClick"`).
+
+```tsx
+import { createTracker } from "@offlegacy/event-tracker";
+
+const [Track] = createTracker({
+  DOMEvents: {
+    onClick: (params, context) => {
+      // Handle click event
+    },
+  },
+});
+
+function App() {
+  return (
+    <Track.Provider initialContext={{}}>
+      <Track.Click params={{ buttonId: "submit" }}>
+        <button>Submit</button>
+      </Track.Click>
+    </Track.Provider>
+  );
+}
+```
+
+### Props
+
+- With schema
+  - `params: SchemaParams | (context: Context) => SchemaParams` - Click event parameters
+  - `schema?: string` - A name of schema that will be used to validate the event parameters
+- Without schema
+  - `params: EventParams | (context: Context) => EventParams` - Click event parameters
+
+## Impression
+
+Tracks impression events using the Intersection Observer API.
+
+```tsx
+import { createTracker } from "@offlegacy/event-tracker";
+
+const [Track] = createTracker({
+  impression: {
+    onImpression: (params, context) => {
+      // Handle impression event
+    },
+    options: {
+      threshold: 0.5,
+    },
+  },
+});
+
+function App() {
+  return (
+    <Track.Provider initialContext={{}}>
+      <Track.Impression params={{ elementId: "hero" }} options={{ threshold: 0.8 }}>
+        <div>Tracked content</div>
+      </Track.Impression>
+    </Track.Provider>
+  );
+}
+```
+
+### Props
+
+- Without schema
+  - `params:  EventParams | (context: Context) => EventParams` - Impression event parameters
+  - `options?: ImpressionOptions` - Optional configuration (overrides global options)
+- With schema
+  - `params: SchemaParams | (context: Context) => SchemaParams` - Impression event parameters
+  - `schema?: string` - A name of schema that will be used to validate the event parameters
+  - `options?: ImpressionOptions` - Optional configuration (overrides global options)
+
+## PageView
+
+Tracks page view events on component mount.
+
+```tsx
+import { createTracker } from "@offlegacy/event-tracker";
+
+const [Track] = createTracker({
+  pageView: {
+    onPageView: (params, context) => {
+      // Handle page view event
+    },
+  },
+});
+
+function App() {
+  return (
+    <Track.Provider initialContext={{}}>
+      <Track.PageView params={{ page: "/home" }} />
+    </Track.Provider>
+  );
+}
+```
+
+### Props
+
+- With schema
+  - `params: SchemaParams | (context: Context) => SchemaParams` - Page view event parameters
+  - `schema?: string` - A name of schema that will be used to validate the event parameters
+- Without schema
+  - `params: EventParams | (context: Context) => EventParams` - Page view event parameters
+
+## SetContext
+
+Sets or updates the tracking context.
+
+```tsx
+import { createTracker } from '@offlegacy/event-tracker'
+
+const [Track] = createTracker({...})
+
+function App() {
+  return (
+    <Track.Provider initialContext={{ userId: 'user-1' }}>
+      <Track.SetContext
+        context={{ lastActive: new Date() }}
+      />
+    </Track.Provider>
+  )
+}
+```
+
+### Props
+
+- `context: unknown | ((prevContext: unknown) => unknown)` - New context value or update function

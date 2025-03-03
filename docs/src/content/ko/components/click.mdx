@@ -1,0 +1,54 @@
+# Click
+
+A specialized version of `DOMEvent` for click events (`type="onClick"`).
+
+```tsx
+import { createTracker } from "@offlegacy/event-tracker";
+
+const [Track] = createTracker({
+  DOMEvents: {
+    onClick: (params, context) => {
+      // Handle click event
+    },
+  },
+});
+
+function App() {
+  return (
+    <Track.Provider initialContext={{}}>
+      <Track.Click params={{ buttonId: "submit" }}>
+        <button>Submit</button>
+      </Track.Click>
+    </Track.Provider>
+  );
+}
+```
+
+### Props
+
+- With schema
+  - `params: SchemaParams | (context: Context) => SchemaParams` - Click event parameters based on schema
+  - `schema: string` - A name of schema that will be used to validate the event parameters
+- Without schema
+  - `params: EventParams | (context: Context) => EventParams` - Click event parameters
+
+## Handling Renamed Click Event Prop
+
+The `eventName` prop allows you to specify a custom click event handler name.  
+It allows you to dynamically specify the new click event handler name, ensuring flexibility even when the handler names change.
+
+```tsx {8, 10}
+function MyButton({ onButtonClick }: { onButtonClick?: () => void }) {
+  return <button onClick={onButtonClick} />;
+}
+
+function App() {
+  return (
+    <Track.Provider initialContext={{}}>
+      <Track.Click type="onFocus" params={{...}} eventName="onButtonClick">
+        <MyButton />
+      </Track.Click>
+    </Track.Provider>
+  );
+}
+```

@@ -9,6 +9,11 @@ const withNextra = nextra({
   contentDirBasePath: "/docs",
 });
 
-const nextConfig: NextConfig = {};
+const nextConfig: NextConfig = {
+  i18n: {
+    locales: ["en", "ko"],
+    defaultLocale: "en",
+  },
+};
 
 export default withNextra(nextConfig);

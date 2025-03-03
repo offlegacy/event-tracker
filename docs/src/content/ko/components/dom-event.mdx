@@ -1,0 +1,55 @@
+# DOMEvent
+
+Used for tracking DOM events. Wraps a child component and fires the specified event handler.
+
+```tsx
+import { createTracker } from "@offlegacy/event-tracker";
+
+const [Track] = createTracker({
+  DOMEvents: {
+    onFocus: (params, context) => {
+      // Handle focus event
+    },
+  },
+});
+
+function App() {
+  return (
+    <Track.Provider initialContext={{}}>
+      <Track.DOMEvent type="onFocus" params={{...}}>
+        <input />
+      </Track.DOMEvent>
+    </Track.Provider>
+  );
+}
+```
+
+### Props
+
+- `type: DOMEventNames` - Event name (e.g., onClick, onFocus)
+- With schema
+  - `params: SchemaParams | (context: Context) => SchemaParams` - Parameters based on schema
+  - `schema: string` - A name of schema that will be used to validate the event parameters
+- Without schema
+  - `params: EventParams | (context: Context) => EventParams` - Event parameters
+
+## Handling Renamed Event Props
+
+The `eventName` prop allows you to specify a custom event handler name.  
+It allows you to dynamically specify the new event handler name, ensuring flexibility even when the handler names change.
+
+```tsx {8, 10}
+function MyInput({ onInputFocus }: { onInputFocus?: () => void }) {
+  return <input onFocus={onInputFocus} />;
+}
+
+function App() {
+  return (
+    <Track.Provider initialContext={{}}>
+      <Track.DOMEvent type="onFocus" params={{...}} eventName="onInputFocus">
+        <MyInput />
+      </Track.DOMEvent>
+    </Track.Provider>
+  );
+}
+```

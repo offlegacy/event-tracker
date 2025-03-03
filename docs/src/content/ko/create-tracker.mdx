@@ -1,0 +1,113 @@
+# createTracker(config)
+
+The main function to create a tracker instance with your desired configuration.
+
+```tsx
+const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useTracker] = createTracker({
+  init,
+  send,
+  DOMEvents,
+  impression: {
+    onImpression,
+    options,
+  },
+  pageView: {
+    onPageView,
+  },
+  batch,
+  schemas,
+});
+```
+
+### Configuration Options
+
+#### init
+
+- Type: `(initialContext: Context, setContext: SetContext) => void | Promise<void>`
+- Optional
+- Function executed before any events happen
+- If it returns a promise, events will be delayed until the promise resolves
+
+#### send
+
+- Type: `(params: EventParams | (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType`
+- Optional
+- Standard function to send events
+- If it returns a promise, events will be delayed until the promise resolves
+
+#### DOMEvents
+
+- Type: `DOMEvents`
+- Optional
+- Collection of standard React DOM events (`onClick`, `onMouseEnter`, etc.)
+- Each handler is executed when that event occurs on a `<Track.DOMEvent type=[event type]>`
+- If a handler returns a promise, subsequent event callbacks will be delayed until it resolves
+
+#### impression
+
+Configuration for impression tracking:
+
+- onImpression
+
+  - Type: `(params: EventParams | (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType`
+  - Optional
+  - Executed when impression occurs on a `<Track.Impression>` child
+  - Promise return value will delay subsequent callbacks
+
+- options
+  - Type: `ImpressionOptions`
+  - Optional
+  - Configuration options for impression tracking:
+    - `threshold`: Percentage of visibility needed (default: 0.2)
+    - `freezeOnceVisible`: Freeze intersection state after visibility (default: true)
+    - `initialIsIntersecting`: Initial intersection state (default: false)
+
+#### pageView
+
+Configuration for page view tracking:
+
+##### onPageView
+
+- Type: `(params: EventParams | (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType`
+- Optional
+- Executed when `<Track.PageView>` is mounted
+- Promise return value will delay subsequent events
+
+#### batch
+
+Configuration for event batching:
+
+- Type: `BatchConfig`
+- Optional
+- Properties:
+  - `enable`: Enable batching (default: false)
+  - `interval`: Flush interval in ms (default: 3000)
+  - `thresholdSize`: Max batch size (default: 25)
+  - `onFlush`: Function to handle batch flush (required if enabled)
+  - `onError`: Error handler (optional)
+
+#### schemas
+
+Configuration for data type validation:
+
+- Type: `SchemaConfig`
+- Optional
+- Properties:
+  - `schemas`: A record of [Zod](https://zod.dev/) schemas
+  - `onSchemaError`?: Function to handle schema validation errors
+  - `abortOnError`?: Whether to abort event tracking if a schema validation error occurs (default: false)
+
+### Return Value
+
+The `createTracker` function returns a tuple containing:
+
+1. An object with tracking components:
+
+   - [`Provider`](/docs/components)
+   - [`DOMEvent`](/docs/components/dom-event)
+   - [`Click`](/docs/components/click)
+   - [`Impression`](/docs/components/impression)
+   - [`PageView`](/docs/components/page-view)
+   - [`SetContext`](/docs/components/set-context)
+
+2. The [custom hook](/docs/hook)

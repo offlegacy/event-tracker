@@ -1,0 +1,202 @@
+# 한글 테스트
+
+## Motivation
+
+Event tracking is a complex task that requires a lot of boilerplate code and complexity.  
+Take a look at this example.
+
+```tsx {14,15, 23-30}
+// Traditional event tracking
+
+const Page = () => {
+  const { user, userId } = useUser();
+
+  return (
+    <div>
+      <p>User: {user.name}</p>
+      <Counter userId={userId} />
+    </div>
+  );
+};
+
+const Counter = ({ userId }: { userId: string }) => {
+  // Receives 'userId' as a prop just for event tracking purposes.
+
+  const [count, setCount] = useState(0);
+  const { track } = useTrackEvent();
+
+  const handleIncrement = () => {
+    setCount(count + 1);
+
+    track({
+      event: "click",
+      params: {
+        type: "count",
+        value: count + 1,
+        userId,
+      },
+    });
+  };
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={handleIncrement}>Increment</button>
+    </div>
+  );
+};
+```
+
+The two main inconveniences caused by event tracking in the code are:
+
+1. **Prop Drilling**: The `userId` is passed as a prop to the `<Counter />` component from the `<Page />` component. If the `<Counter />` component is nested deeper within the component tree, prop drilling can become more severe, reducing the readability and maintainability of the code.
+2. **Coupling of Event Tracking Logic and Business Logic**: The `handleIncrement` function contains both the logic for incrementing the count and tracking the event. Separating the event tracking logic can make the code cleaner and easier to maintain.
+
+## The New Paradigm
+
+`event-tracker` introduces a new paradigm for event tracking.
+The declarative nature of this paradigm simplifies
+the complexity traditionally associated with event tracking, making it accessible to developers of all skill levels.
+
+### Declarative event tracking
+
+```tsx {5, 10, 24, 26}
+const Page = () => {
+  const { user, userId } = useUser();
+
+  return (
+    <Track.Provider initialContext={{ userId }}>
+      <div>
+        <p>User: {user.name}</p>
+        <Counter />
+      </div>
+    </Track.Provider>
+  );
+};
+
+const Counter = () => {
+  const [count, setCount] = useState(0);
+
+  const handleIncrement = () => {
+    setCount(count + 1);
+  };
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <Track.Click params={{ value: count + 1, type: "count" }}>
+        <button onClick={handleIncrement}>Increment</button>
+      </Track.Click>
+    </div>
+  );
+};
+```
+
+Using `event-tracker` allows for declarative event tracking, which improves code readability and reduces complexity. This helps developers understand and use event tracking more easily.  
+Your `handleIncrement` function is now only responsible for incrementing the count, and the event tracking is handled by the `<Track.Click />` component.  
+**This declarative approach makes the developer focus on _'what to track'_ and not _'how to track'._**
+How to track should be defined outside of the React app.
+
+### Improve code cohesion outside your application.
+
+```tsx
+const [Track] = createTracker({
+  DOMEvents: {
+    onClick: (params, context) => {
+      log({
+        event: "click",
+        params: {
+          ...params,
+          userId: context.userId,
+        },
+      });
+    },
+  },
+  onImpression: (params, context) => {
+    log({
+      event: "impression",
+      params: {
+        ...params,
+        userId: context.userId,
+      },
+    });
+  },
+});
+```
+
+Your instructions for **'how to track'** is now separated from your business logic.  
+It's located outside your application, so you can change your event tracking provider without having to change your application code.
+
+### Data Type Validation
+
+`event-tracker` provides built-in schema validation using [Zod](https://zod.dev/), a TypeScript-first schema validation library.
+
+```tsx
+import { z } from "zod";
+import { createTracker } from "@offlegacy/event-tracker";
+
+interface Context {
+  // ...
+}
+
+interface Params {
+  // ...
+}
+
+// Define Schemas
+const schemas = {
+  page_view: z.object({
+    title: z.string(),
+  }),
+  click_button: z.object({
+    target: z.string(),
+  }),
+};
+
+// Configure Tracker
+const [Track] = createTracker<Context, Params, typeof schemas>({
+  // other configurations...
+
+  schema: {
+    schemas: {
+      page_view,
+      click_button,
+    },
+    onSchemaError: (error) => {
+      console.error("Schema validation error:", error);
+    },
+    abortOnError: true,
+  },
+});
+
+// Use the schemas
+<Track.PageView schema="page_view" params={{ title: "Home Page" }} />;
+<Track.Click schema="click_button" params={{ target: "submit-button" }} />;
+```
+
+## Key Features
+
+- 🎯 **Type-safe APIs**: Declarative event tracking with complete type safety
+- 🛡️ **Data Type Validation**: Ensures data type safety and consistency using schemas
+- ⚡️ **Optimized Performance**: Enhanced performance through event batching
+- 🔄 **Guaranteed Order**: Guaranteed execution order for async operations
+- 🔌 **Analytics Agnostic**: Works with any analytics provider of your choice
+- 🧩 **Clean Separation**: Keeps tracking logic separate from business logic
+- 📦 **Lightweight**: Minimal bundle size impact on your application
+
+## Basic Concepts
+
+`event-tracker` is built around a few core concepts:
+
+1. **Tracker Creation**: Use `createTracker` to create a tracker instance with your desired event tracking instructions.
+2. **Provider**: Wrap your app with `Track.Provider` to provide context.
+3. **Event Components**: Use components like `Track.Click` or `Track.Impression` to track events.
+4. **Hooks**: Use the `useTracker` hook to access tracking functionality in your components imperatively.
+
+Check out the other sections for detailed documentation on each feature:
+
+- [createTracker](/docs/create-tracker) - Detailed API documentation on `createTracker`
+- [components](/docs/components) - Available tracking components
+- [hook](/docs/hook) - Track using the hook
+- [Batching](/docs/batching) - Optimizing performance with event batching
+- [Data Type Validation](/docs/data-type-validation) - Ensuring data type safety and consistency using schemas
