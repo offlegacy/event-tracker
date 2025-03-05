@@ -1,16 +1,16 @@
-# Event Batching
+# 배칭
 
-## Overview
+## 개요
 
-Event batching is a performance optimization technique that groups multiple events together before sending them to your analytics service. This is particularly useful when:
+이벤트 배칭은 여러 이벤트를 묶어서 애널리틱스 서비스에 보내기 전에 진행하는 성능 최적화 기술입니다. 이는 다음과 같은 경우에 특히 유용합니다:
 
-- You're not using an analytics service with built-in batching (like Amplitude or Google Analytics)
-- You need to reduce the number of network requests
-- You want to optimize for performance at scale
+- 내부 배칭 기능이 있는 애널리틱스 서비스(Amplitude 또는 Google Analytics)를 사용하지 않는 경우
+- 네트워크 요청 수를 줄이고 싶은 경우
+- 성능을 최적화하고 싶은 경우
 
-## Configuration
+## 설정
 
-Enable batching in your tracker configuration:
+트래커 설정에서 배칭을 활성화합니다:
 
 ```tsx
 const [Track, useTracker] = createTracker({
@@ -21,12 +21,12 @@ const [Track, useTracker] = createTracker({
     thresholdSize: 100,
     onFlush: (batch, isBrowserClosing) => {
       if (isBrowserClosing) {
-        // Use sendBeacon for reliable delivery when browser is closing
+        // 브라우저가 닫힐 때 신뢰할 수 있는 전송을 위해 sendBeacon 사용
         navigator.sendBeacon("/analytics/collect/batch", JSON.stringify(batch));
         return;
       }
 
-      // Normal batch submission
+      // 일반 배칭 처리
       fetch("/analytics/collect/batch", {
         method: "POST",
         body: JSON.stringify(batch),
@@ -36,36 +36,36 @@ const [Track, useTracker] = createTracker({
 });
 ```
 
-### Options
+### 옵션
 
-- `enable: boolean` (default: `false`)
-  - Enables/disables batching
-- `interval: number` (default: `3000`)
-  - Time in milliseconds between batch flushes
-- `thresholdSize: number` (default: `25`)
-  - Maximum number of events in a batch before forcing a flush
+- `enable: boolean` (기본값: `false`)
+  - 배칭 활성화/비활성화
+- `interval: number` (기본값: `3000`)
+  - 배칭 처리 간격 (ms)
+- `thresholdSize: number` (기본값: `25`)
+  - 배칭 처리 전 최대 이벤트 수
 - `onFlush: (batch: Batch[], isBrowserClosing: boolean) => void | Promise<void>`
-  - Required when batching is enabled
-  - Function called to process the batch
-  - `isBrowserClosing` indicates if the flush was triggered by browser closure
+  - 배칭 활성화 시 필요
+  - 배칭 처리 함수
+  - `isBrowserClosing` 브라우저 닫힘 시 배칭 처리 여부
 - `onError: (error: Error) => void | Promise<void>`
-  - Optional error handler for batch processing failures
+  - 배칭 처리 실패 시 오류 처리 함수
 
-## How It Works
+## 작동 방식
 
-1. Events are collected in memory
-2. The batch is flushed when either:
-   - The configured interval is reached
-   - The batch size reaches the threshold
-   - The browser is about to close/hide
+1. 이벤트는 메모리에 수집됩니다
+2. 다음 중 하나가 발생할 때 배칭이 처리됩니다:
+   - 구성된 간격이 도달합니다
+   - 배칭 크기가 임계치에 도달합니다
+   - 브라우저가 닫힐 때
 
-### Example Flow
+### 예시
 
 ```tsx
 const [Track, useTracker] = createTracker({
   DOMEvents: {
     onClick: (clickParams, context) => {
-      // Return value is what gets batched
+      // 반환 값이 배칭됩니다
       return {
         ...clickParams,
         ...context,
@@ -95,15 +95,15 @@ function App() {
 }
 ```
 
-When the button is clicked multiple times:
+버튼을 여러 번 클릭했을 때:
 
-1. Each click runs the `onClick` handler
-2. The return value from each handler is added to the batch queue
-3. After 2 seconds (or when threshold is reached), `onFlush` is called with all collected events
+1. 각 클릭은 `onClick` 핸들러를 실행합니다
+2. 각 핸들러의 반환 값은 배치 큐에 추가됩니다
+3. 2초(또는 임계치에 도달할 때)가 지나면 `onFlush`가 모든 수집된 이벤트와 함께 호출됩니다
 
-## Browser Closing Behavior
+## 브라우저 닫힘 시 동작
 
-When the browser is closing, you should use [`navigator.sendBeacon`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon) to ensure reliable delivery:
+브라우저가 닫힐 때, [`navigator.sendBeacon`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon)을 사용하여 이벤트 전송을 보장합니다:
 
 ```tsx
 onFlush: (batch, isBrowserClosing) => {
@@ -112,7 +112,7 @@ onFlush: (batch, isBrowserClosing) => {
     return;
   }
 
-  // Normal operation
+  // 일반 배칭 처리
   fetch("/analytics/collect/batch", {
     method: "POST",
     body: JSON.stringify(batch),
@@ -120,9 +120,9 @@ onFlush: (batch, isBrowserClosing) => {
 };
 ```
 
-## Important Notes
+## 유의 사항
 
-1. Only the **return values** from event handlers are batched, not the handlers themselves
-2. Each event in the batch maintains its original parameters and context
-3. Events are processed in order, maintaining the sequence of user actions
-4. Use `navigator.sendBeacon` for browser closing scenarios to ensure delivery
+1. 이벤트 핸들러의 **반환 값**만 배칭되며, 핸들러 자체는 배칭되지 않습니다
+2. 배칭된 이벤트는 원래 매개변수와 컨텍스트를 유지합니다
+3. 이벤트는 순서대로 처리되며, 사용자 작업의 순서를 유지합니다
+4. 브라우저 닫힘 시 이벤트 전송을 보장하기 위해 [`navigator.sendBeacon`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon)을 사용합니다

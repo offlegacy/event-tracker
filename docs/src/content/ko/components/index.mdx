@@ -1,6 +1,6 @@
 # Provider
 
-The `Provider` component connects and provides initial context to your application.
+`Provider` 컴포넌트는 애플리케이션에 초기 컨텍스트를 연결하고 제공합니다.
 
 ```tsx
 import { createTracker } from '@offlegacy/event-tracker'
@@ -10,7 +10,7 @@ const [Track] = createTracker({...})
 function App() {
   return (
     <Track.Provider initialContext={{}}>
-      {/* Your app content */}
+      {/* 애플리케이션 컨텐츠 */}
     </Track.Provider>
   )
 }
@@ -18,4 +18,4 @@ function App() {
 
 ### Props
 
-- `initialContext?: Context` - Initial context value
+- `initialContext?: Context` - 초기 컨텍스트 값

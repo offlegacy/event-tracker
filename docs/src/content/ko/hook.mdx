@@ -1,7 +1,7 @@
 # hook
 
-A custom React hook returned as the second array item from [`createTracker`](/docs/create-tracker).  
-It provides access to tracking functionality and context management within your components.
+[`createTracker`](/docs/create-tracker)에서 두 번째 배열 항목으로 반환되는 커스텀 React hook입니다.  
+이 훅은 컴포넌트 내에서 이벤트 트래킹 기능과 컨텍스트 관리에 접근할 수 있게 합니다.
 
 ```tsx
 import { createTracker } from "@offlegacy/event-tracker";
@@ -12,28 +12,28 @@ function MyComponent() {
   const { setContext, getContext, track, trackWithSchema } = useTracker();
 
   return (
-    // Your component content
+    // 컴포넌트 내용
   );
 }
 ```
 
-### Return Value
+### 반환 값
 
-The hook returns an object with the following properties:
+이 hook은 다음 속성을 포함하는 객체를 반환합니다:
 
 #### setContext
 
 - Type: `(context: Context) => void`
-- Sets or updates the current tracking context
-- Can be used to update user information, session data, etc.
+- 현재 트래킹 컨텍스트를 설정하거나 업데이트합니다.
+- 사용자 정보, 세션 데이터 등을 업데이트하는 데 사용할 수 있습니다.
 
 ```tsx
 const { setContext } = useTracker();
 
-// Set new context
+// 새로운 컨텍스트 설정
 setContext({ userId: "user-123" });
 
-// Update context based on previous value
+// 이전 값에 기반한 컨텍스트 업데이트
 setContext((prev) => ({
   ...prev,
   lastActive: new Date(),
@@ -43,8 +43,8 @@ setContext((prev) => ({
 #### getContext
 
 - Type: `() => Context`
-- Returns the current tracking context
-- Useful for accessing current tracking state
+- 현재 트래킹 컨텍스트를 반환합니다.
+- 현재 트래킹 상태에 접근하는 데 유용합니다.
 
 ```tsx
 const { getContext } = useTracker();
@@ -56,24 +56,24 @@ console.log("Current user:", currentContext.userId);
 #### track
 
 - Type: `Record<keyof EventNames, (params: EventParams) => void>`
-- Object containing all configured event tracking functions
-- Keys match the event names defined in your tracker configuration
+- 모든 구성된 이벤트 트래킹 함수를 포함하는 객체
+- key는 트래커 구성에 정의된 이벤트 이름과 일치합니다.
 
 ```tsx
 const { track } = useTracker();
 
-// Track a click event
+// 클릭 이벤트 추적
 track.onClick({ buttonId: "submit" });
 
-// Track an impression
+// 노출 이벤트 추적
 track.onImpression({ elementId: "hero" });
 ```
 
 #### trackWithSchema
 
 - Type: `Record<keyof Schemas, (params: SchemaParams) => void>`
-- Object containing all configured event tracking functions
-- Keys match the event names defined in your tracker configuration
+- 모든 구성된 이벤트 트래킹 함수를 포함하는 객체
+- key는 트래커 구성에 정의된 이벤트 이름과 일치합니다.
 
 ```tsx
 const { trackWithSchema } = useTracker();
@@ -81,20 +81,20 @@ const { trackWithSchema } = useTracker();
 // Track a click event
 trackWithSchema.onClick({ schema: "click", params: { buttonId: "submit" } });
 
-// Track an impression
+// 노출 이벤트 추적
 trackWithSchema.onImpression({ schema: "impression", params: { elementId: "hero" } });
 ```
 
-### Example Usage
+### 사용 예제
 
-Here's a complete example showing how to use the custom hook:
+다음은 이 hook을 사용하는 예제입니다:
 
 ```tsx
 import { createTracker } from "@offlegacy/event-tracker";
 
 const [Track, useTracker] = createTracker({
   onClick: (params) => {
-    // Send event to analytics service
+    // 이벤트를 애널리틱스 서비스로 전송
     analytics.track(params);
   },
   pageView: {
@@ -109,15 +109,15 @@ function UserProfile({ userId }) {
   const { setContext, track, trackWithSchema } = useTracker();
 
   useEffect(() => {
-    // Update context when user ID changes
+    // 사용자 ID가 변경될 때 컨텍스트 업데이트
     setContext({ userId });
 
-    // Track page view
+    // 페이지 뷰 이벤트 트래킹
     track.onPageView({ page: "profile" });
   }, [userId]);
 
   const handleSettingsClick = () => {
-    // Track custom event
+    // 사용자 설정 이벤트 트래킹
     trackWithSchema.onClick({ schema: "settings", params: { userId } });
   };
 
@@ -132,17 +132,18 @@ function UserProfile({ userId }) {
 
 ### Best Practices
 
-1. **Context Updates**
+1. **컨텍스트 업데이트**
 
-   - Use `setContext` for global state that affects multiple events
-   - Consider using the function form of `setContext` for updates based on previous state
+   - 여러 이벤트에 영향을 주는 전역 상태를 업데이트하기 위해 `setContext`를 사용하세요.
+   - 이전 상태에 기반한 업데이트를 위해 `setContext`의 함수 형태를 고려하세요.
 
-2. **Event Tracking**
+2. **이벤트 트래킹**
 
-   - Use the specific event functions from `track` or `trackWithSchema` when possible
+   - 가능한 경우 `track` 또는 `trackWithSchema`에서 이벤트 함수를 사용하세요.
 
-3. **Performance**
-   - Avoid calling tracking functions in render
-   - Use callbacks or effects for tracking
-   - Consider using [batching](/docs/batching) for better performance
-   - Consider using [data type validation](/docs/data-type-validation) for data type safety
+3. **성능**
+
+   - 렌더링 중에 이벤트 트래킹 함수를 호출하지 마세요.
+   - 콜백 또는 효과를 사용하세요.
+   - [배칭](/docs/batching)을 사용하여 성능을 향상시키세요.
+   - [데이터 타입 검증](/docs/data-type-validation)을 사용하여 데이터 타입 안전성을 확인하세요.

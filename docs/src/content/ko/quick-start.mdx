@@ -1,11 +1,11 @@
-# Quick Start
+# 가이드
 
-Here's a simple example of how to use event-tracker:
+다음은 `event-tracker`를 사용하는 간단한 예제입니다:
 
 ```tsx
 import { createTracker } from "@offlegacy/event-tracker";
 
-// Create a tracker instance
+// 트래커 인스턴스 생성
 const [Track, useTracker] = createTracker({
   DOMEvents: {
     onClick: (params, context) => {
@@ -14,7 +14,7 @@ const [Track, useTracker] = createTracker({
   },
 });
 
-// Use in your app
+// 앱에서 사용하기
 function App() {
   return (
     <Track.Provider initialContext={{ userId: "user-123" }}>

@@ -3,31 +3,31 @@ import { MetaRecord } from "nextra";
 const meta: MetaRecord = {
   "getting-started-separator": {
     type: "separator",
-    title: "Getting Started",
+    title: "시작하기",
   },
   index: {
-    title: "Introduction",
+    title: "소개",
     theme: {
       toc: true,
       layout: "default",
     },
   },
   installation: {
-    title: "Installation",
+    title: "설치",
     theme: {
       toc: true,
       layout: "default",
     },
   },
   "quick-start": {
-    title: "Quick Start",
+    title: "가이드",
     theme: {
       toc: true,
       layout: "default",
     },
   },
   "api-separator": {
-    title: "API Reference",
+    title: "API",
     type: "separator",
   },
   "create-tracker": {
@@ -38,7 +38,7 @@ const meta: MetaRecord = {
     },
   },
   components: {
-    title: "components",
+    title: "컴포넌트",
     theme: {
       toc: true,
       layout: "default",
@@ -52,11 +52,11 @@ const meta: MetaRecord = {
     },
   },
   "advanced-separator": {
-    title: "Advanced",
+    title: "고급",
     type: "separator",
   },
   batching: {
-    title: "Batching",
+    title: "배칭",
     theme: {
       toc: true,
       layout: "default",

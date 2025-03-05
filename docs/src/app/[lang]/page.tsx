@@ -10,7 +10,7 @@ export const metadata = {};
 
 const TEXT_MAP = {
   description: {
-    ko: "React 애플리케이션을 위한 경량화되고 타입 안전한 이벤트 추적 라이브러리로, 깔끔한 코드와 최적의 성능을 유지하면서 애널리틱스 통합을 단순화합니다.",
+    ko: "React 애플리케이션을 위한 작고 타입 안전한 이벤트 트래킹 라이브러리로, 깔끔한 코드와 최적의 성능을 유지하면서 애널리틱스 도구와의 통합을 도와줍니다.",
     en: "A lightweight, type-safe event tracking library for React applications that simplifies analytics integration while maintaining clean code and optimal performance.",
   },
   get_started: {
@@ -21,7 +21,7 @@ const TEXT_MAP = {
     {
       ko: {
         title: "타입 안전성이 보장된 API",
-        description: "타입 안전성을 갖춘 선언적 이벤트 추적 API를 제공해요.",
+        description: "타입 안전성을 갖춘 선언적 이벤트 트래킹 API를 제공합니다.",
       },
       en: {
         title: "Type-safe APIs",
@@ -31,7 +31,7 @@ const TEXT_MAP = {
     {
       ko: {
         title: "최적화된 성능",
-        description: "이벤트 배칭을 통한 향상된 성능을 제공해요.",
+        description: "이벤트 배칭을 통한 향상된 성능을 제공합니다.",
       },
       en: {
         title: "Optimized Performance",
@@ -41,7 +41,7 @@ const TEXT_MAP = {
     {
       ko: {
         title: "순서 보장",
-        description: "비동기 작업의 실행 순서가 보장돼요.",
+        description: "비동기 작업의 실행 순서가 보장됩니다.",
       },
       en: {
         title: "Guaranteed Order",
@@ -51,7 +51,7 @@ const TEXT_MAP = {
     {
       ko: {
         title: "애널리틱스 도구에 구애받지 않음",
-        description: "모든 애널리틱스 도구와 호환 가능해요.",
+        description: "모든 애널리틱스 도구와 호환 가능합니다.",
       },
       en: {
         title: "Analytics Integration",
@@ -60,8 +60,8 @@ const TEXT_MAP = {
     },
     {
       ko: {
-        title: "깔끔한 분리",
-        description: "비즈니스 로직과 이벤트 추적 로직의 명확한 분리를 제공해요.",
+        title: "관심사의 분리",
+        description: "비즈니스 로직과 이벤트 트래킹 로직의 명확한 분리를 제공합니다.",
       },
       en: {
         title: "Clean Separation",
@@ -71,7 +71,7 @@ const TEXT_MAP = {
     {
       ko: {
         title: "작은 번들 사이즈",
-        description: "애플리케이션 번들 크기에 최소한의 영향을 미쳐요.",
+        description: "애플리케이션 번들 크기에 최소한의 영향을 미칩니다.",
       },
       en: {
         title: "Lightweight",
