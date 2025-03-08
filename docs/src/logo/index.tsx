@@ -9,8 +9,8 @@ interface LogoProps {
   size?: number;
 }
 
-const DARK_LOGO_PATH = "/dark-logo.png";
-const LIGHT_LOGO_PATH = "/light-logo.png";
+const DARK_LOGO_PATH = "/img/dark-logo.png";
+const LIGHT_LOGO_PATH = "/img/light-logo.png";
 
 export const Logo = ({ size = 30 }: LogoProps) => {
   const isSystemDarkMode = useSystemDarkMode();
