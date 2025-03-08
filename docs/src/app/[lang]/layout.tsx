@@ -7,10 +7,23 @@ import "../globals.css";
 import { TrackClick, TrackImpression, TrackProvider } from "@/tracker";
 import { Logo } from "@/logo";
 import { Lang } from "@/lib/types/lang";
+import { type Metadata } from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: {
     template: "%s | event-tracker",
+    default: "event-tracker",
+  },
+  description:
+    "A lightweight, type-safe event tracking library for React applications that simplifies analytics integration while maintaining clean code and optimal performance.",
+  openGraph: {
+    title: {
+      template: "%s | event-tracker",
+      default: "event-tracker",
+    },
+    images: ["/og-webp.webp"],
+    description:
+      "A lightweight, type-safe event tracking library for React applications that simplifies analytics integration while maintaining clean code and optimal performance.",
   },
 };
 
