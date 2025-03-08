@@ -1,0 +1,113 @@
+# createTracker(config)
+
+원하는 구성으로 트래커 인스턴스를 생성하는 메인 함수입니다.
+
+```tsx
+const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useTracker] = createTracker({
+  init,
+  send,
+  DOMEvents,
+  impression: {
+    onImpression,
+    options,
+  },
+  pageView: {
+    onPageView,
+  },
+  batch,
+  schemas,
+});
+```
+
+### 구성 옵션
+
+#### init
+
+- Type: `(initialContext: Context, setContext: SetContext) => void | Promise<void>`
+- 옵셔널
+- 모든 이벤트가 발생하기 전에 실행되는 함수
+- Promise를 반환하면 이벤트가 Promise가 해결될 때까지 지연됩니다.
+
+#### send
+
+- Type: `(params: EventParams | (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType`
+- 옵셔널
+- 이벤트를 보내는 표준 함수
+- Promise를 반환하면 이벤트가 Promise가 해결될 때까지 지연됩니다.
+
+#### DOMEvents
+
+- Type: `DOMEvents`
+- 옵셔널
+- 표준 React DOM 이벤트 (`onClick`, `onMouseEnter`, 등)의 모음
+- 각 핸들러는 `<Track.DOMEvent type=[이벤트 유형]>`에서 해당 이벤트가 발생할 때 실행됩니다.
+- 핸들러가 Promise를 반환하면 후속 이벤트 콜백이 해결될 때까지 지연됩니다.
+
+#### impression
+
+노출 이벤트를 트래킹하기 위한 설정입니다.
+
+- onImpression
+
+  - Type: `(params: EventParams | (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType`
+  - Optional
+  - Executed when impression occurs on a `<Track.Impression>` child
+  - Promise return value will delay subsequent callbacks
+
+- options
+  - Type: `ImpressionOptions`
+  - 옵셔널
+  - 노출 이벤트 트래킹 구성 옵션:
+    - `threshold`: 노출 필요 비율 (기본값: 0.2)
+    - `freezeOnceVisible`: 노출 후 교차 상태 고정 (기본값: true)
+    - `initialIsIntersecting`: 초기 교차 상태 (기본값: false)
+
+#### pageView
+
+페이지 뷰 이벤트를 트래킹하기 위한 설정입니다.
+
+##### onPageView
+
+- Type: `(params: EventParams | (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType`
+- 옵셔널
+- `<Track.PageView>`가 마운트될 때 실행됩니다.
+- Promise를 반환하면 후속 이벤트가 해결될 때까지 지연됩니다.
+
+#### batch
+
+이벤트 배칭을 위한 설정입니다.
+
+- Type: `BatchConfig`
+- 옵셔널
+- Properties:
+  - `enable`: 배칭 활성화 (기본값: false)
+  - `interval`: 버퍼링 간격 (ms) (기본값: 3000)
+  - `thresholdSize`: 최대 배칭 크기 (기본값: 25)
+  - `onFlush`: 배치 비우기 처리 함수 (활성화된 경우 필요)
+  - `onError`: 오류 처리 함수 (옵셔널)
+
+#### schemas
+
+데이터 타입 검증을 위한 설정입니다.
+
+- Type: `SchemaConfig`
+- 옵셔널
+- Properties:
+  - `schemas`: [Zod](https://zod.dev/) 스키마의 레코드
+  - `onSchemaError`?: 스키마 검증 오류 처리 함수
+  - `abortOnError`?: 스키마 검증 오류가 발생한 경우 이벤트 추적 중단 여부 (기본값: false)
+
+### Return Value
+
+`createTracker` 함수는 다음 튜플을 반환합니다:
+
+1. 트래킹 컴포넌트를 포함하는 객체:
+
+   - [`Provider`](/docs/components)
+   - [`DOMEvent`](/docs/components/dom-event)
+   - [`Click`](/docs/components/click)
+   - [`Impression`](/docs/components/impression)
+   - [`PageView`](/docs/components/page-view)
+   - [`SetContext`](/docs/components/set-context)
+
+2. [커스텀 hook](/docs/hook)

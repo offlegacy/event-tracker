@@ -1,0 +1,37 @@
+# Impression
+
+Intersection Observer API를 사용하여 노출 이벤트를 트래킹합니다..
+
+```tsx
+import { createTracker } from "@offlegacy/event-tracker";
+
+const [Track] = createTracker({
+  impression: {
+    onImpression: (params, context) => {
+      // 노출 이벤트 처리
+    },
+    options: {
+      threshold: 0.5,
+    },
+  },
+});
+
+function App() {
+  return (
+    <Track.Provider initialContext={{}}>
+      <Track.Impression params={{ elementId: "hero" }} options={{ threshold: 0.8 }}>
+        <div>Tracked content</div>
+      </Track.Impression>
+    </Track.Provider>
+  );
+}
+```
+
+### Props
+
+- `options?: ImpressionOptions` - 선택적 설정 (전역 설정 오버라이드)
+- 스키마와 함께 사용하는 경우
+  - `params: SchemaParams | (context: Context) => SchemaParams` - 스키마 기반 노출 이벤트 매개변수
+  - `schema: string` - 이벤트 매개변수 검증을 위한 스키마 이름
+- 스키마와 함께 사용하지 않는 경우
+  - `params: EventParams | (context: Context) => EventParams` - 노출 이벤트 매개변수
