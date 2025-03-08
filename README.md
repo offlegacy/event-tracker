@@ -4,7 +4,7 @@
 
 # event-tracker &middot; [![MIT License](https://img.shields.io/github/license/offlegacy/event-tracker?color=blue)](https://github.com/offlegacy/event-tracker/blob/main/LICENSE) [![NPM badge](https://img.shields.io/npm/v/@offlegacy/event-tracker?logo=npm)](https://www.npmjs.com/package/@offlegacy/event-tracker)
 
-Comprehensive Solution for Event Tracking in React
+Comprehensive solution for event tracking in React applications
 
 
 ## Key Features
