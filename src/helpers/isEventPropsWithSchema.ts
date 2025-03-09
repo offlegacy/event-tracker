@@ -1,18 +1,12 @@
-import {
-  AnySchemas,
-  AnyContext,
-  AnyEventParams,
-  UnionPropsWithAndWithoutSchema,
-  PropsWithSchema,
-} from "../tracker/types";
+import type { Context, EventParams, Schemas, UnionPropsWithAndWithoutSchema, PropsWithSchema } from "../types";
 
 export const isEventPropsWithSchema = <
-  T extends keyof Schemas,
-  Schemas extends AnySchemas = AnySchemas,
-  EventParams extends AnyEventParams = AnyEventParams,
-  Context extends AnyContext = AnyContext,
+  TContext extends Context = Context,
+  TEventParams extends EventParams = EventParams,
+  TSchemas extends Schemas = Schemas,
+  TKey extends keyof TSchemas = keyof TSchemas,
 >(
-  props: UnionPropsWithAndWithoutSchema<T, Schemas, EventParams, Context>,
-): props is PropsWithSchema<T, Schemas, Context> => {
+  props: UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>,
+): props is PropsWithSchema<TContext, TSchemas, TKey> => {
   return "schema" in props && props.schema !== undefined;
 };

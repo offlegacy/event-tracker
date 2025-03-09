@@ -1,17 +1,17 @@
-import type { EventResult, Task } from "../tracker/types";
+import type { Task, TaskResult } from "../types";
 
 import type { FlushType, OnError, OnFlush, SchedulerConfig } from "./types";
 
 const DEFAULT_INTERVAL = 3000;
 const DEFAULT_THRESHOLD_SIZE = 25;
 
-export class Scheduler {
-  onFlush?: OnFlush;
+export class Scheduler<TTaskResult extends TaskResult = TaskResult> {
+  onFlush?: OnFlush<TTaskResult>;
   onError?: OnError;
-  delayedTasks: Task[] = [];
-  batch: EventResult[] = [];
+  delayedTasks: Task<TTaskResult>[] = [];
+  batch: TTaskResult[] = [];
 
-  private taskPromiseChain: Promise<void | EventResult> = Promise.resolve();
+  private taskPromiseChain: Promise<void | TTaskResult> = Promise.resolve();
 
   private isBatchEnabled: boolean;
   private isTrackerInitialized: () => boolean;
@@ -23,7 +23,7 @@ export class Scheduler {
   private beforeUnloadEventListener: (() => void) | null = null;
   private pageHideEventListener: (() => void) | null = null;
 
-  constructor(config: SchedulerConfig) {
+  constructor(config: SchedulerConfig<TTaskResult>) {
     if (config.batch?.enable) {
       this.onFlush = config.batch.onFlush;
       this.onError = config.batch.onError;
@@ -131,7 +131,7 @@ export class Scheduler {
     this.removeLeavePageListeners();
   }
 
-  async schedule(task: Task) {
+  async schedule(task: Task<TTaskResult>) {
     if (!this.isTrackerInitialized()) {
       this.delayedTasks.push(task);
       return;

@@ -1,13 +1,16 @@
-import type { EventResult } from "../tracker/types";
+import { TaskResult } from "../types";
 
-export type Batch<T = any> = EventResult<T>[];
+export type Batch<TTaskResult extends TaskResult = TaskResult> = TTaskResult[];
 
-export type OnFlush = (batch: Batch, isBrowserClosing: boolean) => void | Promise<void>;
+export type OnFlush<TTaskResult extends TaskResult = TaskResult> = (
+  batch: Batch<TTaskResult>,
+  isBrowserClosing: boolean,
+) => void | Promise<void>;
 export type OnError = (error: Error) => void | Promise<void>;
 
 export type FlushType = "interval" | "batchFull" | "pageLeave" | "unknown";
 
-export type BatchConfig =
+export type BatchConfig<TTaskResult extends TaskResult = TaskResult> =
   | {
       enable: false;
     }
@@ -15,11 +18,11 @@ export type BatchConfig =
       enable: true;
       interval?: number;
       thresholdSize?: number;
-      onFlush: OnFlush;
+      onFlush: OnFlush<TTaskResult>;
       onError?: OnError;
     };
 
-export interface SchedulerConfig {
+export interface SchedulerConfig<TTaskResult extends TaskResult = TaskResult> {
   isTrackerInitialized: () => boolean;
-  batch: BatchConfig;
+  batch: BatchConfig<TTaskResult>;
 }
