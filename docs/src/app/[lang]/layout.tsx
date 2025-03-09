@@ -21,11 +21,11 @@ export const metadata: Metadata = {
       template: "%s | Event Tracker",
       default: "Event Tracker",
     },
-    images: ["/og-webp.webp"],
+    images: ["img/og-webp.webp"],
     description: "Comprehensive solution for event tracking in React applications.",
   },
   icons: {
-    icon: "/logo.jpg",
+    icon: "img/logo.jpg",
   },
 };
 
@@ -64,7 +64,7 @@ export default async function RootLayout({
   return (
     <html lang={lang} dir="ltr" suppressHydrationWarning>
       <Head>
-        <link rel="icon" href="/logo.jpg" type="image/jpg" />
+        <link rel="icon" href="img/logo.jpg" type="image/jpg" />
       </Head>
       <body>
         <TrackProvider

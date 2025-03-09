@@ -4,7 +4,8 @@
 
 # event-tracker &middot; [![MIT License](https://img.shields.io/github/license/offlegacy/event-tracker?color=blue)](https://github.com/offlegacy/event-tracker/blob/main/LICENSE) [![NPM badge](https://img.shields.io/npm/v/@offlegacy/event-tracker?logo=npm)](https://www.npmjs.com/package/@offlegacy/event-tracker)
 
-A lightweight, type-safe event tracking library for React applications that simplifies analytics integration while maintaining clean code and optimal performance.
+Comprehensive solution for event tracking in React applications
+
 
 ## Key Features
 
