@@ -56,18 +56,21 @@ export function createTracker<
     if (trackerContext === null) {
       throw new Error("useTracker must be used within a TrackerProvider");
     }
+    const { tracker, _schedule, _getContext, _setContext } = trackerContext;
+    // NOTE: Assign a safe default value when DOMEvents is undefined.
+    const domEvents = tracker.DOMEvents ?? {};
 
     const scheduledDomEvents = {} as Record<
       DOMEventNames,
       (params: EventParamsWithContext<TContext, TEventParams>) => void
     >;
-    for (const key in trackerContext.tracker.DOMEvents) {
-      scheduledDomEvents[key as DOMEventNames] = (params: EventParamsWithContext<TContext, TEventParams>) => {
-        return trackerContext._schedule(() =>
-          trackerContext.tracker.DOMEvents?.[key as DOMEventNames]?.(
-            isFunction<TContext, TEventParams>(params) ? params(trackerContext._getContext()) : params,
-            trackerContext._getContext(),
-            trackerContext._setContext,
+    for (const key of Object.keys(domEvents) as DOMEventNames[]) {
+      scheduledDomEvents[key] = (params: EventParamsWithContext<TContext, TEventParams>) => {
+        return _schedule(() =>
+          domEvents?.[key]?.(
+            isFunction<TContext, TEventParams>(params) ? params(_getContext()) : params,
+            _getContext(),
+            _setContext,
           ),
         );
       };
@@ -76,90 +79,63 @@ export function createTracker<
       DOMEventNames,
       <TKey extends keyof TSchemas>(paramsWithSchema: EventParamsWithSchema<TContext, TSchemas, TKey>) => void
     >;
-    for (const key in trackerContext.tracker.DOMEvents) {
-      scheduledDomEventsWithSchema[key as DOMEventNames] = <TKey extends keyof TSchemas>(
+    for (const key of Object.keys(domEvents) as DOMEventNames[]) {
+      scheduledDomEventsWithSchema[key] = <TKey extends keyof TSchemas>(
         paramsWithSchema: EventParamsWithSchema<TContext, TSchemas, TKey>,
       ) => {
         const params = isFunction<TContext, z.infer<TSchemas[TKey]>>(paramsWithSchema.params)
-          ? paramsWithSchema.params(trackerContext._getContext())
+          ? paramsWithSchema.params(_getContext())
           : paramsWithSchema.params;
 
         validateZodSchema(paramsWithSchema.schema, params);
 
-        return trackerContext._schedule(() =>
-          trackerContext.tracker.DOMEvents?.[key as DOMEventNames]?.(
-            params,
-            trackerContext._getContext(),
-            trackerContext._setContext,
+        return _schedule(() => tracker.DOMEvents?.[key]?.(params, _getContext(), _setContext));
+      };
+    }
+    const createScheduledHandlerWithSchema = <TKey extends keyof TSchemas>(
+      handler?: (params: z.infer<TSchemas[TKey]>, context: TContext, setContext: typeof _setContext) => void,
+    ) => {
+      return (paramsWithSchema: EventParamsWithSchema<TContext, TSchemas, TKey>) => {
+        const params = isFunction<TContext, z.infer<TSchemas[TKey]>>(paramsWithSchema.params)
+          ? paramsWithSchema.params(_getContext())
+          : paramsWithSchema.params;
+
+        validateZodSchema(paramsWithSchema.schema, params);
+
+        return _schedule(() => handler?.(params, _getContext(), _setContext));
+      };
+    };
+    const createScheduledHandler = (
+      handler?: (params: TEventParams, context: TContext, setContext: typeof _setContext) => void,
+    ) => {
+      return (params: EventParamsWithContext<TContext, TEventParams>) => {
+        return _schedule(() =>
+          handler?.(
+            isFunction<TContext, TEventParams>(params) ? params(_getContext()) : params,
+            _getContext(),
+            _setContext,
           ),
         );
       };
-    }
+    };
     return {
       send: (params: EventParamsWithContext<TEventParams, TContext>) =>
-        trackerContext.tracker.send?.(
-          isFunction<TContext, TEventParams>(params) ? params(trackerContext._getContext()) : params,
-          trackerContext._getContext(),
-          trackerContext._setContext,
+        tracker.send?.(
+          isFunction<TContext, TEventParams>(params) ? params(_getContext()) : params,
+          _getContext(),
+          _setContext,
         ),
-      setContext: trackerContext._setContext,
-      getContext: trackerContext._getContext,
+      setContext: _setContext,
+      getContext: _getContext,
       trackWithSchema: {
         ...scheduledDomEventsWithSchema,
-        onImpression: <TKey extends keyof TSchemas>(
-          paramsWithSchema: EventParamsWithSchema<TContext, TSchemas, TKey>,
-        ) => {
-          const params = isFunction<TContext, z.infer<TSchemas[TKey]>>(paramsWithSchema.params)
-            ? paramsWithSchema.params(trackerContext._getContext())
-            : paramsWithSchema.params;
-
-          validateZodSchema(paramsWithSchema.schema, params);
-
-          return trackerContext._schedule(() =>
-            trackerContext.tracker.impression?.onImpression(
-              params,
-              trackerContext._getContext(),
-              trackerContext._setContext,
-            ),
-          );
-        },
-        onPageView: <TKey extends keyof TSchemas>(
-          paramsWithSchema: EventParamsWithSchema<TContext, TSchemas, TKey>,
-        ) => {
-          const params = isFunction<TContext, z.infer<TSchemas[TKey]>>(paramsWithSchema.params)
-            ? paramsWithSchema.params(trackerContext._getContext())
-            : paramsWithSchema.params;
-
-          validateZodSchema(paramsWithSchema.schema, params);
-          return trackerContext._schedule(() =>
-            trackerContext.tracker.pageView?.onPageView(
-              params,
-              trackerContext._getContext(),
-              trackerContext._setContext,
-            ),
-          );
-        },
+        onImpression: createScheduledHandlerWithSchema(tracker.impression?.onImpression),
+        onPageView: createScheduledHandlerWithSchema(tracker.pageView?.onPageView),
       },
       track: {
         ...scheduledDomEvents,
-        onImpression: (params: EventParamsWithContext<TContext, TEventParams>) => {
-          return trackerContext._schedule(() =>
-            trackerContext.tracker.impression?.onImpression(
-              isFunction<TContext, TEventParams>(params) ? params(trackerContext._getContext()) : params,
-              trackerContext._getContext(),
-              trackerContext._setContext,
-            ),
-          );
-        },
-        onPageView: (params: EventParamsWithContext<TContext, TEventParams>) => {
-          return trackerContext._schedule(() =>
-            trackerContext.tracker.pageView?.onPageView(
-              isFunction<TContext, TEventParams>(params) ? params(trackerContext._getContext()) : params,
-              trackerContext._getContext(),
-              trackerContext._setContext,
-            ),
-          );
-        },
+        onImpression: createScheduledHandler(tracker.impression?.onImpression),
+        onPageView: createScheduledHandler(tracker.pageView?.onPageView),
       },
     };
   };
