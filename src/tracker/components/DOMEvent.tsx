@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { isValidElement, cloneElement, Children } from "react";
 
-import type { DOMEventNames } from "../types";
+import type { DOMEventNames } from "../../types";
 
 export interface DOMEventProps {
   type: DOMEventNames;

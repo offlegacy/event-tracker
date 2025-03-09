@@ -3,7 +3,7 @@ import { Children, cloneElement, isValidElement } from "react";
 
 import { useIntersectionObserver } from "../../hooks/useIntersectionObserver";
 import { useMergeRefs } from "../../hooks/useMergeRefs";
-import type { ImpressionOptions } from "../types";
+import type { ImpressionOptions } from "../../types";
 
 export interface ImpressionProps {
   children: ReactNode;

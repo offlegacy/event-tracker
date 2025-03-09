@@ -1,3 +1,3 @@
 export * from "./tracker";
-export * from "./tracker/types";
+export * from "./types";
 export * from "./scheduler/types";
