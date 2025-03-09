@@ -10,8 +10,8 @@ export const metadata = {};
 
 const TEXT_MAP = {
   description: {
-    ko: "React 애플리케이션을 위한 작고 타입 안전한 이벤트 트래킹 라이브러리로, 깔끔한 코드와 최적된 성능을 유지하면서 애널리틱스 도구와의 통합을 도와줍니다.",
-    en: "A lightweight, type-safe event tracking library for React applications that simplifies analytics integration while maintaining clean code and optimal performance.",
+    ko: "React 애플리케이션을 위한 완전한 이벤트 트래킹 시스템.",
+    en: "Comprehensive solution for event tracking in React applications.",
   },
   get_started: {
     ko: "시작하기",

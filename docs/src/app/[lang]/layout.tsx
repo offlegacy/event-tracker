@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { Head } from "nextra/components";
 import { getPageMap } from "nextra/page-map";
 import { Footer, Layout, LocaleSwitch, Navbar } from "nextra-theme-docs";
@@ -11,19 +12,20 @@ import { type Metadata } from "next";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | event-tracker",
-    default: "event-tracker",
+    template: "%s | Event Tracker",
+    default: "Event Tracker",
   },
-  description:
-    "A lightweight, type-safe event tracking library for React applications that simplifies analytics integration while maintaining clean code and optimal performance.",
+  description: "Comprehensive solution for event tracking in React applications.",
   openGraph: {
     title: {
-      template: "%s | event-tracker",
-      default: "event-tracker",
+      template: "%s | Event Tracker",
+      default: "Event Tracker",
     },
     images: ["/og-webp.webp"],
-    description:
-      "A lightweight, type-safe event tracking library for React applications that simplifies analytics integration while maintaining clean code and optimal performance.",
+    description: "Comprehensive solution for event tracking in React applications.",
+  },
+  icons: {
+    icon: "/logo.jpg",
   },
 };
 
@@ -33,7 +35,7 @@ const navbar = (
       <TrackClick params={{ target: "logo" }}>
         <div className="flex items-center gap-2">
           <Logo />
-          <b>event-tracker</b>
+          <b>Event Tracker</b>
         </div>
       </TrackClick>
     }
@@ -57,6 +59,7 @@ export default async function RootLayout({
 }) {
   const { lang } = await params;
   const pageMap = await getPageMap(lang);
+  const headersList = await headers();
 
   return (
     <html lang={lang} dir="ltr" suppressHydrationWarning>
@@ -64,7 +67,11 @@ export default async function RootLayout({
         <link rel="icon" href="/logo.jpg" type="image/jpg" />
       </Head>
       <body>
-        <TrackProvider initialContext={{ referrer: typeof window !== "undefined" ? document.referrer : "" }}>
+        <TrackProvider
+          initialContext={{
+            referrer: headersList.get("referer") ?? headersList.get("referrer") ?? undefined,
+          }}
+        >
           <Layout
             i18n={[
               { locale: "en", name: "English" },
