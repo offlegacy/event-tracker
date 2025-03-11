@@ -57,7 +57,6 @@ export function createTracker<
       throw new Error("useTracker must be used within a TrackerProvider");
     }
     const { tracker, _schedule, _getContext, _setContext } = trackerContext;
-    // NOTE: Assign a safe default value when DOMEvents is undefined.
     const domEvents = tracker.DOMEvents ?? {};
 
     const scheduledDomEvents = {} as Record<
