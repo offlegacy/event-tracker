@@ -92,8 +92,8 @@ export function createTracker<
         return _schedule(() => domEvents[key]?.(params, _getContext(), _setContext));
       };
     }
-    const createScheduledHandlerWithSchema = <TKey extends keyof TSchemas>(
-      handler?: EventFunction<TContext, TEventParams, TSchemas, TTaskResult, TKey>,
+    const scheduleEventWithSchema = <TKey extends keyof TSchemas>(
+      event?: EventFunction<TContext, TEventParams, TSchemas, TTaskResult, TKey>,
     ) => {
       return (paramsWithSchema: EventParamsWithSchema<TContext, TSchemas, TKey>) => {
         const params = isFunction<TContext, z.infer<TSchemas[TKey]>>(paramsWithSchema.params)
@@ -102,13 +102,13 @@ export function createTracker<
 
         validateZodSchema(paramsWithSchema.schema, params);
 
-        return _schedule(() => handler?.(params, _getContext(), _setContext));
+        return _schedule(() => event?.(params, _getContext(), _setContext));
       };
     };
-    const createScheduledHandler = (handler?: EventFunction<TContext, TEventParams, TSchemas, TTaskResult>) => {
+    const scheduleEvent = (event?: EventFunction<TContext, TEventParams, TSchemas, TTaskResult>) => {
       return (params: EventParamsWithContext<TContext, TEventParams>) => {
         return _schedule(() =>
-          handler?.(
+          event?.(
             isFunction<TContext, TEventParams>(params) ? params(_getContext()) : params,
             _getContext(),
             _setContext,
@@ -127,13 +127,13 @@ export function createTracker<
       getContext: _getContext,
       trackWithSchema: {
         ...scheduledDomEventsWithSchema,
-        onImpression: createScheduledHandlerWithSchema(tracker.impression?.onImpression),
-        onPageView: createScheduledHandlerWithSchema(tracker.pageView?.onPageView),
+        onImpression: scheduleEventWithSchema(tracker.impression?.onImpression),
+        onPageView: scheduleEventWithSchema(tracker.pageView?.onPageView),
       },
       track: {
         ...scheduledDomEvents,
-        onImpression: createScheduledHandler(tracker.impression?.onImpression),
-        onPageView: createScheduledHandler(tracker.pageView?.onPageView),
+        onImpression: scheduleEvent(tracker.impression?.onImpression),
+        onPageView: scheduleEvent(tracker.pageView?.onPageView),
       },
     };
   };
