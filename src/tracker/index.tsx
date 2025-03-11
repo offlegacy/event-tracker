@@ -16,6 +16,7 @@ import type {
   EventParamsWithContext,
   EventParamsWithSchema,
   UnionPropsWithAndWithoutSchema,
+  EventFunction,
   ImpressionOptions,
 } from "../types";
 
@@ -66,7 +67,7 @@ export function createTracker<
     for (const key of Object.keys(domEvents) as DOMEventNames[]) {
       scheduledDomEvents[key] = (params: EventParamsWithContext<TContext, TEventParams>) => {
         return _schedule(() =>
-          domEvents?.[key]?.(
+          domEvents[key]?.(
             isFunction<TContext, TEventParams>(params) ? params(_getContext()) : params,
             _getContext(),
             _setContext,
@@ -88,11 +89,11 @@ export function createTracker<
 
         validateZodSchema(paramsWithSchema.schema, params);
 
-        return _schedule(() => tracker.DOMEvents?.[key]?.(params, _getContext(), _setContext));
+        return _schedule(() => domEvents[key]?.(params, _getContext(), _setContext));
       };
     }
     const createScheduledHandlerWithSchema = <TKey extends keyof TSchemas>(
-      handler?: (params: z.infer<TSchemas[TKey]>, context: TContext, setContext: typeof _setContext) => void,
+      handler?: EventFunction<TContext, TEventParams, TSchemas, TTaskResult, TKey>,
     ) => {
       return (paramsWithSchema: EventParamsWithSchema<TContext, TSchemas, TKey>) => {
         const params = isFunction<TContext, z.infer<TSchemas[TKey]>>(paramsWithSchema.params)
@@ -104,9 +105,7 @@ export function createTracker<
         return _schedule(() => handler?.(params, _getContext(), _setContext));
       };
     };
-    const createScheduledHandler = (
-      handler?: (params: TEventParams, context: TContext, setContext: typeof _setContext) => void,
-    ) => {
+    const createScheduledHandler = (handler?: EventFunction<TContext, TEventParams, TSchemas, TTaskResult>) => {
       return (params: EventParamsWithContext<TContext, TEventParams>) => {
         return _schedule(() =>
           handler?.(
