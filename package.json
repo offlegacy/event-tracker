@@ -1,6 +1,6 @@
 {
   "name": "@offlegacy/event-tracker",
-  "version": "1.2.1",
+  "version": "1.2.3",
   "description": "The best solution for event tracking in React applications.",
   "keywords": [
     "react",
