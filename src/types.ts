@@ -36,7 +36,7 @@ export type EventFunction<
   TTaskResult extends TaskResult = TaskResult,
   TKey extends keyof TSchemas = keyof TSchemas,
 > = (
-  params: TEventParams | SchemaParams<TSchemas, TKey>,
+  params: TEventParams & SchemaParams<TSchemas, TKey>,
   context: TContext,
   setContext: SetContext<TContext>,
 ) => TaskReturnType<TTaskResult>;
