@@ -35,11 +35,13 @@ export type EventFunction<
   TSchemas extends Schemas = Schemas,
   TTaskResult extends TaskResult = TaskResult,
   TKey extends keyof TSchemas = keyof TSchemas,
-> = (
-  params: TEventParams & SchemaParams<TSchemas, TKey>,
-  context: TContext,
-  setContext: SetContext<TContext>,
-) => TaskReturnType<TTaskResult>;
+> =
+  | ((params: TEventParams, context: TContext, setContext: SetContext<TContext>) => TaskReturnType<TTaskResult>)
+  | ((
+      params: SchemaParams<TSchemas, TKey>,
+      context: TContext,
+      setContext: SetContext<TContext>,
+    ) => TaskReturnType<TTaskResult>);
 
 /** Task Return Type */
 /**
@@ -59,7 +61,7 @@ export type DOMEvents<
   TEventParams extends EventParams = EventParams,
   TSchemas extends Schemas = Schemas,
   TTaskResult extends TaskResult = TaskResult,
-> = Partial<Record<DOMEventNames, EventFunction<TContext, TEventParams, TSchemas, TTaskResult>>>;
+> = Partial<Record<DOMEventNames, EventFunction<TContext, TEventParams, TSchemas, TTaskResult, keyof TSchemas>>>;
 
 /** Impression */
 export interface ImpressionConfig<

@@ -18,6 +18,8 @@ import type {
   UnionPropsWithAndWithoutSchema,
   EventFunction,
   ImpressionOptions,
+  DOMEvents,
+  SchemaParams,
 } from "../types";
 
 import { Click as PrimitiveClick } from "./components/Click";
@@ -58,7 +60,7 @@ export function createTracker<
       throw new Error("useTracker must be used within a TrackerProvider");
     }
     const { tracker, _schedule, _getContext, _setContext } = trackerContext;
-    const domEvents = tracker.DOMEvents ?? {};
+    const domEvents = tracker.DOMEvents ?? ({} as DOMEvents<TContext, TEventParams, TSchemas, TTaskResult>);
 
     const scheduledDomEvents = {} as Record<
       DOMEventNames,
@@ -83,13 +85,15 @@ export function createTracker<
       scheduledDomEventsWithSchema[key] = <TKey extends keyof TSchemas>(
         paramsWithSchema: EventParamsWithSchema<TContext, TSchemas, TKey>,
       ) => {
-        const params = isFunction<TContext, z.infer<TSchemas[TKey]>>(paramsWithSchema.params)
+        const params = isFunction<TContext, SchemaParams<TSchemas, TKey>>(paramsWithSchema.params)
           ? paramsWithSchema.params(_getContext())
           : paramsWithSchema.params;
 
         validateZodSchema(paramsWithSchema.schema, params);
 
-        return _schedule(() => domEvents[key]?.(params, _getContext(), _setContext));
+        return _schedule(() =>
+          domEvents[key]?.(params as TEventParams & SchemaParams<TSchemas, TKey>, _getContext(), _setContext),
+        );
       };
     }
     const scheduleEventWithSchema = <TKey extends keyof TSchemas>(
@@ -102,7 +106,9 @@ export function createTracker<
 
         validateZodSchema(paramsWithSchema.schema, params);
 
-        return _schedule(() => event?.(params, _getContext(), _setContext));
+        return _schedule(() =>
+          event?.(params as TEventParams & SchemaParams<TSchemas, TKey>, _getContext(), _setContext),
+        );
       };
     };
     const scheduleEvent = (event?: EventFunction<TContext, TEventParams, TSchemas, TTaskResult>) => {
@@ -119,7 +125,8 @@ export function createTracker<
     return {
       send: (params: EventParamsWithContext<TEventParams, TContext>) =>
         tracker.send?.(
-          isFunction<TContext, TEventParams>(params) ? params(_getContext()) : params,
+          (isFunction<TContext, TEventParams>(params) ? params(_getContext()) : params) as TEventParams &
+            SchemaParams<TSchemas, keyof TSchemas>,
           _getContext(),
           _setContext,
         ),
@@ -198,12 +205,11 @@ export function createTracker<
     type,
     eventName,
     ...props
-  }: { children: ReactNode; type: DOMEventNames; eventName?: string } & UnionPropsWithAndWithoutSchema<
-    TContext,
-    TEventParams,
-    TSchemas,
-    TKey
-  >) => {
+  }: {
+    children: ReactNode;
+    type: DOMEventNames;
+    eventName?: string;
+  } & UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>) => {
     const tracker = useTracker();
 
     return (
@@ -211,7 +217,9 @@ export function createTracker<
         eventName={eventName}
         type={type}
         onTrigger={() => {
-          isEventPropsWithSchema(props) ? tracker.trackWithSchema[type]?.(props) : tracker.track[type]?.(props.params);
+          void (isEventPropsWithSchema(props)
+            ? tracker.trackWithSchema[type]?.(props)
+            : tracker.track[type]?.(props.params));
         }}
       >
         {children}
@@ -228,9 +236,9 @@ export function createTracker<
     return (
       <PrimitiveClick
         onClick={() => {
-          isEventPropsWithSchema(props)
+          void (isEventPropsWithSchema(props)
             ? tracker.trackWithSchema.onClick?.(props)
-            : tracker.track.onClick?.(props.params);
+            : tracker.track.onClick?.(props.params));
         }}
       >
         {children}
@@ -252,9 +260,9 @@ export function createTracker<
       <PrimitiveImpression
         options={options}
         onImpression={() => {
-          isEventPropsWithSchema(props)
+          void (isEventPropsWithSchema(props)
             ? tracker.trackWithSchema.onImpression?.(props)
-            : tracker.track.onImpression?.(props.params);
+            : tracker.track.onImpression?.(props.params));
         }}
       >
         {children}
@@ -270,9 +278,9 @@ export function createTracker<
     return (
       <PrimitivePageView
         onPageView={() => {
-          isEventPropsWithSchema(props)
+          void (isEventPropsWithSchema(props)
             ? tracker.trackWithSchema.onPageView?.(props)
-            : tracker.track.onPageView?.(props.params);
+            : tracker.track.onPageView?.(props.params));
         }}
       />
     );
