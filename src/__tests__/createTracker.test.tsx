@@ -125,6 +125,7 @@ describe("DOMEvents", () => {
     type Context = { userId: string };
     const context: Context = { userId: "id" };
     const focusEventParams = { a: 1 };
+
     const page = render(
       <Track.Provider initialContext={context}>
         <div>test</div>
@@ -143,6 +144,8 @@ describe("DOMEvents", () => {
   it("DOMEvent's event name can be changed using eventName prop", async () => {
     const context = { userId: "id" };
     const focusEventParams = { a: 1 };
+    const originalInputFocusFn = vi.fn();
+
     const CustomInput = ({ onInputFocus }: { onInputFocus?: () => void }) => {
       return <input onFocus={onInputFocus} />;
     };
@@ -151,7 +154,7 @@ describe("DOMEvents", () => {
       <Track.Provider initialContext={context}>
         <div>test</div>
         <Track.DOMEvent type="onFocus" params={focusEventParams} eventName="onInputFocus">
-          <CustomInput />
+          <CustomInput onInputFocus={originalInputFocusFn} />
         </Track.DOMEvent>
       </Track.Provider>,
     );
@@ -160,6 +163,7 @@ describe("DOMEvents", () => {
     await sleep(1);
 
     expect(focusFn).toHaveBeenCalledWith(focusEventParams, context, anyFn);
+    expect(originalInputFocusFn).toHaveBeenCalled();
   });
 });
 
@@ -273,7 +277,10 @@ describe("set context", () => {
     });
 
     pageViewFn.mockImplementationOnce((_, __, setContext) => {
-      setContext((prev: { userId: string; test: boolean }) => ({ ...prev, test: true }));
+      setContext((prev: { userId: string; test: boolean }) => ({
+        ...prev,
+        test: true,
+      }));
     });
 
     const page = render(
