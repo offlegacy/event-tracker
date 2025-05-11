@@ -20,7 +20,7 @@ export const DOMEvent = ({ children, type, onTrigger, eventName = type }: DOMEve
       [eventName]: (...args: any[]) => {
         onTrigger?.();
         if (child.props && typeof child.props?.[eventName] === "function") {
-          return child.props[type]?.(...args);
+          return child.props[eventName]?.(...args);
         }
       },
     })
