@@ -18,13 +18,14 @@ const track = isDev ? console.log : amplitude.track;
 
 export const [Track] = createTracker({
   init: () => {
-    if (API_KEY === undefined) {
-      throw new Error("NO API KEY");
-    }
-    if (!isDev)
+    if (!isDev) {
+      if (API_KEY === undefined) {
+        throw new Error("NO API KEY");
+      }
       amplitude.init(API_KEY, {
         autocapture: false,
       });
+    }
   },
   pageView: {
     onPageView: (params: EventParams, context: Context) => {
