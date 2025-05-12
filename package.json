@@ -44,7 +44,10 @@
     "lint": "eslint --cache --ignore-pattern=docs/** .",
     "prepack": "pnpm build",
     "prepare": "husky",
-    "release": "pnpm build && npm publish"
+    "release": "pnpm build && npm publish",
+    "format": "prettier --write --ignore-pattern \"docs/**\" .",
+    "format:check": "prettier --check --ignore-pattern \"docs/**\" .",
+    "format:file": "prettier --write"
   },
   "main": "dist/index.cjs",
   "module": "dist/index.js",
