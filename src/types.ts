@@ -35,14 +35,7 @@ export type EventFunction<
   TSchemas extends Schemas = Schemas,
   TTaskResult extends TaskResult = TaskResult,
   TKey extends keyof TSchemas = keyof TSchemas,
-> =
-  | ((params: TEventParams, context: TContext, setContext: SetContext<TContext>) => TaskReturnType<TTaskResult>)
-  | ((
-      params: SchemaParams<TSchemas, TKey>,
-      context: TContext,
-      setContext: SetContext<TContext>,
-    ) => TaskReturnType<TTaskResult>);
-
+> = (params: TEventParams, context: TContext, setContext: SetContext<TContext>) => TaskReturnType<TTaskResult>;
 /** Task Return Type */
 /**
  * Type of the return value of the event function.
