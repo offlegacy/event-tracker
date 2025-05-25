@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { isEventPropsWithSchema } from "../helpers/isEventPropsWithSchema";
 import { isFunction } from "../helpers/isFunction";
+import { useDebounceCache } from "../hooks/useDebounceCache";
 import { Scheduler } from "../scheduler";
 import type {
   TrackerConfig,
@@ -22,8 +23,7 @@ import type {
   SchemaParams,
   TrackingOptions,
 } from "../types";
-import type { DebounceConfig, DebouncedFunction } from "../utils/debounce";
-import { debounce } from "../utils/debounce";
+import type { DebounceConfig } from "../utils/debounce";
 
 import { Click as PrimitiveClick } from "./components/Click";
 import { DOMEvent as PrimitiveDOMEvent } from "./components/DOMEvent";
@@ -65,23 +65,7 @@ export function createTracker<
     const { tracker, _schedule, _getContext, _setContext } = trackerContext;
     const domEvents = tracker.DOMEvents ?? ({} as DOMEvents<TContext, TEventParams, TSchemas, TTaskResult>);
 
-    // Debounce instance caching
-    const debounceInstancesRef = useRef<Map<string, DebouncedFunction<any>>>(new Map());
-
-    // Helper function to get or create debounced function
-    const getDebounced = <T extends (...args: any[]) => any>(
-      key: string,
-      fn: T,
-      debounceConfig: DebounceConfig,
-    ): DebouncedFunction<T> => {
-      const cacheKey = `${key}-${JSON.stringify(debounceConfig)}`;
-
-      if (!debounceInstancesRef.current.has(cacheKey)) {
-        debounceInstancesRef.current.set(cacheKey, debounce(fn, debounceConfig));
-      }
-
-      return debounceInstancesRef.current.get(cacheKey)!;
-    };
+    const { getDebounced } = useDebounceCache();
 
     // Basic scheduled DOM events with optional options parameter
     const scheduledDomEvents = {} as Record<
