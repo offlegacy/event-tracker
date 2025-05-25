@@ -194,12 +194,7 @@ export type EnabledCondition<TContext extends Context = Context, TEventParams ex
 export type TrackingOptions<TContext extends Context = Context, TEventParams extends EventParams = EventParams> = {
   enabled?: EnabledCondition<TContext, TEventParams>;
 } & (
-  | {
-      debounce?: DebounceConfig;
-      enabled?: EnabledCondition<TContext, TEventParams>;
-    }
-  | {
-      throttle?: ThrottleConfig;
-      enabled?: EnabledCondition<TContext, TEventParams>;
-    }
+  | { debounce: DebounceConfig; throttle?: never }
+  | { throttle: ThrottleConfig; debounce?: never }
+  | { debounce?: never; throttle?: never }
 );
