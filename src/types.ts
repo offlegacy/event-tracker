@@ -1,6 +1,7 @@
 import { BatchConfig } from ".";
 import { type z } from "zod";
 import { DOMAttributes } from "react";
+import type { DebounceConfig } from "./utils/debounce";
 
 /** Context */
 export type Context = Record<string, any>;
@@ -182,4 +183,9 @@ export interface TrackerContextProps<
   _setContext: (context: TContext | ((prevContext: TContext) => TContext)) => void;
   _getContext: () => TContext;
   _schedule: (task: Task<TTaskResult>) => Promise<void>;
+}
+
+/** Tracking Options */
+export interface TrackingOptions {
+  debounce?: DebounceConfig;
 }

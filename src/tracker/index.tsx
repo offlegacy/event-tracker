@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
-import { createContext, useContext, useEffect, useMemo, useRef } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from "react";
 import { z } from "zod";
 
 import { isEventPropsWithSchema } from "../helpers/isEventPropsWithSchema";
 import { isFunction } from "../helpers/isFunction";
+import { useDebounceCache } from "../hooks/useDebounceCache";
 import { Scheduler } from "../scheduler";
 import type {
   TrackerConfig,
@@ -20,7 +21,9 @@ import type {
   ImpressionOptions,
   DOMEvents,
   SchemaParams,
+  TrackingOptions,
 } from "../types";
+import type { DebounceConfig } from "../utils/debounce";
 
 import { Click as PrimitiveClick } from "./components/Click";
 import { DOMEvent as PrimitiveDOMEvent } from "./components/DOMEvent";
@@ -62,68 +65,122 @@ export function createTracker<
     const { tracker, _schedule, _getContext, _setContext } = trackerContext;
     const domEvents = tracker.DOMEvents ?? ({} as DOMEvents<TContext, TEventParams, TSchemas, TTaskResult>);
 
+    const { getDebounced } = useDebounceCache();
+
+    // Basic scheduled DOM events with optional options parameter
     const scheduledDomEvents = {} as Record<
       DOMEventNames,
-      (params: EventParamsWithContext<TContext, TEventParams>) => void
+      (params: EventParamsWithContext<TContext, TEventParams>, options?: TrackingOptions) => void
     >;
+
     for (const key of Object.keys(domEvents) as DOMEventNames[]) {
-      scheduledDomEvents[key] = (params: EventParamsWithContext<TContext, TEventParams>) => {
-        return _schedule(() =>
-          domEvents[key]?.(
-            isFunction<TContext, TEventParams>(params) ? params(_getContext()) : params,
-            _getContext(),
-            _setContext,
-          ),
-        );
+      scheduledDomEvents[key] = (params: EventParamsWithContext<TContext, TEventParams>, options?: TrackingOptions) => {
+        const executeEvent = () => {
+          return _schedule(() =>
+            domEvents[key]?.(
+              isFunction<TContext, TEventParams>(params) ? params(_getContext()) : params,
+              _getContext(),
+              _setContext,
+            ),
+          );
+        };
+
+        if (options?.debounce) {
+          const debouncedFn = getDebounced(`dom-${key}`, executeEvent, options.debounce);
+          debouncedFn();
+        } else {
+          executeEvent();
+        }
       };
     }
+
+    // Basic scheduled DOM events with schema and optional options parameter
     const scheduledDomEventsWithSchema = {} as Record<
       DOMEventNames,
-      <TKey extends keyof TSchemas>(paramsWithSchema: EventParamsWithSchema<TContext, TSchemas, TKey>) => void
+      <TKey extends keyof TSchemas>(
+        paramsWithSchema: EventParamsWithSchema<TContext, TSchemas, TKey>,
+        options?: TrackingOptions,
+      ) => void
     >;
+
     for (const key of Object.keys(domEvents) as DOMEventNames[]) {
       scheduledDomEventsWithSchema[key] = <TKey extends keyof TSchemas>(
         paramsWithSchema: EventParamsWithSchema<TContext, TSchemas, TKey>,
+        options?: TrackingOptions,
       ) => {
-        const params = isFunction<TContext, SchemaParams<TSchemas, TKey>>(paramsWithSchema.params)
-          ? paramsWithSchema.params(_getContext())
-          : paramsWithSchema.params;
+        const executeEvent = () => {
+          const params = isFunction<TContext, SchemaParams<TSchemas, TKey>>(paramsWithSchema.params)
+            ? paramsWithSchema.params(_getContext())
+            : paramsWithSchema.params;
 
-        validateZodSchema(paramsWithSchema.schema, params);
+          validateZodSchema(paramsWithSchema.schema, params);
 
-        return _schedule(() =>
-          domEvents[key]?.(params as TEventParams & SchemaParams<TSchemas, TKey>, _getContext(), _setContext),
-        );
+          return _schedule(() =>
+            domEvents[key]?.(params as TEventParams & SchemaParams<TSchemas, TKey>, _getContext(), _setContext),
+          );
+        };
+
+        if (options?.debounce) {
+          const debouncedFn = getDebounced(`dom-schema-${key}`, executeEvent, options.debounce);
+          debouncedFn();
+        } else {
+          executeEvent();
+        }
       };
     }
+
+    // Basic schedule event with schema
     const scheduleEventWithSchema = <TKey extends keyof TSchemas>(
       event?: EventFunction<TContext, TEventParams, TSchemas, TTaskResult, TKey>,
     ) => {
-      return (paramsWithSchema: EventParamsWithSchema<TContext, TSchemas, TKey>) => {
-        const params = isFunction<TContext, z.infer<TSchemas[TKey]>>(paramsWithSchema.params)
-          ? paramsWithSchema.params(_getContext())
-          : paramsWithSchema.params;
+      return (paramsWithSchema: EventParamsWithSchema<TContext, TSchemas, TKey>, options?: TrackingOptions) => {
+        const executeEvent = () => {
+          const params = isFunction<TContext, z.infer<TSchemas[TKey]>>(paramsWithSchema.params)
+            ? paramsWithSchema.params(_getContext())
+            : paramsWithSchema.params;
 
-        validateZodSchema(paramsWithSchema.schema, params);
+          validateZodSchema(paramsWithSchema.schema, params);
 
-        return _schedule(() =>
-          event?.(params as TEventParams & SchemaParams<TSchemas, TKey>, _getContext(), _setContext),
-        );
+          return _schedule(() =>
+            event?.(params as TEventParams & SchemaParams<TSchemas, TKey>, _getContext(), _setContext),
+          );
+        };
+
+        if (options?.debounce) {
+          const eventName = event?.name || "anonymous-event";
+          const debouncedFn = getDebounced(`event-schema-${eventName}`, executeEvent, options.debounce);
+          debouncedFn();
+        } else {
+          executeEvent();
+        }
       };
     };
+
+    // Basic schedule event
     const scheduleEvent = (event?: EventFunction<TContext, TEventParams, TSchemas, TTaskResult>) => {
-      return (params: EventParamsWithContext<TContext, TEventParams>) => {
-        return _schedule(() =>
-          event?.(
-            isFunction<TContext, TEventParams>(params) ? params(_getContext()) : params,
-            _getContext(),
-            _setContext,
-          ),
-        );
+      return (params: EventParamsWithContext<TContext, TEventParams>, options?: TrackingOptions) => {
+        const executeEvent = () => {
+          return _schedule(() =>
+            event?.(
+              isFunction<TContext, TEventParams>(params) ? params(_getContext()) : params,
+              _getContext(),
+              _setContext,
+            ),
+          );
+        };
+
+        if (options?.debounce) {
+          const eventName = event?.name || "anonymous-event";
+          const debouncedFn = getDebounced(`event-${eventName}`, executeEvent, options.debounce);
+          debouncedFn();
+        } else {
+          executeEvent();
+        }
       };
     };
+
     return {
-      send: (params: EventParamsWithContext<TEventParams, TContext>) =>
+      send: (params: EventParamsWithContext<TContext, TEventParams>) =>
         tracker.send?.(
           (isFunction<TContext, TEventParams>(params) ? params(_getContext()) : params) as TEventParams &
             SchemaParams<TSchemas, keyof TSchemas>,
@@ -204,24 +261,26 @@ export function createTracker<
     children,
     type,
     eventName,
+    debounce,
     ...props
   }: {
     children: ReactNode;
     type: DOMEventNames;
     eventName?: string;
+    debounce?: DebounceConfig;
   } & UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>) => {
     const tracker = useTracker();
 
+    const onTrigger = useCallback(() => {
+      const options: TrackingOptions = debounce ? { debounce } : {};
+
+      void (isEventPropsWithSchema(props)
+        ? tracker.trackWithSchema[type]?.(props, options)
+        : tracker.track[type]?.(props.params, options));
+    }, [tracker, props, type, debounce]);
+
     return (
-      <PrimitiveDOMEvent
-        eventName={eventName}
-        type={type}
-        onTrigger={() => {
-          void (isEventPropsWithSchema(props)
-            ? tracker.trackWithSchema[type]?.(props)
-            : tracker.track[type]?.(props.params));
-        }}
-      >
+      <PrimitiveDOMEvent eventName={eventName} type={type} onTrigger={onTrigger}>
         {children}
       </PrimitiveDOMEvent>
     );
@@ -229,61 +288,69 @@ export function createTracker<
 
   const Click = <TKey extends keyof TSchemas>({
     children,
+    debounce,
     ...props
-  }: { children: ReactNode } & UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>) => {
+  }: { children: ReactNode; debounce?: DebounceConfig } & UnionPropsWithAndWithoutSchema<
+    TContext,
+    TEventParams,
+    TSchemas,
+    TKey
+  >) => {
     const tracker = useTracker();
 
-    return (
-      <PrimitiveClick
-        onClick={() => {
-          void (isEventPropsWithSchema(props)
-            ? tracker.trackWithSchema.onClick?.(props)
-            : tracker.track.onClick?.(props.params));
-        }}
-      >
-        {children}
-      </PrimitiveClick>
-    );
+    const onClick = useCallback(() => {
+      const options: TrackingOptions = debounce ? { debounce } : {};
+
+      void (isEventPropsWithSchema(props)
+        ? tracker.trackWithSchema.onClick?.(props, options)
+        : tracker.track.onClick?.(props.params, options));
+    }, [tracker, props, debounce]);
+
+    return <PrimitiveClick onClick={onClick}>{children}</PrimitiveClick>;
   };
 
   const Impression = <TKey extends keyof TSchemas>({
     children,
     options,
+    debounce,
     ...props
   }: {
     children: ReactNode;
     options?: ImpressionOptions;
+    debounce?: DebounceConfig;
   } & UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>) => {
     const tracker = useTracker();
 
+    const onImpression = useCallback(() => {
+      const options: TrackingOptions = debounce ? { debounce } : {};
+
+      void (isEventPropsWithSchema(props)
+        ? tracker.trackWithSchema.onImpression?.(props, options)
+        : tracker.track.onImpression?.(props.params, options));
+    }, [tracker, props, debounce]);
+
     return (
-      <PrimitiveImpression
-        options={options}
-        onImpression={() => {
-          void (isEventPropsWithSchema(props)
-            ? tracker.trackWithSchema.onImpression?.(props)
-            : tracker.track.onImpression?.(props.params));
-        }}
-      >
+      <PrimitiveImpression options={options} onImpression={onImpression}>
         {children}
       </PrimitiveImpression>
     );
   };
 
-  const PageView = <TKey extends keyof TSchemas>(
-    props: UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>,
-  ) => {
+  const PageView = <TKey extends keyof TSchemas>({
+    debounce,
+    ...props
+  }: { debounce?: DebounceConfig } & UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>) => {
     const tracker = useTracker();
 
-    return (
-      <PrimitivePageView
-        onPageView={() => {
-          void (isEventPropsWithSchema(props)
-            ? tracker.trackWithSchema.onPageView?.(props)
-            : tracker.track.onPageView?.(props.params));
-        }}
-      />
-    );
+    const onPageView = useCallback(() => {
+      const options: TrackingOptions = debounce ? { debounce } : {};
+
+      void (isEventPropsWithSchema(props)
+        ? tracker.trackWithSchema.onPageView?.(props, options)
+        : tracker.track.onPageView?.(props.params, options));
+    }, [tracker, props, debounce]);
+
+    return <PrimitivePageView onPageView={onPageView} />;
   };
 
   const SetContext = ({ context }: { context: TContext | ((prevContext: TContext) => TContext) }) => {
