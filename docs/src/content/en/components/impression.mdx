@@ -35,3 +35,34 @@ function App() {
   - `schema: string` - A name of schema that will be used to validate the event parameters
 - Without schema
   - `params: EventParams | (context: Context) => EventParams` - Impression event parameters
+- `enabled?: boolean | ((context: Context, params: EventParams) => boolean)` - Conditionally enable/disable event tracking (default: `true`)
+- `debounce?: DebounceConfig` - Debounce configuration to prevent rapid successive events
+- `throttle?: ThrottleConfig` - Throttle configuration to limit event frequency
+
+**Note:** `debounce` and `throttle` are mutually exclusive and cannot be used together.
+
+### Tracking Options Examples
+
+#### Conditional Tracking
+
+```tsx
+<Track.Impression
+  params={{ elementId: "premium-content" }}
+  enabled={(context) => context.user?.hasAccess}
+  options={{ threshold: 0.5 }}
+>
+  <div>Premium Content</div>
+</Track.Impression>
+```
+
+#### Throttled Impressions
+
+```tsx
+<Track.Impression
+  params={{ elementId: "banner" }}
+  throttle={{ delay: 2000, leading: true, trailing: false }}
+  options={{ threshold: 0.8 }}
+>
+  <div>Advertisement Banner</div>
+</Track.Impression>
+```

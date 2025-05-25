@@ -1,6 +1,6 @@
 # Impression
 
-Intersection Observer API를 사용하여 노출 이벤트를 트래킹합니다..
+Intersection Observer API를 사용하여 노출 이벤트를 추적합니다.
 
 ```tsx
 import { createTracker } from "@offlegacy/event-tracker";
@@ -20,7 +20,7 @@ function App() {
   return (
     <Track.Provider initialContext={{}}>
       <Track.Impression params={{ elementId: "hero" }} options={{ threshold: 0.8 }}>
-        <div>Tracked content</div>
+        <div>추적할 콘텐츠</div>
       </Track.Impression>
     </Track.Provider>
   );
@@ -29,9 +29,40 @@ function App() {
 
 ### Props
 
-- `options?: ImpressionOptions` - 선택적 설정 (전역 설정 오버라이드)
+- `options?: ImpressionOptions` - 선택적 설정 (전역 옵션을 덮어씀)
 - 스키마와 함께 사용하는 경우
   - `params: SchemaParams | (context: Context) => SchemaParams` - 스키마 기반 노출 이벤트 매개변수
   - `schema: string` - 이벤트 매개변수 검증을 위한 스키마 이름
 - 스키마와 함께 사용하지 않는 경우
   - `params: EventParams | (context: Context) => EventParams` - 노출 이벤트 매개변수
+- `enabled?: boolean | ((context: Context, params: EventParams) => boolean)` - 이벤트 추적을 조건부로 활성화/비활성화 (기본값: `true`)
+- `debounce?: DebounceConfig` - 연속적인 이벤트 발생을 방지하는 디바운스 설정
+- `throttle?: ThrottleConfig` - 이벤트 발생 빈도를 제한하는 스로틀 설정
+
+**참고:** `debounce`와 `throttle`은 상호 배타적이며 함께 사용할 수 없습니다.
+
+### 추적 옵션 예제
+
+#### 조건부 추적
+
+```tsx
+<Track.Impression
+  params={{ elementId: "premium-content" }}
+  enabled={(context) => context.user?.hasAccess}
+  options={{ threshold: 0.5 }}
+>
+  <div>프리미엄 콘텐츠</div>
+</Track.Impression>
+```
+
+#### 스로틀 노출 추적
+
+```tsx
+<Track.Impression
+  params={{ elementId: "banner" }}
+  throttle={{ delay: 2000, leading: true, trailing: false }}
+  options={{ threshold: 0.8 }}
+>
+  <div>광고 배너</div>
+</Track.Impression>
+```

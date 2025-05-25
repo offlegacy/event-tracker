@@ -55,15 +55,40 @@ console.log("Current user:", currentContext.userId);
 
 #### track
 
-- Type: `Record<keyof EventNames, (params: EventParams) => void>`
+- Type: `Record<keyof EventNames, (params: EventParams, options?: TrackingOptions) => void>`
 - 모든 구성된 이벤트 트래킹 함수를 포함하는 객체
 - key는 트래커 구성에 정의된 이벤트 이름과 일치합니다.
+- 고급 제어를 위한 선택적 `TrackingOptions`를 허용합니다.
 
 ```tsx
 const { track } = useTracker();
 
-// 클릭 이벤트 추적
+// 간단한 클릭 이벤트 추적
 track.onClick({ buttonId: "submit" });
+
+// 조건부 로직과 함께 추적
+track.onClick(
+  { buttonId: "premium" },
+  {
+    enabled: (context) => context.user?.isPremium,
+  },
+);
+
+// 디바운싱과 함께 추적
+track.onClick(
+  { buttonId: "search" },
+  {
+    debounce: { delay: 300, leading: false, trailing: true },
+  },
+);
+
+// 스로틀링과 함께 추적
+track.onClick(
+  { buttonId: "rapid-action" },
+  {
+    throttle: { delay: 1000, leading: true, trailing: false },
+  },
+);
 
 // 노출 이벤트 추적
 track.onImpression({ elementId: "hero" });
@@ -71,18 +96,68 @@ track.onImpression({ elementId: "hero" });
 
 #### trackWithSchema
 
-- Type: `Record<keyof Schemas, (params: SchemaParams) => void>`
-- 모든 구성된 이벤트 트래킹 함수를 포함하는 객체
+- Type: `Record<keyof Schemas, (params: SchemaParams, options?: TrackingOptions) => void>`
+- 스키마 검증이 포함된 모든 구성된 이벤트 트래킹 함수를 포함하는 객체
 - key는 트래커 구성에 정의된 이벤트 이름과 일치합니다.
+- 고급 제어를 위한 선택적 `TrackingOptions`를 허용합니다.
 
 ```tsx
 const { trackWithSchema } = useTracker();
 
-// Track a click event
+// 스키마와 함께 클릭 이벤트 추적
 trackWithSchema.onClick({ schema: "click", params: { buttonId: "submit" } });
 
-// 노출 이벤트 추적
-trackWithSchema.onImpression({ schema: "impression", params: { elementId: "hero" } });
+// 조건부 로직과 스키마와 함께 추적
+trackWithSchema.onClick(
+  {
+    schema: "premium_click",
+    params: { buttonId: "premium", userId: "123" },
+  },
+  {
+    enabled: (context, params) => context.user?.id === params.userId,
+  },
+);
+
+// 스로틀링과 스키마와 함께 추적
+trackWithSchema.onImpression(
+  {
+    schema: "impression",
+    params: { elementId: "hero", userId: "123" },
+  },
+  {
+    throttle: { delay: 2000, leading: true, trailing: false },
+  },
+);
+```
+
+### TrackingOptions
+
+`track`과 `trackWithSchema` 메서드 모두 다음 옵션을 포함하는 선택적 두 번째 매개변수를 허용합니다:
+
+- `enabled?: boolean | ((context: Context, params: EventParams) => boolean)` - 이벤트 추적을 조건부로 활성화/비활성화
+- `debounce?: DebounceConfig` - 연속적인 이벤트 발생을 방지하는 디바운스 설정
+- `throttle?: ThrottleConfig` - 이벤트 발생 빈도를 제한하는 스로틀 설정
+
+**참고:** `debounce`와 `throttle`은 상호 배타적이며 함께 사용할 수 없습니다.
+
+#### DebounceConfig
+
+```tsx
+interface DebounceConfig {
+  delay: number; // 밀리초 단위의 지연 시간
+  leading?: boolean; // 선행 에지에서 실행 (기본값: false)
+  trailing?: boolean; // 후행 에지에서 실행 (기본값: true)
+}
+```
+
+#### ThrottleConfig
+
+```tsx
+interface ThrottleConfig {
+  delay: number; // 밀리초 단위의 지연 시간
+  leading?: boolean; // 선행 에지에서 실행 (기본값: true)
+  trailing?: boolean; // 후행 에지에서 실행 (기본값: false)
+}
 ```
 
 ### 사용 예제

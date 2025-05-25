@@ -55,15 +55,40 @@ console.log("Current user:", currentContext.userId);
 
 #### track
 
-- Type: `Record<keyof EventNames, (params: EventParams) => void>`
+- Type: `Record<keyof EventNames, (params: EventParams, options?: TrackingOptions) => void>`
 - Object containing all configured event tracking functions
 - Keys match the event names defined in your tracker configuration
+- Accepts optional `TrackingOptions` for advanced control
 
 ```tsx
 const { track } = useTracker();
 
-// Track a click event
+// Track a simple click event
 track.onClick({ buttonId: "submit" });
+
+// Track with conditional logic
+track.onClick(
+  { buttonId: "premium" },
+  {
+    enabled: (context) => context.user?.isPremium,
+  },
+);
+
+// Track with debouncing
+track.onClick(
+  { buttonId: "search" },
+  {
+    debounce: { delay: 300, leading: false, trailing: true },
+  },
+);
+
+// Track with throttling
+track.onClick(
+  { buttonId: "rapid-action" },
+  {
+    throttle: { delay: 1000, leading: true, trailing: false },
+  },
+);
 
 // Track an impression
 track.onImpression({ elementId: "hero" });
@@ -71,18 +96,68 @@ track.onImpression({ elementId: "hero" });
 
 #### trackWithSchema
 
-- Type: `Record<keyof Schemas, (params: SchemaParams) => void>`
-- Object containing all configured event tracking functions
+- Type: `Record<keyof Schemas, (params: SchemaParams, options?: TrackingOptions) => void>`
+- Object containing all configured event tracking functions with schema validation
 - Keys match the event names defined in your tracker configuration
+- Accepts optional `TrackingOptions` for advanced control
 
 ```tsx
 const { trackWithSchema } = useTracker();
 
-// Track a click event
+// Track a click event with schema
 trackWithSchema.onClick({ schema: "click", params: { buttonId: "submit" } });
 
-// Track an impression
-trackWithSchema.onImpression({ schema: "impression", params: { elementId: "hero" } });
+// Track with conditional logic and schema
+trackWithSchema.onClick(
+  {
+    schema: "premium_click",
+    params: { buttonId: "premium", userId: "123" },
+  },
+  {
+    enabled: (context, params) => context.user?.id === params.userId,
+  },
+);
+
+// Track with throttling and schema
+trackWithSchema.onImpression(
+  {
+    schema: "impression",
+    params: { elementId: "hero", userId: "123" },
+  },
+  {
+    throttle: { delay: 2000, leading: true, trailing: false },
+  },
+);
+```
+
+### TrackingOptions
+
+Both `track` and `trackWithSchema` methods accept an optional second parameter with the following options:
+
+- `enabled?: boolean | ((context: Context, params: EventParams) => boolean)` - Conditionally enable/disable event tracking
+- `debounce?: DebounceConfig` - Debounce configuration to prevent rapid successive events
+- `throttle?: ThrottleConfig` - Throttle configuration to limit event frequency
+
+**Note:** `debounce` and `throttle` are mutually exclusive and cannot be used together.
+
+#### DebounceConfig
+
+```tsx
+interface DebounceConfig {
+  delay: number; // Delay in milliseconds
+  leading?: boolean; // Execute on leading edge (default: false)
+  trailing?: boolean; // Execute on trailing edge (default: true)
+}
+```
+
+#### ThrottleConfig
+
+```tsx
+interface ThrottleConfig {
+  delay: number; // Delay in milliseconds
+  leading?: boolean; // Execute on leading edge (default: true)
+  trailing?: boolean; // Execute on trailing edge (default: false)
+}
 ```
 
 ### Example Usage

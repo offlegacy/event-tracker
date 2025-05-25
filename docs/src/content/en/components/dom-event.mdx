@@ -32,6 +32,45 @@ function App() {
   - `schema: string` - A name of schema that will be used to validate the event parameters
 - Without schema
   - `params: EventParams | (context: Context) => EventParams` - Event parameters
+- `enabled?: boolean | ((context: Context, params: EventParams) => boolean)` - Conditionally enable/disable event tracking (default: `true`)
+- `debounce?: DebounceConfig` - Debounce configuration to prevent rapid successive events
+- `throttle?: ThrottleConfig` - Throttle configuration to limit event frequency
+
+**Note:** `debounce` and `throttle` are mutually exclusive and cannot be used together.
+
+### Tracking Options Examples
+
+#### Conditional Tracking
+
+```tsx
+<Track.DOMEvent type="onFocus" params={{ inputId: "email" }} enabled={(context) => context.trackingEnabled}>
+  <input type="email" />
+</Track.DOMEvent>
+```
+
+#### Debounced Tracking
+
+```tsx
+<Track.DOMEvent
+  type="onChange"
+  params={{ inputId: "search" }}
+  debounce={{ delay: 500, leading: false, trailing: true }}
+>
+  <input type="search" />
+</Track.DOMEvent>
+```
+
+#### Throttled Tracking
+
+```tsx
+<Track.DOMEvent
+  type="onScroll"
+  params={{ elementId: "main-content" }}
+  throttle={{ delay: 100, leading: true, trailing: false }}
+>
+  <div>Scrollable content</div>
+</Track.DOMEvent>
+```
 
 ## Handling Renamed Event Props
 
