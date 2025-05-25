@@ -11,7 +11,7 @@ import type { Context, EventParams, EnabledCondition } from "../types";
 export function evaluateEnabledCondition<
   TContext extends Context = Context,
   TEventParams extends EventParams = EventParams,
->(enabled: EnabledCondition<TContext, TEventParams> | undefined, context: TContext, params: TEventParams): boolean {
+>(enabled: EnabledCondition<TContext, TEventParams> | undefined, context: TContext, params: unknown): boolean {
   // Default to true if enabled is not specified
   if (enabled === undefined) return true;
 
@@ -21,7 +21,7 @@ export function evaluateEnabledCondition<
   // Handle function values
   if (typeof enabled === "function") {
     try {
-      return enabled(context, params);
+      return enabled(context, params as TEventParams);
     } catch (error) {
       console.warn("Enabled condition evaluation failed:", error);
       return false; // Fail safe - don't track on error
