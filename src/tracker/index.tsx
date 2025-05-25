@@ -312,41 +312,45 @@ export function createTracker<
   const Impression = <TKey extends keyof TSchemas>({
     children,
     options,
+    debounce,
     ...props
   }: {
     children: ReactNode;
     options?: ImpressionOptions;
+    debounce?: DebounceConfig;
   } & UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>) => {
     const tracker = useTracker();
 
+    const onImpression = useCallback(() => {
+      const options: TrackingOptions = debounce ? { debounce } : {};
+
+      void (isEventPropsWithSchema(props)
+        ? tracker.trackWithSchema.onImpression?.(props, options)
+        : tracker.track.onImpression?.(props.params, options));
+    }, [tracker, props, debounce]);
+
     return (
-      <PrimitiveImpression
-        options={options}
-        onImpression={() => {
-          void (isEventPropsWithSchema(props)
-            ? tracker.trackWithSchema.onImpression?.(props)
-            : tracker.track.onImpression?.(props.params));
-        }}
-      >
+      <PrimitiveImpression options={options} onImpression={onImpression}>
         {children}
       </PrimitiveImpression>
     );
   };
 
-  const PageView = <TKey extends keyof TSchemas>(
-    props: UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>,
-  ) => {
+  const PageView = <TKey extends keyof TSchemas>({
+    debounce,
+    ...props
+  }: { debounce?: DebounceConfig } & UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>) => {
     const tracker = useTracker();
 
-    return (
-      <PrimitivePageView
-        onPageView={() => {
-          void (isEventPropsWithSchema(props)
-            ? tracker.trackWithSchema.onPageView?.(props)
-            : tracker.track.onPageView?.(props.params));
-        }}
-      />
-    );
+    const onPageView = useCallback(() => {
+      const options: TrackingOptions = debounce ? { debounce } : {};
+
+      void (isEventPropsWithSchema(props)
+        ? tracker.trackWithSchema.onPageView?.(props, options)
+        : tracker.track.onPageView?.(props.params, options));
+    }, [tracker, props, debounce]);
+
+    return <PrimitivePageView onPageView={onPageView} />;
   };
 
   const SetContext = ({ context }: { context: TContext | ((prevContext: TContext) => TContext) }) => {
