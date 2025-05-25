@@ -72,11 +72,17 @@ export function createTracker<
     // Basic scheduled DOM events with optional options parameter
     const scheduledDomEvents = {} as Record<
       DOMEventNames,
-      (params: EventParamsWithContext<TContext, TEventParams>, options?: TrackingOptions) => void
+      (
+        params: EventParamsWithContext<TContext, TEventParams>,
+        options?: TrackingOptions<TContext, TEventParams>,
+      ) => void
     >;
 
     for (const key of Object.keys(domEvents) as DOMEventNames[]) {
-      scheduledDomEvents[key] = (params: EventParamsWithContext<TContext, TEventParams>, options?: TrackingOptions) => {
+      scheduledDomEvents[key] = (
+        params: EventParamsWithContext<TContext, TEventParams>,
+        options?: TrackingOptions<TContext, TEventParams>,
+      ) => {
         const executeEvent = () => {
           return _schedule(() =>
             domEvents[key]?.(
@@ -104,14 +110,14 @@ export function createTracker<
       DOMEventNames,
       <TKey extends keyof TSchemas>(
         paramsWithSchema: EventParamsWithSchema<TContext, TSchemas, TKey>,
-        options?: TrackingOptions,
+        options?: TrackingOptions<TContext, TEventParams>,
       ) => void
     >;
 
     for (const key of Object.keys(domEvents) as DOMEventNames[]) {
       scheduledDomEventsWithSchema[key] = <TKey extends keyof TSchemas>(
         paramsWithSchema: EventParamsWithSchema<TContext, TSchemas, TKey>,
-        options?: TrackingOptions,
+        options?: TrackingOptions<TContext, TEventParams>,
       ) => {
         const executeEvent = () => {
           const params = isFunction<TContext, SchemaParams<TSchemas, TKey>>(paramsWithSchema.params)
@@ -141,7 +147,10 @@ export function createTracker<
     const scheduleEventWithSchema = <TKey extends keyof TSchemas>(
       event?: EventFunction<TContext, TEventParams, TSchemas, TTaskResult, TKey>,
     ) => {
-      return (paramsWithSchema: EventParamsWithSchema<TContext, TSchemas, TKey>, options?: TrackingOptions) => {
+      return (
+        paramsWithSchema: EventParamsWithSchema<TContext, TSchemas, TKey>,
+        options?: TrackingOptions<TContext, TEventParams>,
+      ) => {
         const executeEvent = () => {
           const params = isFunction<TContext, z.infer<TSchemas[TKey]>>(paramsWithSchema.params)
             ? paramsWithSchema.params(_getContext())
@@ -170,7 +179,10 @@ export function createTracker<
 
     // Basic schedule event
     const scheduleEvent = (event?: EventFunction<TContext, TEventParams, TSchemas, TTaskResult>) => {
-      return (params: EventParamsWithContext<TContext, TEventParams>, options?: TrackingOptions) => {
+      return (
+        params: EventParamsWithContext<TContext, TEventParams>,
+        options?: TrackingOptions<TContext, TEventParams>,
+      ) => {
         const executeEvent = () => {
           return _schedule(() =>
             event?.(
@@ -284,7 +296,7 @@ export function createTracker<
     type: DOMEventNames;
     eventName?: string;
     enabled?: EnabledCondition<TContext, TEventParams>;
-  } & TrackingOptions &
+  } & TrackingOptions<TContext, TEventParams> &
     UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>) => {
     const tracker = useTracker();
 
@@ -295,7 +307,7 @@ export function createTracker<
       const isEnabled = evaluateEnabledCondition(enabled, tracker.getContext(), resolvedParams);
       if (!isEnabled) return;
 
-      let options: TrackingOptions = {};
+      let options: TrackingOptions<TContext, TEventParams> = {};
       if ("debounce" in props && props.debounce) options = { debounce: props.debounce };
       else if ("throttle" in props && props.throttle) options = { throttle: props.throttle };
 
@@ -318,7 +330,7 @@ export function createTracker<
   }: {
     children: ReactNode;
     enabled?: EnabledCondition<TContext, TEventParams>;
-  } & TrackingOptions &
+  } & TrackingOptions<TContext, TEventParams> &
     UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>) => {
     const tracker = useTracker();
 
@@ -329,7 +341,7 @@ export function createTracker<
       const isEnabled = evaluateEnabledCondition(enabled, tracker.getContext(), resolvedParams);
       if (!isEnabled) return;
 
-      let options: TrackingOptions = {};
+      let options: TrackingOptions<TContext, TEventParams> = {};
       if ("debounce" in props && props.debounce) options = { debounce: props.debounce };
       else if ("throttle" in props && props.throttle) options = { throttle: props.throttle };
 
@@ -350,7 +362,7 @@ export function createTracker<
     children: ReactNode;
     options?: ImpressionOptions;
     enabled?: EnabledCondition<TContext, TEventParams>;
-  } & TrackingOptions &
+  } & TrackingOptions<TContext, TEventParams> &
     UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>) => {
     const tracker = useTracker();
 
@@ -361,7 +373,7 @@ export function createTracker<
       const isEnabled = evaluateEnabledCondition(enabled, tracker.getContext(), resolvedParams);
       if (!isEnabled) return;
 
-      let trackingOptions: TrackingOptions = {};
+      let trackingOptions: TrackingOptions<TContext, TEventParams> = {};
       if ("debounce" in props && props.debounce) trackingOptions = { debounce: props.debounce };
       else if ("throttle" in props && props.throttle) trackingOptions = { throttle: props.throttle };
 
@@ -382,7 +394,7 @@ export function createTracker<
     ...props
   }: {
     enabled?: EnabledCondition<TContext, TEventParams>;
-  } & TrackingOptions &
+  } & TrackingOptions<TContext, TEventParams> &
     UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>) => {
     const tracker = useTracker();
 
@@ -393,7 +405,7 @@ export function createTracker<
       const isEnabled = evaluateEnabledCondition(enabled, tracker.getContext(), resolvedParams);
       if (!isEnabled) return;
 
-      let options: TrackingOptions = {};
+      let options: TrackingOptions<TContext, TEventParams> = {};
       if ("debounce" in props && props.debounce) options = { debounce: props.debounce };
       else if ("throttle" in props && props.throttle) options = { throttle: props.throttle };
 
