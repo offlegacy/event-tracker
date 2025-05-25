@@ -22,7 +22,9 @@ import type {
   DOMEvents,
   SchemaParams,
   TrackingOptions,
+  EnabledCondition,
 } from "../types";
+import { evaluateEnabledCondition } from "../utils/condition";
 
 import { Click as PrimitiveClick } from "./components/Click";
 import { DOMEvent as PrimitiveDOMEvent } from "./components/DOMEvent";
@@ -274,16 +276,30 @@ export function createTracker<
     children,
     type,
     eventName,
+    enabled,
     ...props
   }: {
     children: ReactNode;
     type: DOMEventNames;
     eventName?: string;
+    enabled?: EnabledCondition<TContext, TEventParams>;
   } & TrackingOptions &
     UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>) => {
     const tracker = useTracker();
 
     const onTrigger = useCallback(() => {
+      // Check enabled condition first
+      const resolvedParams = isEventPropsWithSchema(props)
+        ? isFunction<TContext, SchemaParams<TSchemas, TKey>>(props.params)
+          ? props.params(tracker.getContext())
+          : props.params
+        : isFunction<TContext, TEventParams>(props.params)
+          ? props.params(tracker.getContext())
+          : props.params;
+
+      const isEnabled = evaluateEnabledCondition(enabled, tracker.getContext(), resolvedParams);
+      if (!isEnabled) return;
+
       let options: TrackingOptions = {};
       if ("debounce" in props && props.debounce) options = { debounce: props.debounce };
       else if ("throttle" in props && props.throttle) options = { throttle: props.throttle };
@@ -291,7 +307,7 @@ export function createTracker<
       void (isEventPropsWithSchema(props)
         ? tracker.trackWithSchema[type]?.(props, options)
         : tracker.track[type]?.(props.params, options));
-    }, [tracker, props, type]);
+    }, [tracker, props, type, enabled]);
 
     return (
       <PrimitiveDOMEvent eventName={eventName} type={type} onTrigger={onTrigger}>
@@ -302,14 +318,28 @@ export function createTracker<
 
   const Click = <TKey extends keyof TSchemas>({
     children,
+    enabled,
     ...props
   }: {
     children: ReactNode;
+    enabled?: EnabledCondition<TContext, TEventParams>;
   } & TrackingOptions &
     UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>) => {
     const tracker = useTracker();
 
     const onClick = useCallback(() => {
+      // Check enabled condition first
+      const resolvedParams = isEventPropsWithSchema(props)
+        ? isFunction<TContext, SchemaParams<TSchemas, TKey>>(props.params)
+          ? props.params(tracker.getContext())
+          : props.params
+        : isFunction<TContext, TEventParams>(props.params)
+          ? props.params(tracker.getContext())
+          : props.params;
+
+      const isEnabled = evaluateEnabledCondition(enabled, tracker.getContext(), resolvedParams);
+      if (!isEnabled) return;
+
       let options: TrackingOptions = {};
       if ("debounce" in props && props.debounce) options = { debounce: props.debounce };
       else if ("throttle" in props && props.throttle) options = { throttle: props.throttle };
@@ -317,7 +347,7 @@ export function createTracker<
       void (isEventPropsWithSchema(props)
         ? tracker.trackWithSchema.onClick?.(props, options)
         : tracker.track.onClick?.(props.params, options));
-    }, [tracker, props]);
+    }, [tracker, props, enabled]);
 
     return <PrimitiveClick onClick={onClick}>{children}</PrimitiveClick>;
   };
@@ -325,16 +355,29 @@ export function createTracker<
   const Impression = <TKey extends keyof TSchemas>({
     children,
     options,
-
+    enabled,
     ...props
   }: {
     children: ReactNode;
     options?: ImpressionOptions;
+    enabled?: EnabledCondition<TContext, TEventParams>;
   } & TrackingOptions &
     UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>) => {
     const tracker = useTracker();
 
     const onImpression = useCallback(() => {
+      // Check enabled condition first
+      const resolvedParams = isEventPropsWithSchema(props)
+        ? isFunction<TContext, SchemaParams<TSchemas, TKey>>(props.params)
+          ? props.params(tracker.getContext())
+          : props.params
+        : isFunction<TContext, TEventParams>(props.params)
+          ? props.params(tracker.getContext())
+          : props.params;
+
+      const isEnabled = evaluateEnabledCondition(enabled, tracker.getContext(), resolvedParams);
+      if (!isEnabled) return;
+
       let trackingOptions: TrackingOptions = {};
       if ("debounce" in props && props.debounce) trackingOptions = { debounce: props.debounce };
       else if ("throttle" in props && props.throttle) trackingOptions = { throttle: props.throttle };
@@ -342,7 +385,7 @@ export function createTracker<
       void (isEventPropsWithSchema(props)
         ? tracker.trackWithSchema.onImpression?.(props, trackingOptions)
         : tracker.track.onImpression?.(props.params, trackingOptions));
-    }, [tracker, props]);
+    }, [tracker, props, enabled]);
 
     return (
       <PrimitiveImpression options={options} onImpression={onImpression}>
@@ -351,12 +394,28 @@ export function createTracker<
     );
   };
 
-  const PageView = <TKey extends keyof TSchemas>(
-    props: TrackingOptions & UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>,
-  ) => {
+  const PageView = <TKey extends keyof TSchemas>({
+    enabled,
+    ...props
+  }: {
+    enabled?: EnabledCondition<TContext, TEventParams>;
+  } & TrackingOptions &
+    UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>) => {
     const tracker = useTracker();
 
     const onPageView = useCallback(() => {
+      // Check enabled condition first
+      const resolvedParams = isEventPropsWithSchema(props)
+        ? isFunction<TContext, SchemaParams<TSchemas, TKey>>(props.params)
+          ? props.params(tracker.getContext())
+          : props.params
+        : isFunction<TContext, TEventParams>(props.params)
+          ? props.params(tracker.getContext())
+          : props.params;
+
+      const isEnabled = evaluateEnabledCondition(enabled, tracker.getContext(), resolvedParams);
+      if (!isEnabled) return;
+
       let options: TrackingOptions = {};
       if ("debounce" in props && props.debounce) options = { debounce: props.debounce };
       else if ("throttle" in props && props.throttle) options = { throttle: props.throttle };
@@ -364,7 +423,7 @@ export function createTracker<
       void (isEventPropsWithSchema(props)
         ? tracker.trackWithSchema.onPageView?.(props, options)
         : tracker.track.onPageView?.(props.params, options));
-    }, [tracker, props]);
+    }, [tracker, props, enabled]);
 
     return <PrimitivePageView onPageView={onPageView} />;
   };
