@@ -25,6 +25,7 @@ import type {
   EnabledCondition,
 } from "../types";
 import { evaluateEnabledCondition } from "../utils/condition";
+import { resolveParams } from "../utils/resolveParams";
 
 import { Click as PrimitiveClick } from "./components/Click";
 import { DOMEvent as PrimitiveDOMEvent } from "./components/DOMEvent";
@@ -289,13 +290,7 @@ export function createTracker<
 
     const onTrigger = useCallback(() => {
       // Check enabled condition first
-      const resolvedParams = isEventPropsWithSchema(props)
-        ? isFunction<TContext, SchemaParams<TSchemas, TKey>>(props.params)
-          ? props.params(tracker.getContext())
-          : props.params
-        : isFunction<TContext, TEventParams>(props.params)
-          ? props.params(tracker.getContext())
-          : props.params;
+      const resolvedParams = resolveParams(props, tracker.getContext);
 
       const isEnabled = evaluateEnabledCondition(enabled, tracker.getContext(), resolvedParams);
       if (!isEnabled) return;
@@ -329,13 +324,7 @@ export function createTracker<
 
     const onClick = useCallback(() => {
       // Check enabled condition first
-      const resolvedParams = isEventPropsWithSchema(props)
-        ? isFunction<TContext, SchemaParams<TSchemas, TKey>>(props.params)
-          ? props.params(tracker.getContext())
-          : props.params
-        : isFunction<TContext, TEventParams>(props.params)
-          ? props.params(tracker.getContext())
-          : props.params;
+      const resolvedParams = resolveParams(props, tracker.getContext);
 
       const isEnabled = evaluateEnabledCondition(enabled, tracker.getContext(), resolvedParams);
       if (!isEnabled) return;
@@ -367,13 +356,7 @@ export function createTracker<
 
     const onImpression = useCallback(() => {
       // Check enabled condition first
-      const resolvedParams = isEventPropsWithSchema(props)
-        ? isFunction<TContext, SchemaParams<TSchemas, TKey>>(props.params)
-          ? props.params(tracker.getContext())
-          : props.params
-        : isFunction<TContext, TEventParams>(props.params)
-          ? props.params(tracker.getContext())
-          : props.params;
+      const resolvedParams = resolveParams(props, tracker.getContext);
 
       const isEnabled = evaluateEnabledCondition(enabled, tracker.getContext(), resolvedParams);
       if (!isEnabled) return;
@@ -405,13 +388,7 @@ export function createTracker<
 
     const onPageView = useCallback(() => {
       // Check enabled condition first
-      const resolvedParams = isEventPropsWithSchema(props)
-        ? isFunction<TContext, SchemaParams<TSchemas, TKey>>(props.params)
-          ? props.params(tracker.getContext())
-          : props.params
-        : isFunction<TContext, TEventParams>(props.params)
-          ? props.params(tracker.getContext())
-          : props.params;
+      const resolvedParams = resolveParams(props, tracker.getContext);
 
       const isEnabled = evaluateEnabledCondition(enabled, tracker.getContext(), resolvedParams);
       if (!isEnabled) return;

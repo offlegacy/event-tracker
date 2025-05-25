@@ -34,7 +34,7 @@ describe("enabled condition", () => {
       button.click();
 
       // Wait for async operations
-      await sleep(10);
+      await sleep(0);
 
       expect(mockOnClick).toHaveBeenCalledWith({ action: "test_click" }, {}, expect.any(Function));
     });
@@ -52,7 +52,7 @@ describe("enabled condition", () => {
       button.click();
 
       // Wait for async operations
-      await sleep(10);
+      await sleep(0);
 
       expect(mockOnClick).not.toHaveBeenCalled();
     });
@@ -70,7 +70,7 @@ describe("enabled condition", () => {
       button.click();
 
       // Wait for async operations
-      await sleep(10);
+      await sleep(0);
 
       expect(mockOnClick).toHaveBeenCalledWith({ action: "test_click" }, {}, expect.any(Function));
     });
@@ -92,7 +92,7 @@ describe("enabled condition", () => {
       button.click();
 
       // Wait for async operations
-      await sleep(10);
+      await sleep(0);
 
       expect(enabledCondition).toHaveBeenCalledWith({}, { action: "test_click" });
       expect(mockOnClick).toHaveBeenCalledWith({ action: "test_click" }, {}, expect.any(Function));
@@ -113,7 +113,7 @@ describe("enabled condition", () => {
       button.click();
 
       // Wait for async operations
-      await sleep(10);
+      await sleep(0);
 
       expect(enabledCondition).toHaveBeenCalledWith({}, { action: "test_click" });
       expect(mockOnClick).not.toHaveBeenCalled();
@@ -138,7 +138,7 @@ describe("enabled condition", () => {
       button.click();
 
       // Wait for async operations
-      await sleep(10);
+      await sleep(0);
 
       expect(enabledCondition).toHaveBeenCalledWith(initialContext, { action: "test_click", userId: "123" });
       expect(mockOnClick).toHaveBeenCalledWith(
@@ -166,7 +166,7 @@ describe("enabled condition", () => {
       button.click();
 
       // Wait for async operations
-      await sleep(10);
+      await sleep(0);
 
       expect(consoleSpy).toHaveBeenCalledWith("Enabled condition evaluation failed:", expect.any(Error));
       expect(mockOnClick).not.toHaveBeenCalled();
@@ -197,7 +197,7 @@ describe("enabled condition", () => {
       button.click();
 
       // Wait for async operations
-      await sleep(10);
+      await sleep(0);
 
       expect(mockOnClick).not.toHaveBeenCalled();
     });
@@ -223,7 +223,7 @@ describe("enabled condition", () => {
       button.click();
 
       // Wait for async operations
-      await sleep(10);
+      await sleep(0);
 
       expect(mockOnClick).toHaveBeenCalledWith({ action: "test_click" }, initialContext, expect.any(Function));
     });
@@ -253,7 +253,7 @@ describe("enabled condition", () => {
       button.click();
 
       // Wait for async operations
-      await sleep(10);
+      await sleep(0);
 
       expect(mockUserEvent).toHaveBeenCalledWith({ action: "admin_action" }, userContext, expect.any(Function));
     });
@@ -273,7 +273,7 @@ describe("enabled condition", () => {
       button.click();
 
       // Wait for async operations
-      await sleep(10);
+      await sleep(0);
 
       expect(mockOnClick).not.toHaveBeenCalled();
     });
