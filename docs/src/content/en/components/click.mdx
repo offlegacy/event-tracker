@@ -31,6 +31,37 @@ function App() {
   - `schema: string` - A name of schema that will be used to validate the event parameters
 - Without schema
   - `params: EventParams | (context: Context) => EventParams` - Click event parameters
+- `enabled?: boolean | ((context: Context, params: EventParams) => boolean)` - Conditionally enable/disable event tracking (default: `true`)
+- `debounce?: DebounceConfig` - Debounce configuration to prevent rapid successive events
+- `throttle?: ThrottleConfig` - Throttle configuration to limit event frequency
+
+**Note:** `debounce` and `throttle` are mutually exclusive and cannot be used together.
+
+### Tracking Options Examples
+
+#### Conditional Tracking
+
+```tsx
+<Track.Click params={{ buttonId: "premium-feature" }} enabled={(context, params) => context.user?.isPremium}>
+  <button>Premium Feature</button>
+</Track.Click>
+```
+
+#### Debounced Tracking
+
+```tsx
+<Track.Click params={{ buttonId: "search" }} debounce={{ delay: 300, leading: false, trailing: true }}>
+  <button>Search</button>
+</Track.Click>
+```
+
+#### Throttled Tracking
+
+```tsx
+<Track.Click params={{ buttonId: "rapid-action" }} throttle={{ delay: 1000, leading: true, trailing: false }}>
+  <button>Quick Action</button>
+</Track.Click>
+```
 
 ## Handling Renamed Click Event Prop
 
