@@ -2,6 +2,7 @@ import { BatchConfig } from ".";
 import { type z } from "zod";
 import { DOMAttributes } from "react";
 import type { DebounceConfig } from "./utils/debounce";
+import type { ThrottleConfig } from "./utils/throttle";
 
 /** Context */
 export type Context = Record<string, any>;
@@ -186,6 +187,10 @@ export interface TrackerContextProps<
 }
 
 /** Tracking Options */
-export interface TrackingOptions {
-  debounce?: DebounceConfig;
-}
+export type TrackingOptions =
+  | {
+      debounce?: DebounceConfig;
+    }
+  | {
+      throttle?: ThrottleConfig;
+    };

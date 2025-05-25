@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { isEventPropsWithSchema } from "../helpers/isEventPropsWithSchema";
 import { isFunction } from "../helpers/isFunction";
-import { useDebounceCache } from "../hooks/useDebounceCache";
+import { useTimingCache } from "../hooks/useTimingCache";
 import { Scheduler } from "../scheduler";
 import type {
   TrackerConfig,
@@ -23,7 +23,6 @@ import type {
   SchemaParams,
   TrackingOptions,
 } from "../types";
-import type { DebounceConfig } from "../utils/debounce";
 
 import { Click as PrimitiveClick } from "./components/Click";
 import { DOMEvent as PrimitiveDOMEvent } from "./components/DOMEvent";
@@ -65,7 +64,7 @@ export function createTracker<
     const { tracker, _schedule, _getContext, _setContext } = trackerContext;
     const domEvents = tracker.DOMEvents ?? ({} as DOMEvents<TContext, TEventParams, TSchemas, TTaskResult>);
 
-    const { getDebounced } = useDebounceCache();
+    const { getDebounced, getThrottled } = useTimingCache();
 
     // Basic scheduled DOM events with optional options parameter
     const scheduledDomEvents = {} as Record<
@@ -85,9 +84,12 @@ export function createTracker<
           );
         };
 
-        if (options?.debounce) {
+        if (options !== undefined && "debounce" in options && options.debounce) {
           const debouncedFn = getDebounced(`dom-${key}`, executeEvent, options.debounce);
           debouncedFn();
+        } else if (options !== undefined && "throttle" in options && options.throttle) {
+          const throttledFn = getThrottled(`dom-${key}`, executeEvent, options.throttle);
+          throttledFn();
         } else {
           executeEvent();
         }
@@ -120,9 +122,12 @@ export function createTracker<
           );
         };
 
-        if (options?.debounce) {
+        if (options !== undefined && "debounce" in options && options.debounce) {
           const debouncedFn = getDebounced(`dom-schema-${key}`, executeEvent, options.debounce);
           debouncedFn();
+        } else if (options !== undefined && "throttle" in options && options.throttle) {
+          const throttledFn = getThrottled(`dom-schema-${key}`, executeEvent, options.throttle);
+          throttledFn();
         } else {
           executeEvent();
         }
@@ -146,10 +151,14 @@ export function createTracker<
           );
         };
 
-        if (options?.debounce) {
+        if (options !== undefined && "debounce" in options && options.debounce) {
           const eventName = event?.name || "anonymous-event";
           const debouncedFn = getDebounced(`event-schema-${eventName}`, executeEvent, options.debounce);
           debouncedFn();
+        } else if (options !== undefined && "throttle" in options && options.throttle) {
+          const eventName = event?.name || "anonymous-event";
+          const throttledFn = getThrottled(`event-schema-${eventName}`, executeEvent, options.throttle);
+          throttledFn();
         } else {
           executeEvent();
         }
@@ -169,10 +178,14 @@ export function createTracker<
           );
         };
 
-        if (options?.debounce) {
+        if (options !== undefined && "debounce" in options && options.debounce) {
           const eventName = event?.name || "anonymous-event";
           const debouncedFn = getDebounced(`event-${eventName}`, executeEvent, options.debounce);
           debouncedFn();
+        } else if (options !== undefined && "throttle" in options && options.throttle) {
+          const eventName = event?.name || "anonymous-event";
+          const throttledFn = getThrottled(`event-${eventName}`, executeEvent, options.throttle);
+          throttledFn();
         } else {
           executeEvent();
         }
@@ -261,23 +274,24 @@ export function createTracker<
     children,
     type,
     eventName,
-    debounce,
     ...props
   }: {
     children: ReactNode;
     type: DOMEventNames;
     eventName?: string;
-    debounce?: DebounceConfig;
-  } & UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>) => {
+  } & TrackingOptions &
+    UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>) => {
     const tracker = useTracker();
 
     const onTrigger = useCallback(() => {
-      const options: TrackingOptions = debounce ? { debounce } : {};
+      let options: TrackingOptions = {};
+      if ("debounce" in props && props.debounce) options = { debounce: props.debounce };
+      else if ("throttle" in props && props.throttle) options = { throttle: props.throttle };
 
       void (isEventPropsWithSchema(props)
         ? tracker.trackWithSchema[type]?.(props, options)
         : tracker.track[type]?.(props.params, options));
-    }, [tracker, props, type, debounce]);
+    }, [tracker, props, type]);
 
     return (
       <PrimitiveDOMEvent eventName={eventName} type={type} onTrigger={onTrigger}>
@@ -288,23 +302,22 @@ export function createTracker<
 
   const Click = <TKey extends keyof TSchemas>({
     children,
-    debounce,
     ...props
-  }: { children: ReactNode; debounce?: DebounceConfig } & UnionPropsWithAndWithoutSchema<
-    TContext,
-    TEventParams,
-    TSchemas,
-    TKey
-  >) => {
+  }: {
+    children: ReactNode;
+  } & TrackingOptions &
+    UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>) => {
     const tracker = useTracker();
 
     const onClick = useCallback(() => {
-      const options: TrackingOptions = debounce ? { debounce } : {};
+      let options: TrackingOptions = {};
+      if ("debounce" in props && props.debounce) options = { debounce: props.debounce };
+      else if ("throttle" in props && props.throttle) options = { throttle: props.throttle };
 
       void (isEventPropsWithSchema(props)
         ? tracker.trackWithSchema.onClick?.(props, options)
         : tracker.track.onClick?.(props.params, options));
-    }, [tracker, props, debounce]);
+    }, [tracker, props]);
 
     return <PrimitiveClick onClick={onClick}>{children}</PrimitiveClick>;
   };
@@ -312,22 +325,24 @@ export function createTracker<
   const Impression = <TKey extends keyof TSchemas>({
     children,
     options,
-    debounce,
+
     ...props
   }: {
     children: ReactNode;
     options?: ImpressionOptions;
-    debounce?: DebounceConfig;
-  } & UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>) => {
+  } & TrackingOptions &
+    UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>) => {
     const tracker = useTracker();
 
     const onImpression = useCallback(() => {
-      const options: TrackingOptions = debounce ? { debounce } : {};
+      let trackingOptions: TrackingOptions = {};
+      if ("debounce" in props && props.debounce) trackingOptions = { debounce: props.debounce };
+      else if ("throttle" in props && props.throttle) trackingOptions = { throttle: props.throttle };
 
       void (isEventPropsWithSchema(props)
-        ? tracker.trackWithSchema.onImpression?.(props, options)
-        : tracker.track.onImpression?.(props.params, options));
-    }, [tracker, props, debounce]);
+        ? tracker.trackWithSchema.onImpression?.(props, trackingOptions)
+        : tracker.track.onImpression?.(props.params, trackingOptions));
+    }, [tracker, props]);
 
     return (
       <PrimitiveImpression options={options} onImpression={onImpression}>
@@ -336,19 +351,20 @@ export function createTracker<
     );
   };
 
-  const PageView = <TKey extends keyof TSchemas>({
-    debounce,
-    ...props
-  }: { debounce?: DebounceConfig } & UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>) => {
+  const PageView = <TKey extends keyof TSchemas>(
+    props: TrackingOptions & UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>,
+  ) => {
     const tracker = useTracker();
 
     const onPageView = useCallback(() => {
-      const options: TrackingOptions = debounce ? { debounce } : {};
+      let options: TrackingOptions = {};
+      if ("debounce" in props && props.debounce) options = { debounce: props.debounce };
+      else if ("throttle" in props && props.throttle) options = { throttle: props.throttle };
 
       void (isEventPropsWithSchema(props)
         ? tracker.trackWithSchema.onPageView?.(props, options)
         : tracker.track.onPageView?.(props.params, options));
-    }, [tracker, props, debounce]);
+    }, [tracker, props]);
 
     return <PrimitivePageView onPageView={onPageView} />;
   };
