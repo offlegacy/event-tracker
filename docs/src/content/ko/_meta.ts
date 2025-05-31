@@ -1,6 +1,6 @@
-import { MetaRecord } from "nextra";
+import type { MetaRecord } from "nextra";
 
-const meta: MetaRecord = {
+export default {
   "getting-started-separator": {
     type: "separator",
     title: "시작하기",
@@ -12,22 +12,22 @@ const meta: MetaRecord = {
       layout: "default",
     },
   },
+  "why-event-tracker": {
+    title: "왜 Event Tracker인가요?",
+    theme: {
+      toc: true,
+      layout: "default",
+    },
+  },
   installation: {
-    title: "설치",
+    title: "설치하기",
     theme: {
       toc: true,
       layout: "default",
     },
   },
-  "quick-start": {
-    title: "가이드",
-    theme: {
-      toc: true,
-      layout: "default",
-    },
-  },
-  "api-separator": {
-    title: "API",
+  "api-reference-separator": {
+    title: "API 레퍼런스",
     type: "separator",
   },
   "create-tracker": {
@@ -38,21 +38,22 @@ const meta: MetaRecord = {
     },
   },
   components: {
-    title: "컴포넌트",
+    title: "Components",
     theme: {
       toc: true,
       layout: "default",
+      collapsed: true,
     },
   },
-  hook: {
-    title: "hook",
+  useTracker: {
+    title: "useTracker",
     theme: {
       toc: true,
       layout: "default",
     },
   },
   "advanced-separator": {
-    title: "고급",
+    title: "가이드",
     type: "separator",
   },
   batching: {
@@ -62,6 +63,22 @@ const meta: MetaRecord = {
       layout: "default",
     },
   },
-};
-
-export default meta;
+  "data-type-validation": {
+    title: "데이터 타입 검증",
+    theme: {
+      toc: true,
+      layout: "default",
+    },
+  },
+  "example-separator": {
+    title: "예제",
+    type: "separator",
+  },
+  "basic-example": {
+    title: "기본",
+    theme: {
+      toc: true,
+      layout: "default",
+    },
+  },
+} satisfies MetaRecord;
