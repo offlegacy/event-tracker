@@ -1,6 +1,6 @@
-# createTracker(config)
+# createTracker
 
-원하는 구성으로 트래커 인스턴스를 생성하는 메인 함수입니다.
+`createTracker`는 사용자 정의 설정으로 트래커 인스턴스를 생성하는 함수입니다. 이 함수의 파라미터를 통해 이벤트 트래킹을 정의하고, 반환된 튜플을 통해 트래커 인스턴스를 사용할 수 있습니다.
 
 ```tsx
 const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useTracker] = createTracker({
@@ -19,95 +19,92 @@ const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useTrack
 });
 ```
 
-### 구성 옵션
+## Reference
 
-#### init
+### Parameters
 
-- Type: `(initialContext: Context, setContext: SetContext) => void | Promise<void>`
-- 옵셔널
-- 모든 이벤트가 발생하기 전에 실행되는 함수
-- Promise를 반환하면 이벤트가 Promise가 해결될 때까지 지연됩니다.
+`createTracker`는 하나의 설정 객체를 인자로 받습니다.
 
-#### send
+| 옵션         | 타입                                                                                                                     | 설명                                                        |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| `init`       | `(initialContext: Context, setContext: SetContext) => void \| Promise<void>`                                             | 모든 이벤트 발생 전에 실행되는 초기화 함수. Promise 지원.   |
+| `send`       | `(params: EventParams \| (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType` | 이벤트 전송 함수. Promise 지원.                             |
+| `DOMEvents`  | [`DOMEvents`](https://developer.mozilla.org/docs/Web/API/Event)                                                          | React DOM 이벤트 핸들러 모음 (`onClick`, `onMouseEnter` 등) |
+| `impression` | `ImpressionOptions`                                                                                                      | 노출 이벤트 트래킹 설정                                     |
+| `pageView`   | `PageViewOptions`                                                                                                        | 페이지 뷰 트래킹 설정                                       |
+| `batch`      | `BatchConfig`                                                                                                            | 이벤트 배칭 설정                                            |
+| `schemas`    | `SchemaConfig`                                                                                                           | 이벤트 스키마 검증 설정                                     |
 
-- Type: `(params: EventParams | (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType`
-- 옵셔널
-- 이벤트를 보내는 표준 함수
-- Promise를 반환하면 이벤트가 Promise가 해결될 때까지 지연됩니다.
+---
 
-#### DOMEvents
+#### `init`
 
-- Type: `DOMEvents`
-- 옵셔널
-- 표준 React DOM 이벤트 (`onClick`, `onMouseEnter`, 등)의 모음
-- 각 핸들러는 `<Track.DOMEvent type=[이벤트 유형]>`에서 해당 이벤트가 발생할 때 실행됩니다.
-- 핸들러가 Promise를 반환하면 후속 이벤트 콜백이 해결될 때까지 지연됩니다.
+- 타입: `(initialContext: Context, setContext: SetContext) => void | Promise<void>`
+- 설명: 모든 이벤트가 발생하기 전, 초기 컨텍스트를 설정하는 함수입니다. 비동기 함수 지원.
 
-#### impression
+#### `send`
 
-노출 이벤트를 트래킹하기 위한 설정입니다.
+- 타입: `(params: EventParams | (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType`
+- 설명: 이벤트를 외부로 전송하는 함수입니다. 비동기 처리 가능.
 
-- onImpression
+#### `DOMEvents`
 
-  - Type: `(params: EventParams | (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType`
-  - Optional
-  - Executed when impression occurs on a `<Track.Impression>` child
-  - Promise return value will delay subsequent callbacks
+- 타입: `DOMEvents`
+- 설명: 표준 React DOM 이벤트 핸들러 객체입니다. `<Track.DOMEvent>` 컴포넌트에서 사용됩니다.
 
-- options
-  - Type: `ImpressionOptions`
-  - 옵셔널
-  - 노출 이벤트 트래킹 구성 옵션:
-    - `threshold`: 노출 필요 비율 (기본값: 0.2)
-    - `freezeOnceVisible`: 노출 후 교차 상태 고정 (기본값: true)
-    - `initialIsIntersecting`: 초기 교차 상태 (기본값: false)
+#### `impression`
 
-#### pageView
+- `impression.onImpression`
 
-페이지 뷰 이벤트를 트래킹하기 위한 설정입니다.
+  - 타입: `(params: EventParams | (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType`
+  - 설명: `<Track.Impression>` 발생 시 실행되는 콜백
 
-##### onPageView
+- `impression.options`
 
-- Type: `(params: EventParams | (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType`
-- 옵셔널
-- `<Track.PageView>`가 마운트될 때 실행됩니다.
-- Promise를 반환하면 후속 이벤트가 해결될 때까지 지연됩니다.
+  - 타입: `ImpressionOptions`
+  - 속성:
 
-#### batch
+    - `threshold`: 노출 비율 기준 (기본값: 0.2)
+    - `freezeOnceVisible`: 노출 후 상태 고정 여부 (기본값: true)
+    - `initialIsIntersecting`: 초기 교차 여부 (기본값: false)
 
-이벤트 배칭을 위한 설정입니다.
+#### `pageView`
 
-- Type: `BatchConfig`
-- 옵셔널
-- Properties:
-  - `enable`: 배칭 활성화 (기본값: false)
-  - `interval`: 버퍼링 간격 (ms) (기본값: 3000)
-  - `thresholdSize`: 최대 배칭 크기 (기본값: 25)
-  - `onFlush`: 배치 비우기 처리 함수 (활성화된 경우 필요)
-  - `onError`: 오류 처리 함수 (옵셔널)
+- `pageView.onPageView`
 
-#### schemas
+  - 타입: `(params: EventParams | (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType`
+  - 설명: `<Track.PageView>` 마운트 시 실행됩니다.
 
-데이터 타입 검증을 위한 설정입니다.
+#### `batch`
 
-- Type: `SchemaConfig`
-- 옵셔널
-- Properties:
-  - `schemas`: [Zod](https://zod.dev/) 스키마의 레코드
-  - `onSchemaError`?: 스키마 검증 오류 처리 함수
-  - `abortOnError`?: 스키마 검증 오류가 발생한 경우 이벤트 추적 중단 여부 (기본값: false)
+- 타입: `BatchConfig`
+- 속성:
 
-### Return Value
+  - `batch.enable`: 배치 활성화 여부 (기본값: false)
+  - `batch.interval`: 전송 간격(ms, 기본값: 3000)
+  - `batch.thresholdSize`: 최대 배치 크기 (기본값: 25)
+  - `batch.onFlush`: 이벤트 전송 처리 함수
+  - `batch.onError`: 오류 발생 시 처리 함수 (옵셔널)
 
-`createTracker` 함수는 다음 튜플을 반환합니다:
+#### `schemas`
 
-1. 트래킹 컴포넌트를 포함하는 객체:
+- 타입: `SchemaConfig`
+- 속성:
 
-   - [`Provider`](/docs/components)
-   - [`DOMEvent`](/docs/components/dom-event)
-   - [`Click`](/docs/components/click)
-   - [`Impression`](/docs/components/impression)
-   - [`PageView`](/docs/components/page-view)
-   - [`SetContext`](/docs/components/set-context)
+  - `schemas.schema`: [Zod](https://zod.dev/) 기반의 스키마 정의
+  - `schemas.onSchemaError`: 스키마 오류 발생 시 처리 함수
+  - `schemas.abortOnError`: 오류 시 이벤트 중단 여부 (기본값: false)
 
-2. [커스텀 hook](/docs/hook)
+### Returns
+
+`createTracker`는 다음 두 값을 포함한 튜플을 반환합니다.
+
+```tsx
+const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useTracker] = createTracker({...})
+```
+
+1. 이벤트 컴포넌트 (`Tracker`)
+
+   - `Provider`, `DOMEvent`, `Click`, `Impression`, `PageView`, `SetContext`
+
+2. 커스텀 훅 (`useTracker`)
