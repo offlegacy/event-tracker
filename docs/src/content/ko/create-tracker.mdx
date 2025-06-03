@@ -25,7 +25,7 @@ const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useTrack
 
 `createTracker`는 하나의 설정 객체를 인자로 받습니다.
 
-| 옵션         | 타입                                                                                                                     | 설명                                                        |
+| 설정         | 타입                                                                                                                     | 설명                                                        |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
 | `init`       | `(initialContext: Context, setContext: SetContext) => void \| Promise<void>`                                             | 모든 이벤트 발생 전에 실행되는 초기화 함수. Promise 지원.   |
 | `send`       | `(params: EventParams \| (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType` | 이벤트 전송 함수. Promise 지원.                             |
@@ -64,9 +64,9 @@ const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useTrack
   - 타입: `ImpressionOptions`
   - 속성:
 
-    - `threshold`: 노출 비율 기준 (기본값: 0.2)
-    - `freezeOnceVisible`: 노출 후 상태 고정 여부 (기본값: true)
-    - `initialIsIntersecting`: 초기 교차 여부 (기본값: false)
+    - `threshold`: 노출 비율 기준 (기본값: `0.2`)
+    - `freezeOnceVisible`: 노출 후 상태 고정 여부 (기본값: `true`)
+    - `initialIsIntersecting`: 초기 교차 여부 (기본값: `false`)
 
 #### `pageView`
 
@@ -80,9 +80,9 @@ const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useTrack
 - 타입: `BatchConfig`
 - 속성:
 
-  - `batch.enable`: 배치 활성화 여부 (기본값: false)
-  - `batch.interval`: 전송 간격(ms, 기본값: 3000)
-  - `batch.thresholdSize`: 최대 배치 크기 (기본값: 25)
+  - `batch.enable`: 배치 활성화 여부 (기본값: `false`)
+  - `batch.interval`: 전송 간격(ms, 기본값: `3000`)
+  - `batch.thresholdSize`: 최대 배치 크기 (기본값: `25`)
   - `batch.onFlush`: 이벤트 전송 처리 함수
   - `batch.onError`: 오류 발생 시 처리 함수 (옵셔널)
 
@@ -93,7 +93,7 @@ const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useTrack
 
   - `schemas.schema`: [Zod](https://zod.dev/) 기반의 스키마 정의
   - `schemas.onSchemaError`: 스키마 오류 발생 시 처리 함수
-  - `schemas.abortOnError`: 오류 시 이벤트 중단 여부 (기본값: false)
+  - `schemas.abortOnError`: 오류 시 이벤트 중단 여부 (기본값: `false`)
 
 ### Returns
 
@@ -103,8 +103,25 @@ const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useTrack
 const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useTracker] = createTracker({...})
 ```
 
-1. 이벤트 컴포넌트 (`Tracker`)
+#### [Components](./components)
 
-   - `Provider`, `DOMEvent`, `Click`, `Impression`, `PageView`, `SetContext`
+리턴 배열에서 첫 요소인 이벤트 컴포넌트는 여러 가지 이벤트 컴포넌트를 포함하고 있습니다.
 
-2. 커스텀 훅 (`useTracker`)
+```tsx
+const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }] = createTracker(config);
+```
+
+- `Provider`
+- `DOMEvent`
+- `Click`
+- `Impression`
+- `PageView`
+- `SetContext`
+
+#### [useTracker](./use-tracker)
+
+```tsx
+const [, useTracker] = createTracker(config);
+```
+
+리턴 배열에서 두번째 요소인 커스텀 React hook입니다. 이 훅은 컴포넌트 내에서 이벤트 트래킹 기능과 컨텍스트 관리에 접근할 수 있게 합니다.

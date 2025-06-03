@@ -45,7 +45,7 @@ export default {
       collapsed: true,
     },
   },
-  useTracker: {
+  "use-tracker": {
     title: "useTracker",
     theme: {
       toc: true,
