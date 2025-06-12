@@ -1,6 +1,6 @@
-# createTracker(config)
+# createTracker
 
-The main function to create a tracker instance with your desired configuration.
+`createTracker` is a function used to create tracker instances with custom configurations. It allows you to define event tracking behaviors through parameters, returning a tuple containing the tracker instance and a custom hook for usage.
 
 ```tsx
 const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useTracker] = createTracker({
@@ -19,95 +19,109 @@ const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useTrack
 });
 ```
 
-### Configuration Options
+## Reference
 
-#### init
+### Parameters
+
+`createTracker` accepts a single configuration object as its parameter.
+
+| Option       | Type                                                                                                                     | Description                                                                          |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| `init`       | `(initialContext: Context, setContext: SetContext) => void \| Promise<void>`                                             | Initialization function executed before any event occurs. Supports async operations. |
+| `send`       | `(params: EventParams \| (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType` | Function for sending events externally. Supports async operations.                   |
+| `DOMEvents`  | [`DOMEvents`](https://developer.mozilla.org/docs/Web/API/Event)                                                          | Collection of React DOM event handlers (`onClick`, `onMouseEnter`, etc.).            |
+| `impression` | `ImpressionOptions`                                                                                                      | Configuration for impression event tracking.                                         |
+| `pageView`   | `PageViewOptions`                                                                                                        | Configuration for page view tracking.                                                |
+| `batch`      | `BatchConfig`                                                                                                            | Configuration for event batching.                                                    |
+| `schemas`    | `SchemaConfig`                                                                                                           | Configuration for event schema validation.                                           |
+
+---
+
+#### `init`
 
 - Type: `(initialContext: Context, setContext: SetContext) => void | Promise<void>`
-- Optional
-- Function executed before any events happen
-- If it returns a promise, events will be delayed until the promise resolves
+- Description: Function to set the initial context before any event occurs. Supports asynchronous functions.
 
-#### send
+#### `send`
 
 - Type: `(params: EventParams | (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType`
-- Optional
-- Standard function to send events
-- If it returns a promise, events will be delayed until the promise resolves
+- Description: Function for sending events externally. Supports asynchronous operations.
 
-#### DOMEvents
+#### `DOMEvents`
 
 - Type: `DOMEvents`
-- Optional
-- Collection of standard React DOM events (`onClick`, `onMouseEnter`, etc.)
-- Each handler is executed when that event occurs on a `<Track.DOMEvent type=[event type]>`
-- If a handler returns a promise, subsequent event callbacks will be delayed until it resolves
+- Description: Standard React DOM event handlers. Used by `<Track.DOMEvent>` components.
 
-#### impression
+#### `impression`
 
-Configuration for impression tracking:
-
-- onImpression
+- `impression.onImpression`
 
   - Type: `(params: EventParams | (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType`
-  - Optional
-  - Executed when impression occurs on a `<Track.Impression>` child
-  - Promise return value will delay subsequent callbacks
+  - Description: Callback executed when `<Track.Impression>` event occurs.
 
-- options
+- `impression.options`
+
   - Type: `ImpressionOptions`
-  - Optional
-  - Configuration options for impression tracking:
-    - `threshold`: Percentage of visibility needed (default: 0.2)
-    - `freezeOnceVisible`: Freeze intersection state after visibility (default: true)
-    - `initialIsIntersecting`: Initial intersection state (default: false)
+  - Properties:
 
-#### pageView
+    - `threshold`: Visibility threshold ratio (default: `0.2`)
+    - `freezeOnceVisible`: Fix visibility state after impression (default: `true`)
+    - `initialIsIntersecting`: Initial intersection state (default: `false`)
 
-Configuration for page view tracking:
+#### `pageView`
 
-##### onPageView
+- `pageView.onPageView`
 
-- Type: `(params: EventParams | (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType`
-- Optional
-- Executed when `<Track.PageView>` is mounted
-- Promise return value will delay subsequent events
+  - Type: `(params: EventParams | (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType`
+  - Description: Executed when `<Track.PageView>` component mounts.
 
-#### batch
-
-Configuration for event batching:
+#### `batch`
 
 - Type: `BatchConfig`
-- Optional
 - Properties:
-  - `enable`: Enable batching (default: false)
-  - `interval`: Flush interval in ms (default: 3000)
-  - `thresholdSize`: Max batch size (default: 25)
-  - `onFlush`: Function to handle batch flush (required if enabled)
-  - `onError`: Error handler (optional)
 
-#### schemas
+  - `batch.enable`: Enable batching (default: `false`)
+  - `batch.interval`: Sending interval in milliseconds (default: `3000`)
+  - `batch.thresholdSize`: Maximum batch size (default: `25`)
+  - `batch.onFlush`: Function to handle batched event sending
+  - `batch.onError`: Optional error handling function
 
-Configuration for data type validation:
+#### `schemas`
 
 - Type: `SchemaConfig`
-- Optional
 - Properties:
-  - `schemas`: A record of [Zod](https://zod.dev/) schemas
-  - `onSchemaError`?: Function to handle schema validation errors
-  - `abortOnError`?: Whether to abort event tracking if a schema validation error occurs (default: false)
 
-### Return Value
+  - `schemas.schema`: Schema definitions based on [Zod](https://zod.dev/)
+  - `schemas.onSchemaError`: Function executed when schema validation errors occur
+  - `schemas.abortOnError`: Abort events on validation error (default: `false`)
 
-The `createTracker` function returns a tuple containing:
+### Returns
 
-1. An object with tracking components:
+`createTracker` returns a tuple containing the following two elements:
 
-   - [`Provider`](/docs/components)
-   - [`DOMEvent`](/docs/components/dom-event)
-   - [`Click`](/docs/components/click)
-   - [`Impression`](/docs/components/impression)
-   - [`PageView`](/docs/components/page-view)
-   - [`SetContext`](/docs/components/set-context)
+```tsx
+const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useTracker] = createTracker({...})
+```
 
-2. The [custom hook](/docs/hook)
+#### [Components](./components)
+
+The first element of the returned tuple contains various event components:
+
+```tsx
+const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }] = createTracker(config);
+```
+
+- `Provider`
+- `DOMEvent`
+- `Click`
+- `Impression`
+- `PageView`
+- `SetContext`
+
+#### [useTracker](./use-tracker)
+
+```tsx
+const [, useTracker] = createTracker(config);
+```
+
+The second element of the returned tuple is a custom React hook. It provides access to event tracking functionalities and context management within components.

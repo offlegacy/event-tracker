@@ -1,12 +1,19 @@
 import { MetaRecord } from "nextra";
 
-const meta: MetaRecord = {
+export default {
   "getting-started-separator": {
     type: "separator",
     title: "Getting Started",
   },
   index: {
     title: "Introduction",
+    theme: {
+      toc: true,
+      layout: "default",
+    },
+  },
+  "why-event-tracker": {
+    title: "Why Event Tracker?",
     theme: {
       toc: true,
       layout: "default",
@@ -19,14 +26,7 @@ const meta: MetaRecord = {
       layout: "default",
     },
   },
-  "quick-start": {
-    title: "Quick Start",
-    theme: {
-      toc: true,
-      layout: "default",
-    },
-  },
-  "api-separator": {
+  "api-reference-separator": {
     title: "API Reference",
     type: "separator",
   },
@@ -38,21 +38,21 @@ const meta: MetaRecord = {
     },
   },
   components: {
-    title: "components",
+    title: "Components",
     theme: {
       toc: true,
       layout: "default",
     },
   },
-  hook: {
-    title: "hook",
+  "use-tracker": {
+    title: "useTracker",
     theme: {
       toc: true,
       layout: "default",
     },
   },
   "advanced-separator": {
-    title: "Advanced",
+    title: "Guides",
     type: "separator",
   },
   batching: {
@@ -62,6 +62,22 @@ const meta: MetaRecord = {
       layout: "default",
     },
   },
-};
-
-export default meta;
+  "data-type-validation": {
+    title: "Data Type Validation",
+    theme: {
+      toc: true,
+      layout: "default",
+    },
+  },
+  "example-separator": {
+    title: "Examples",
+    type: "separator",
+  },
+  "basic-example": {
+    title: "Basic",
+    theme: {
+      toc: true,
+      layout: "default",
+    },
+  },
+} satisfies MetaRecord;
