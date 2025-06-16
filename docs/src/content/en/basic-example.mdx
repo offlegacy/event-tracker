@@ -1,6 +1,6 @@
-# Quick Start
+# Guide
 
-Here's a simple example of how to use event-tracker:
+Here's a simple example demonstrating how to use `event-tracker`:
 
 ```tsx
 import { createTracker } from "@offlegacy/event-tracker";
@@ -14,7 +14,7 @@ const [Track, useTracker] = createTracker({
   },
 });
 
-// Use in your app
+// Usage within the app
 function App() {
   return (
     <Track.Provider initialContext={{ userId: "user-123" }}>
