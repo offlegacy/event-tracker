@@ -7,8 +7,8 @@ import "nextra-theme-docs/style-prefixed.css";
 import "../globals.css";
 import { TrackClick, TrackImpression, TrackProvider } from "@/tracker";
 import { Logo } from "@/logo";
-import { Lang } from "@/lib/types/lang";
-import { type Metadata } from "next";
+import type { Lang } from "@/lib/types/lang";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: {

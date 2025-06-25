@@ -14,6 +14,14 @@ const nextConfig: NextConfig = {
     locales: ["en", "ko"],
     defaultLocale: "en",
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "contrib.rocks",
+      },
+    ],
+  },
 };
 
 export default withNextra(nextConfig);
