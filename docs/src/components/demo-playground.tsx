@@ -12,7 +12,7 @@ export async function DemoCode() {
 const [Track, useTracker] = createTracker({
   DOMEvents: {
     onClick: (params, context) => {
-      toast.success(\${context.userId}: \${params.buttonId}\`);
+      toast.success(\`\${context.userId}: \${params.buttonId}\`);
     },
   },
 });
