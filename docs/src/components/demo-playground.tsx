@@ -1,15 +1,9 @@
 import { highlight, Pre } from "codehike/code";
 import { DemoButton } from "./demo-button";
 
-export async function DemoCode() {
-  const isDark = typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const theme = isDark ? "github-dark" : "github-light";
+const code = `import { createTracker } from "@offlegacy/event-tracker";
 
-  const highlighted = await highlight(
-    {
-      value: `import { createTracker } from "@offlegacy/event-tracker";
-
-const [Track, useTracker] = createTracker({
+const [Track] = createTracker({
   DOMEvents: {
     onClick: (params, context) => {
       toast.success(\`\${context.userId}: \${params.buttonId}\`);
@@ -25,7 +19,15 @@ function App() {
       </Track.Click>
     </Track.Provider>
   );
-}`,
+}`;
+
+export async function DemoCode() {
+  const isDark = typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const theme = isDark ? "github-dark" : "github-light";
+
+  const highlighted = await highlight(
+    {
+      value: code,
       lang: "tsx",
       meta: "",
     },
