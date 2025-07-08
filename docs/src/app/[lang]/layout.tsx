@@ -13,13 +13,14 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: {
     template: "%s | Event Tracker",
-    default: "Event Tracker",
+    default: "Event Tracker | Comprehensive solution for event tracking in React applications",
   },
   description: "Comprehensive solution for event tracking in React applications.",
+  metadataBase: new URL("https://event-tracker.offlegacy.org"),
   openGraph: {
     title: {
       template: "%s | Event Tracker",
-      default: "Event Tracker",
+      default: "Event Tracker | Comprehensive solution for event tracking in React applications",
     },
     images: ["img/og-webp.webp"],
     description: "Comprehensive solution for event tracking in React applications.",
@@ -35,7 +36,7 @@ const navbar = (
       <TrackClick params={{ target: "logo" }}>
         <div className="flex items-center gap-2">
           <Logo />
-          <b>Event Tracker</b>
+          <b className="text-lg font-bold">Event Tracker</b>
         </div>
       </TrackClick>
     }
@@ -46,7 +47,7 @@ const navbar = (
 );
 const footer = (
   <TrackImpression params={{ target: "footer" }}>
-    <Footer>MIT {new Date().getFullYear()} © OffLegacy</Footer>
+    <Footer>MIT {new Date().getFullYear()} &copy; OffLegacy</Footer>
   </TrackImpression>
 );
 
@@ -81,7 +82,7 @@ export default async function RootLayout({
             pageMap={pageMap}
             docsRepositoryBase="https://github.com/offlegacy/event-tracker/tree/main/docs"
             footer={footer}
-            darkMode
+            darkMode={false}
           >
             {children}
           </Layout>
