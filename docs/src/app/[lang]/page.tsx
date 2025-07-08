@@ -6,88 +6,92 @@ import { importPage } from "nextra/pages";
 import type { Lang } from "@/lib/types/lang";
 import { DemoCode } from "@/components/demo-playground";
 import Image from "next/image";
+import { InstallCopyButton } from "@/components/install-copy-button";
 
 export const metadata = {};
 
 const TEXT_MAP = {
   description: {
-    ko: "React 애플리케이션을 위한 완전한 이벤트 트래킹 시스템.",
-    en: "Comprehensive solution for event tracking in React applications.",
+    ko: "React 애플리케이션을 위한 완전한 이벤트 트래킹 시스템",
+    en: "Comprehensive solution for event tracking in React applications",
   },
   get_started: {
     ko: "시작하기",
     en: "Get Started",
   },
   featureCardsTitle: {
-    ko: "Event Tracker가 제시하는 새로운 패러다임",
-    en: "New Paradigm Offered by Event Tracker",
+    ko: "Event Tracker가 제시하는 새로운 이벤트 트래킹 패러다임",
+    en: "New Paradigm of Event Tracking Offered by Event Tracker",
   },
   featureCards: [
     {
       ko: {
-        title: "타입 안정성을 갖춘 선언적 API",
-        description:
-          "TypeScript를 완벽하게 지원하여 개발 과정에서의 오류를 줄이고, 자동 완성을 통해 생산성을 높입니다.",
+        title: "선언적 API",
+        description: "트래킹을 위한 별도의 설정이나 복잡한 코드 없이, 컴포넌트 형태로 직관적으로 선언할 수 있습니다.",
       },
       en: {
-        title: "Declarative API with Type Safety",
-        description:
-          "Fully supports TypeScript, reducing errors during development and increasing productivity through auto-completion.",
+        title: "Declarative API",
+        description: "Track events intuitively through component-based declarations, without boilerplate.",
       },
     },
     {
       ko: {
         title: "강력한 데이터 타입 검증",
-        description: "Zod를 활용한 스키마 기반 검증으로 데이터의 신뢰성을 확보합니다.",
+        description:
+          "Zod 기반의 정적 스키마 검증으로 런타임 이전에 오류를 방지하고, 수집되는 이벤트 데이터의 신뢰도를 보장합니다.",
       },
       en: {
         title: "Powerful Data Type Validation",
-        description: "Ensures data reliability through schema-based validation using Zod.",
+        description:
+          "Schema-based validation with Zod catches issues before runtime and guarantees the integrity of your event data.",
       },
     },
     {
       ko: {
         title: "최적화된 성능",
         description:
-          "배칭이나 디바운스, 스로틀링 기능을 통해 네트워크 요청을 최소화하고 애플리케이션 성능에 미치는 영향을 줄입니다.",
+          "배칭, 디바운스, 스로틀링 등 네트워크 요청을 최소화하는 다양한 전략이 내장되어 있어, 성능 저하 없이 안정적으로 트래킹할 수 있습니다.",
       },
       en: {
-        title: "Optimized Performance	",
+        title: "Optimized Performance",
         description:
-          "Minimizes network requests through batching, debouncing, or throttling, reducing the impact on application performance.",
+          "Built-in strategies like batching, debouncing, and throttling minimize network overhead, enabling efficient and reliable tracking.",
       },
     },
     {
       ko: {
         title: "실행 순서 보장",
-        description: "비동기적으로 발생하는 이벤트들에 대해서도 의도한 순서대로 처리되도록 보장합니다.",
+        description:
+          "비동기 상황에서도 이벤트가 의도한 순서대로 처리되도록 설계되어, 복잡한 사용자 흐름에서도 정확한 트래킹이 가능합니다.",
       },
       en: {
         title: "Guaranteed Execution Order",
-        description: "Ensures asynchronous events are processed in the intended sequence.",
+        description:
+          "Ensures that events are processed in the intended order, even under asynchronous conditions—crucial for accurate tracking in complex flows.",
       },
     },
     {
       ko: {
-        title: "애널리틱스 도구 독립성	",
+        title: "애널리틱스 도구 독립성",
         description:
-          "특정 애널리틱스 서비스에 종속되지 않고, 원하는 모든 도구(Google Analytics, Amplitude 등)와 유연하게 통합할 수 있습니다.",
+          "Google Analytics, Amplitude, Segment 등 어떤 도구든 자유롭게 연동할 수 있어, 기존 인프라를 변경하지 않고도 도입이 가능합니다.",
       },
       en: {
         title: "Analytics Tool Independence",
         description:
-          "Flexible integration with any analytics tool (e.g., Google Analytics, Amplitude), without being tied to any specific provider.",
+          "Easily integrates with tools like Google Analytics, Amplitude, or Segment—without forcing you to switch or couple to a specific vendor.",
       },
     },
     {
       ko: {
         title: "명확한 관심사 분리",
-        description: "트래킹 로직과 비즈니스 로직을 효과적으로 분리하여 코드의 유지보수성과 확장성을 극대화합니다.",
+        description:
+          "트래킹 로직을 비즈니스 코드에서 완전히 분리함으로써 코드의 가독성, 테스트 용이성, 유지보수성을 모두 향상시킵니다.",
       },
       en: {
         title: "Clear Separation of Concerns",
         description:
-          "Effectively separates tracking logic from business logic, maximizing code maintainability and scalability.",
+          "Keeps tracking logic out of your business logic, resulting in cleaner code that’s easier to test, maintain, and evolve.",
       },
     },
   ],
@@ -98,66 +102,57 @@ export default async function Page(props: { params: Promise<{ mdxPath: string[];
   await importPage(mdxPath, lang);
 
   return (
-    <main className="mx-auto flex max-w-screen-xl flex-col gap-48 px-6 py-32">
+    <main className="mx-auto flex max-w-screen-xl flex-col gap-48 break-keep px-6 py-32">
       <TrackPageView params={{ title: "Home" }} />
-      <div className="flex flex-col justify-between gap-10 lg:flex-row">
+      <div className="flex flex-col justify-between gap-10 xl:flex-row">
         <div className="flex flex-col gap-6">
           <Logo size={200} />
           <div className="space-y-2">
             <h1 className="text-6xl font-bold">Event Tracker</h1>
             <p className="max-w-2xl text-xl text-gray-600 dark:text-gray-300">{TEXT_MAP.description[lang]}</p>
           </div>
-          <div className="flex gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row">
             <TrackClick params={{ target: "Get Started button" }}>
               <Link
                 href="/docs"
-                className="rounded-lg bg-blue-500 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-600"
+                className="flex items-center justify-center rounded-lg bg-blue-500 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-600"
               >
                 {TEXT_MAP.get_started[lang]}
               </Link>
             </TrackClick>
-            <button
-              type="button"
-              className="rounded-lg border border-gray-200 px-6 py-3 text-sm font-medium text-gray-600 transition-colors hover:border-gray-300"
-            >
-              npm i @offlegacy/event-tracker
-            </button>
+            <InstallCopyButton />
           </div>
         </div>
-        <DemoCode />
+        <div className="min-h-[572.75px]">
+          <DemoCode />
+        </div>
       </div>
-      <div className="flex flex-col items-center justify-center gap-10">
+      <div className="flex flex-col items-center justify-center gap-16">
         <p className="text-center text-3xl font-bold">{TEXT_MAP.featureCardsTitle[lang]}</p>
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
           <FeatureCard
-            icon="🔧"
             title={TEXT_MAP.featureCards[0][lang].title}
             description={TEXT_MAP.featureCards[0][lang].description}
           />
           <FeatureCard
-            icon="✅"
-            title={TEXT_MAP.featureCards[1][lang].title}
-            description={TEXT_MAP.featureCards[1][lang].description}
-          />
-          <FeatureCard
-            icon="⚡️"
             title={TEXT_MAP.featureCards[2][lang].title}
             description={TEXT_MAP.featureCards[2][lang].description}
           />
           <FeatureCard
-            icon="🎯"
-            title={TEXT_MAP.featureCards[3][lang].title}
-            description={TEXT_MAP.featureCards[3][lang].description}
-          />
-          <FeatureCard
-            icon="🎛️"
             title={TEXT_MAP.featureCards[4][lang].title}
             description={TEXT_MAP.featureCards[4][lang].description}
           />
           <FeatureCard
-            icon="🏗️"
+            title={TEXT_MAP.featureCards[3][lang].title}
+            description={TEXT_MAP.featureCards[3][lang].description}
+          />
+          <FeatureCard
             title={TEXT_MAP.featureCards[5][lang].title}
             description={TEXT_MAP.featureCards[5][lang].description}
+          />
+          <FeatureCard
+            title={TEXT_MAP.featureCards[1][lang].title}
+            description={TEXT_MAP.featureCards[1][lang].description}
           />
         </div>
       </div>
@@ -182,10 +177,9 @@ export default async function Page(props: { params: Promise<{ mdxPath: string[];
   );
 }
 
-function FeatureCard({ icon, title, description }: { icon: string; title: string; description: string }) {
+function FeatureCard({ title, description }: { title: string; description: string }) {
   return (
     <div className="break-keep rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
-      <div className="mb-4 text-3xl">{icon}</div>
       <h3 className="mb-2 text-lg font-bold">{title}</h3>
       <p className="text-gray-600 dark:text-gray-300">{description}</p>
     </div>
