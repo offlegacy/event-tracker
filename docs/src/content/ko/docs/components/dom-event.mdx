@@ -30,12 +30,12 @@ function App() {
 
 ### Props
 
-| Props         | 타입             | 설명                                                  | 필수 |
-| ------------- | ---------------- | ----------------------------------------------------- | ---- |
-| DOMEventNames | DOMEventNames    | 이벤트 이름 (예: `"onClick"`, `"onFocus"`)            | O    |
-| `enabled`     | `boolean         | ((context: Context, params: EventParams) => boolean)` | -    |
-| `debounce`    | `DebounceConfig` | 연속적인 이벤트 발생을 방지하는 디바운스 설정         | -    |
-| `throttle`    | `ThrottleConfig` | 이벤트 발생 빈도를 제한하는 스로틀 설정               | -    |
+| Props         | 타입             | 설명                                                   | 필수 |
+| ------------- | ---------------- | ------------------------------------------------------ | ---- |
+| DOMEventNames | DOMEventNames    | 이벤트 이름 (예: `"onClick"`, `"onFocus"`)             | O    |
+| `enabled`     | `boolean`        | `((context: Context, params: EventParams) => boolean)` | -    |
+| `debounce`    | `DebounceConfig` | 연속적인 이벤트 발생을 방지하는 디바운스 설정          | -    |
+| `throttle`    | `ThrottleConfig` | 이벤트 발생 빈도를 제한하는 스로틀 설정                | -    |
 
 <Callout type="info">참고: `debounce`와 `throttle`은 상호 배타적이며 함께 사용할 수 없습니다.</Callout>
 

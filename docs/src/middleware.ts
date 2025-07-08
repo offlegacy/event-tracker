@@ -1,5 +1,15 @@
 export { middleware } from "nextra/locales";
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|img|favicon.ico|icon.svg|apple-icon.png|manifest|_pagefind).*)"],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - img (image files)
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico|img|_pagefind).*)",
+  ],
 };

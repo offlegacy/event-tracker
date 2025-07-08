@@ -5,7 +5,7 @@ export default {
     type: "separator",
     title: "시작하기",
   },
-  index: {
+  introduction: {
     title: "소개",
     theme: {
       toc: true,
@@ -37,14 +37,7 @@ export default {
       layout: "default",
     },
   },
-  components: {
-    title: "Components",
-    theme: {
-      toc: true,
-      layout: "default",
-      collapsed: true,
-    },
-  },
+  components: { title: "Components" },
   "use-tracker": {
     title: "useTracker",
     theme: {

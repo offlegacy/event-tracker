@@ -1,9 +1,9 @@
 import { generateStaticParamsFor, importPage } from "nextra/pages";
 
-import { useMDXComponents } from "../../../../../mdx-components";
+import { useMDXComponents } from "@/mdx-components";
 
 import { TrackPageView } from "@/tracker";
-import { Lang } from "@/lib/types/lang";
+import type { Lang } from "@/lib/types/lang";
 
 export const generateStaticParams = generateStaticParamsFor("mdxPath");
 

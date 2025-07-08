@@ -1,89 +1,42 @@
-import { Steps } from "nextra/components";
+---
+title: Event Tracker | Comprehensive solution for event tracking in React applications
+---
 
-# Introduction
+import HomePage from "@/components/home-page";
 
-Welcome to the Event Tracker documentation.
-
-## What is Event Tracker?
-
-Event Tracker is a declarative React library designed to simplify the implementation of complex event tracking, allowing developers to focus more on their business logic. It is designed to efficiently manage event tracking in applications of any scale.
-
-```tsx
-import { createTracker } from "@offlegacy/event-tracker";
-
-// Creating a tracker instance
-const [Track, useTracker] = createTracker({
-  DOMEvents: {
-    onClick: (params, context) => {
-      log("Click event:", params, context);
+<HomePage
+  description="Comprehensive solution for event tracking in React applications"
+  get_started="Get Started"
+  featureCardsTitle="New Paradigm of Event Tracking Offered by Event Tracker"
+  featureCards={[
+    {
+      title: "Declarative API",
+      description: "Track events intuitively through component-based declarations, without boilerplate.",
     },
-  },
-});
-
-// Usage within an app
-function App() {
-  return (
-    <Track.Provider initialContext={{ userId: "userId-123" }}>
-      <Track.Click params={{ buttonId: "event-click" }}>
-        <button>Event Click!</button>
-      </Track.Click>
-    </Track.Provider>
-  );
-}
-```
-
-### Key Features
-
-Event Tracker provides various features prioritizing both developer experience and application performance.
-
-| Feature                          | Description                                                                                                                                                                               |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Declarative API with Type Safety | Fully supports [TypeScript](https://www.typescriptlang.org/), reducing errors during development and increasing productivity through auto-completion.                                     |
-| Powerful Data Type Validation    | Ensures data reliability through schema-based validation using [Zod](https://zod.dev/).                                                                                                   |
-| Optimized Performance            | Minimizes network requests through batching, debouncing, or throttling, reducing the impact on application performance.                                                                   |
-| Guaranteed Execution Order       | Ensures asynchronous events are processed in the intended sequence.                                                                                                                       |
-| Analytics Tool Independence      | Flexible integration with any analytics tool (e.g., [Google Analytics](https://analytics.google.com/), [Amplitude](https://amplitude.com/)), without being tied to any specific provider. |
-| Clear Separation of Concerns     | Effectively separates tracking logic from business logic, maximizing code maintainability and scalability.                                                                                |
-
-## Core Concepts
-
-There are several key concepts you need to understand to use Event Tracker effectively.
-
-<Steps>
-
-### Instance (`createTracker`)
-
-The foundational starting point of the library. Use the `createTracker` function to generate a tracker instance (a collection of `Track` components and the `useTracker` hook). Define event tracking by configuring DOM event handlers, impression event handlers, schemas, and more.
-
-Multiple tracker instances can be created according to specific purposes (e.g., separate instances for sending events to Google Analytics and Amplitude).
-
-### Provider (`Track.Provider`)
-
-Implemented using React's Context API. Wrap your application or component tree at the top with `Track.Provider` to provide common tracking data (context) to child components. For example, providing information such as `userId` and `pageName` through context allows utilizing this information during each event tracking.
-
-### Event Components (`Track.Click`, `Track.PageView`, etc.)
-
-Special components provided to track events declaratively. These are available from the first element of the array returned by `createTracker`.
-
-- `Track.Click`: Tracks click events occurring on child elements.
-- `Track.Impression`: Tracks when child elements become visible on the screen.
-- `Track.PageView`: Tracks page view events upon component mount.
-
-In addition, you can customize or utilize various provided components that respond to different user interactions and lifecycle events. Each component can receive and utilize specific event-related data through the `context` and `params` props.
-
-### Custom Hook (`useTracker`)
-
-Used for more complex or conditional event tracking unrelated directly to component lifecycles or DOM events. The `useTracker` hook lets you access context information from `Track.Provider` and execute defined tracking logic imperatively.
-
-</Steps>
-
-## Next Steps
-
-These core concepts work synergistically to provide Event Tracker's powerful and flexible event-tracking environment. For detailed usage and in-depth information about each feature, refer to the documents below:
-
-- [Why Event Tracker?](/docs/why-event-tracker): Introduction to the necessity and core features of Event Tracker.
-- [`createTracker`](/docs/create-tracker): Guide to creating tracker instances and detailed configurations.
-- [Components](/docs/components): Examples and details of all available tracking components.
-- [`useTracker`](/docs/hook): Custom tracking techniques using the custom hook.
-- [Batching](/docs/batching): Strategies for optimizing performance through event batching.
-- [Data Type Validation](/docs/data-type-validation): Guide to data validation using Zod schemas.
+    {
+      title: "Analytics Tool Independence",
+      description:
+        "Easily integrates with tools like Google Analytics, Amplitude, or Segment—without forcing you to switch or couple to a specific vendor.",
+    },
+    {
+      title: "Clear Separation of Concerns",
+      description:
+        "Keeps tracking logic out of your business logic, resulting in cleaner code that’s easier to test, maintain, and evolve.",
+    },
+    {
+      title: "Optimized Performance",
+      description:
+        "Built-in strategies like batching, debouncing, and throttling minimize network overhead, enabling efficient and reliable tracking.",
+    },
+    {
+      title: "Guaranteed Execution Order",
+      description:
+        "Ensures that events are processed in the intended order, even under asynchronous conditions—crucial for accurate tracking in complex flows.",
+    },
+    {
+      title: "Powerful Data Type Validation",
+      description:
+        "Schema-based validation with Zod catches issues before runtime and guarantees the integrity of your event data.",
+    },
+  ]}
+/>

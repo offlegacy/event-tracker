@@ -1,11 +1,11 @@
-import { MetaRecord } from "nextra";
+import type { MetaRecord } from "nextra";
 
 export default {
   "getting-started-separator": {
     type: "separator",
     title: "Getting Started",
   },
-  index: {
+  introduction: {
     title: "Introduction",
     theme: {
       toc: true,
@@ -37,13 +37,7 @@ export default {
       layout: "default",
     },
   },
-  components: {
-    title: "Components",
-    theme: {
-      toc: true,
-      layout: "default",
-    },
-  },
+  components: { title: "Components" },
   "use-tracker": {
     title: "useTracker",
     theme: {

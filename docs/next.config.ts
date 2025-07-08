@@ -6,10 +6,11 @@ const withNextra = nextra({
   search: {
     codeblocks: false,
   },
-  contentDirBasePath: "/docs",
+  readingTime: true,
 });
 
 const nextConfig: NextConfig = {
+  reactStrictMode: true,
   i18n: {
     locales: ["en", "ko"],
     defaultLocale: "en",
