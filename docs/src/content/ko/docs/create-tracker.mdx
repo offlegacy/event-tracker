@@ -19,6 +19,17 @@ const [{ Provider, DOMEvent, Click, Impression, PageView, SetContext }, useTrack
 });
 ```
 
+## Signature
+
+```ts
+function createTracker<
+  TContext extends Context = Context,
+  TEventParams extends EventParams = EventParams,
+  TSchemas extends Schemas = Schemas,
+  TTaskResult extends TaskResult = TaskResult,
+>(config: TrackerConfig<TContext, TEventParams, TSchemas, TTaskResult>): [EventComponents, UseTracker];
+```
+
 ## Reference
 
 ### Parameters

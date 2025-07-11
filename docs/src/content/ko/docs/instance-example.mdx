@@ -1,0 +1,1031 @@
+# 트래킹 인스턴스 만들기
+
+`event-tracker`를 사용하여 여러 개의 트래커 인스턴스를 생성하고 활용하는 방법을 알아보겠습니다. 각 인스턴스는 서로 다른 목적이나 애널리틱스 서비스를 위해 사용할 수 있습니다.
+
+## 인스턴스 분리 전략
+
+### 1. 애널리틱스 서비스별 분리
+
+- Google Analytics, Amplitude, Mixpanel 등 각각의 서비스에 맞는 인스턴스
+- 서비스별 특화된 이벤트 구조와 파라미터
+
+### 2. 목적별 분리
+
+- 사용자 행동 분석, 성능 모니터링, 에러 추적 등
+- 각 목적에 맞는 데이터 구조와 전송 방식
+
+### 3. 환경별 분리
+
+- 개발, 스테이징, 프로덕션 환경
+- 환경별 다른 설정과 데이터 처리
+
+## 기본 설정
+
+### 1. Google Analytics 인스턴스
+
+```tsx
+// trackers/ga4Tracker.ts
+import { createTracker } from "@offlegacy/event-tracker";
+
+interface GA4Context {
+  userId?: string;
+  sessionId?: string;
+  pageTitle?: string;
+  pagePath?: string;
+}
+
+interface GA4EventParams {
+  eventName: string;
+  eventCategory?: string;
+  eventAction?: string;
+  eventLabel?: string;
+  eventValue?: number;
+  customParameters?: Record<string, any>;
+}
+
+// GA4 이벤트 전송 함수
+const sendGA4Event = (params: GA4EventParams, context: GA4Context) => {
+  window.gtag("event", params.eventName, {
+    event_category: params.eventCategory,
+    event_action: params.eventAction,
+    event_label: params.eventLabel,
+    value: params.eventValue,
+    user_id: context.userId,
+    session_id: context.sessionId,
+    page_title: context.pageTitle,
+    page_path: context.pagePath,
+    ...params.customParameters,
+  });
+};
+
+// GA4 트래커 인스턴스
+export const [GATrack, useGATracker] = createTracker<GA4Context, GA4EventParams>({
+  init: (initialContext, setContext) => {
+    const sessionId = `ga_session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const pageTitle = document.title;
+    const pagePath = window.location.pathname;
+
+    setContext({
+      ...initialContext,
+      sessionId,
+      pageTitle,
+      pagePath,
+    });
+  },
+
+  send: (params, context) => {
+    sendGA4Event(params, context);
+  },
+
+  DOMEvents: {
+    onClick: (params, context) => {
+      sendGA4Event(
+        {
+          eventName: "click",
+          eventCategory: "engagement",
+          eventAction: "click",
+          eventLabel: params.eventLabel || "button_click",
+          customParameters: {
+            button_id: params.buttonId,
+            button_text: params.buttonText,
+            page_location: context.pagePath,
+            ...params.customParameters,
+          },
+        },
+        context,
+      );
+    },
+  },
+
+  impression: {
+    onImpression: (params, context) => {
+      sendGA4Event(
+        {
+          eventName: "impression",
+          eventCategory: "engagement",
+          eventAction: "view",
+          eventLabel: params.elementId,
+          customParameters: {
+            element_id: params.elementId,
+            element_type: params.elementType,
+            visibility_percentage: params.visibilityPercentage,
+            ...params.customParameters,
+          },
+        },
+        context,
+      );
+    },
+    options: {
+      threshold: 0.5,
+      freezeOnceVisible: true,
+    },
+  },
+
+  pageView: {
+    onPageView: (params, context) => {
+      sendGA4Event(
+        {
+          eventName: "page_view",
+          eventCategory: "navigation",
+          eventAction: "page_view",
+          eventLabel: params.pagePath || context.pagePath,
+          customParameters: {
+            page_title: params.pageTitle || context.pageTitle,
+            page_path: params.pagePath || context.pagePath,
+            referrer: params.referrer,
+            ...params.customParameters,
+          },
+        },
+        context,
+      );
+    },
+  },
+});
+
+export { GATrack, useGATracker };
+```
+
+### 2. Amplitude 인스턴스
+
+```tsx
+// trackers/amplitudeTracker.ts
+import { createTracker } from "@offlegacy/event-tracker";
+import * as amplitude from "@amplitude/analytics-browser";
+
+interface AmplitudeContext {
+  userId?: string;
+  deviceId?: string;
+  sessionId?: number;
+  userProperties?: Record<string, any>;
+}
+
+interface AmplitudeEventParams {
+  eventType: string;
+  eventProperties?: Record<string, any>;
+  userProperties?: Record<string, any>;
+}
+
+// Amplitude 이벤트 전송 함수
+const sendAmplitudeEvent = (params: AmplitudeEventParams, context: AmplitudeContext) => {
+  amplitude.track(params.eventType, {
+    ...params.eventProperties,
+    user_id: context.userId,
+    device_id: context.deviceId,
+    session_id: context.sessionId,
+  });
+
+  // 사용자 속성 업데이트
+  if (params.userProperties) {
+    amplitude.setUserProperties(params.userProperties);
+  }
+};
+
+// Amplitude 트래커 인스턴스
+export const [AmpTrack, useAmpTracker] = createTracker<AmplitudeContext, AmplitudeEventParams>({
+  init: (initialContext, setContext) => {
+    // Amplitude 초기화
+    if (process.env.NEXT_PUBLIC_AMPLITUDE_API_KEY) {
+      amplitude.init(process.env.NEXT_PUBLIC_AMPLITUDE_API_KEY, {
+        defaultTracking: false,
+      });
+    }
+
+    const sessionId = Date.now();
+    const deviceId = amplitude.getDeviceId() || `device_${Math.random().toString(36).substr(2, 9)}`;
+
+    setContext({
+      ...initialContext,
+      sessionId,
+      deviceId,
+    });
+  },
+
+  send: (params, context) => {
+    sendAmplitudeEvent(params, context);
+  },
+
+  DOMEvents: {
+    onClick: (params, context) => {
+      sendAmplitudeEvent(
+        {
+          eventType: "Button Clicked",
+          eventProperties: {
+            button_id: params.buttonId,
+            button_text: params.buttonText,
+            page_path: window.location.pathname,
+            timestamp: Date.now(),
+            ...params.eventProperties,
+          },
+        },
+        context,
+      );
+    },
+  },
+
+  impression: {
+    onImpression: (params, context) => {
+      sendAmplitudeEvent(
+        {
+          eventType: "Content Viewed",
+          eventProperties: {
+            element_id: params.elementId,
+            element_type: params.elementType,
+            visibility_percentage: params.visibilityPercentage,
+            timestamp: Date.now(),
+            ...params.eventProperties,
+          },
+        },
+        context,
+      );
+    },
+    options: {
+      threshold: 0.3,
+      freezeOnceVisible: true,
+    },
+  },
+
+  pageView: {
+    onPageView: (params, context) => {
+      sendAmplitudeEvent(
+        {
+          eventType: "Page Viewed",
+          eventProperties: {
+            page_path: params.pagePath || window.location.pathname,
+            page_title: params.pageTitle || document.title,
+            referrer: params.referrer || document.referrer,
+            timestamp: Date.now(),
+            ...params.eventProperties,
+          },
+        },
+        context,
+      );
+    },
+  },
+});
+
+export { AmpTrack, useAmpTracker };
+```
+
+### 3. 성능 모니터링 인스턴스
+
+```tsx
+// trackers/performanceTracker.ts
+import { createTracker } from "@offlegacy/event-tracker";
+
+interface PerformanceContext {
+  userId?: string;
+  sessionId?: string;
+  deviceInfo?: {
+    userAgent: string;
+    screenSize: string;
+    connectionType?: string;
+  };
+}
+
+interface PerformanceEventParams {
+  metricName: string;
+  value: number;
+  unit?: string;
+  category?: "navigation" | "resource" | "user" | "custom";
+  metadata?: Record<string, any>;
+}
+
+// 성능 이벤트 전송 함수
+const sendPerformanceEvent = (params: PerformanceEventParams, context: PerformanceContext) => {
+  // 성능 모니터링 서비스로 전송
+  performanceAPI.track(params.metricName, {
+    value: params.value,
+    unit: params.unit,
+    category: params.category,
+    user_id: context.userId,
+    session_id: context.sessionId,
+    device_info: context.deviceInfo,
+    timestamp: Date.now(),
+    ...params.metadata,
+  });
+};
+
+// 성능 트래커 인스턴스
+export const [PerfTrack, usePerfTracker] = createTracker<PerformanceContext, PerformanceEventParams>({
+  init: (initialContext, setContext) => {
+    const sessionId = `perf_session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    // 디바이스 정보 수집
+    const deviceInfo = {
+      userAgent: navigator.userAgent,
+      screenSize: `${screen.width}x${screen.height}`,
+      connectionType: (navigator as any).connection?.effectiveType,
+    };
+
+    setContext({
+      ...initialContext,
+      sessionId,
+      deviceInfo,
+    });
+  },
+
+  send: (params, context) => {
+    sendPerformanceEvent(params, context);
+  },
+
+  DOMEvents: {
+    onClick: (params, context) => {
+      // 클릭 응답 시간 측정
+      const clickTime = performance.now();
+      sendPerformanceEvent(
+        {
+          metricName: "click_response_time",
+          value: clickTime,
+          unit: "ms",
+          category: "user",
+          metadata: {
+            button_id: params.buttonId,
+            interaction_type: "click",
+          },
+        },
+        context,
+      );
+    },
+  },
+
+  pageView: {
+    onPageView: (params, context) => {
+      // 페이지 로드 성능 측정
+      const navigationEntry = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming;
+
+      if (navigationEntry) {
+        sendPerformanceEvent(
+          {
+            metricName: "page_load_time",
+            value: navigationEntry.loadEventEnd - navigationEntry.loadEventStart,
+            unit: "ms",
+            category: "navigation",
+            metadata: {
+              page_path: params.pagePath || window.location.pathname,
+              dom_content_loaded: navigationEntry.domContentLoadedEventEnd - navigationEntry.domContentLoadedEventStart,
+              first_paint: performance.getEntriesByName("first-paint")[0]?.startTime || 0,
+            },
+          },
+          context,
+        );
+      }
+    },
+  },
+});
+
+export { PerfTrack, usePerfTracker };
+```
+
+### 4. 에러 추적 인스턴스
+
+```tsx
+// trackers/errorTracker.ts
+import { createTracker } from "@offlegacy/event-tracker";
+
+interface ErrorContext {
+  userId?: string;
+  sessionId?: string;
+  pageInfo?: {
+    url: string;
+    title: string;
+    referrer: string;
+  };
+}
+
+interface ErrorEventParams {
+  errorType: "javascript" | "network" | "resource" | "custom";
+  errorMessage: string;
+  errorStack?: string;
+  severity?: "low" | "medium" | "high" | "critical";
+  metadata?: Record<string, any>;
+}
+
+// 에러 이벤트 전송 함수
+const sendErrorEvent = (params: ErrorEventParams, context: ErrorContext) => {
+  // 에러 추적 서비스로 전송
+  errorTracking.captureException(new Error(params.errorMessage), {
+    tags: {
+      error_type: params.errorType,
+      severity: params.severity || "medium",
+    },
+    extra: {
+      error_stack: params.errorStack,
+      user_id: context.userId,
+      session_id: context.sessionId,
+      page_info: context.pageInfo,
+      ...params.metadata,
+    },
+  });
+};
+
+// 에러 트래커 인스턴스
+export const [ErrorTrack, useErrorTracker] = createTracker<ErrorContext, ErrorEventParams>({
+  init: (initialContext, setContext) => {
+    const sessionId = `error_session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    const pageInfo = {
+      url: window.location.href,
+      title: document.title,
+      referrer: document.referrer,
+    };
+
+    setContext({
+      ...initialContext,
+      sessionId,
+      pageInfo,
+    });
+
+    // 전역 에러 핸들러 설정
+    window.addEventListener("error", (event) => {
+      sendErrorEvent(
+        {
+          errorType: "javascript",
+          errorMessage: event.message,
+          errorStack: event.error?.stack,
+          severity: "high",
+          metadata: {
+            filename: event.filename,
+            lineno: event.lineno,
+            colno: event.colno,
+          },
+        },
+        { ...initialContext, sessionId, pageInfo },
+      );
+    });
+
+    // 네트워크 에러 핸들러
+    window.addEventListener("unhandledrejection", (event) => {
+      sendErrorEvent(
+        {
+          errorType: "network",
+          errorMessage: event.reason?.message || "Unhandled Promise Rejection",
+          errorStack: event.reason?.stack,
+          severity: "medium",
+          metadata: {
+            promise_reason: event.reason,
+          },
+        },
+        { ...initialContext, sessionId, pageInfo },
+      );
+    });
+  },
+
+  send: (params, context) => {
+    sendErrorEvent(params, context);
+  },
+});
+
+export { ErrorTrack, useErrorTracker };
+```
+
+## 실제 사용 예제
+
+### 1. 다중 인스턴스 조합 사용
+
+```tsx
+// components/MultiTrackerApp.tsx
+import { GATrack, useGATracker } from "../trackers/ga4Tracker";
+import { AmpTrack, useAmpTracker } from "../trackers/amplitudeTracker";
+import { PerfTrack, usePerfTracker } from "../trackers/performanceTracker";
+import { ErrorTrack, useErrorTracker } from "../trackers/errorTracker";
+
+function MultiTrackerApp() {
+  return (
+    // Google Analytics 트래커
+    <GATrack.Provider
+      initialContext={{
+        userId: "user-123",
+      }}
+    >
+      {/* Amplitude 트래커 */}
+      <AmpTrack.Provider
+        initialContext={{
+          userId: "user-123",
+          userProperties: {
+            plan: "premium",
+            signup_date: "2024-01-01",
+          },
+        }}
+      >
+        {/* 성능 모니터링 트래커 */}
+        <PerfTrack.Provider
+          initialContext={{
+            userId: "user-123",
+          }}
+        >
+          {/* 에러 추적 트래커 */}
+          <ErrorTrack.Provider
+            initialContext={{
+              userId: "user-123",
+            }}
+          >
+            <MainContent />
+          </ErrorTrack.Provider>
+        </PerfTrack.Provider>
+      </AmpTrack.Provider>
+    </GATrack.Provider>
+  );
+}
+
+function MainContent() {
+  const { track: gaTrack } = useGATracker();
+  const { track: ampTrack } = useAmpTracker();
+  const { track: perfTrack } = usePerfTracker();
+  const { track: errorTrack } = useErrorTracker();
+
+  const handlePurchase = async () => {
+    try {
+      // 구매 로직
+      const purchaseResult = await processPurchase();
+
+      // 각 서비스별로 다른 형식의 이벤트 전송
+
+      // Google Analytics - 전자상거래 이벤트
+      await gaTrack({
+        eventName: "purchase",
+        eventCategory: "ecommerce",
+        eventAction: "purchase",
+        eventValue: purchaseResult.amount,
+        customParameters: {
+          transaction_id: purchaseResult.transactionId,
+          currency: "KRW",
+          items: purchaseResult.items,
+        },
+      });
+
+      // Amplitude - 사용자 행동 이벤트
+      await ampTrack({
+        eventType: "Purchase Completed",
+        eventProperties: {
+          amount: purchaseResult.amount,
+          currency: "KRW",
+          transaction_id: purchaseResult.transactionId,
+          item_count: purchaseResult.items.length,
+          payment_method: purchaseResult.paymentMethod,
+        },
+        userProperties: {
+          last_purchase_date: new Date().toISOString(),
+          total_purchases: (purchaseResult.userTotalPurchases || 0) + 1,
+        },
+      });
+
+      // 성능 모니터링 - 구매 완료 시간
+      await perfTrack({
+        metricName: "purchase_completion_time",
+        value: Date.now() - purchaseResult.startTime,
+        unit: "ms",
+        category: "user",
+        metadata: {
+          purchase_amount: purchaseResult.amount,
+          item_count: purchaseResult.items.length,
+        },
+      });
+    } catch (error) {
+      // 에러 추적
+      await errorTrack({
+        errorType: "custom",
+        errorMessage: "Purchase failed",
+        errorStack: error.stack,
+        severity: "high",
+        metadata: {
+          purchase_amount: purchaseResult?.amount,
+          error_details: error.message,
+        },
+      });
+    }
+  };
+
+  return (
+    <div>
+      <h1>다중 트래커 예제</h1>
+
+      {/* Google Analytics 페이지 뷰 */}
+      <GATrack.PageView
+        params={{
+          pagePath: "/multi-tracker-example",
+          pageTitle: "다중 트래커 예제 페이지",
+          category: "demo",
+        }}
+      />
+
+      {/* Amplitude 페이지 뷰 */}
+      <AmpTrack.PageView
+        params={{
+          pagePath: "/multi-tracker-example",
+          pageTitle: "다중 트래커 예제 페이지",
+          eventProperties: {
+            page_category: "demo",
+            user_segment: "premium",
+          },
+        }}
+      />
+
+      {/* 성능 모니터링 페이지 뷰 */}
+      <PerfTrack.PageView
+        params={{
+          pagePath: "/multi-tracker-example",
+        }}
+      />
+
+      <button onClick={handlePurchase}>구매하기 (다중 트래킹)</button>
+    </div>
+  );
+}
+```
+
+### 2. 조건부 인스턴스 사용
+
+```tsx
+// components/ConditionalTracker.tsx
+import { GATrack, useGATracker } from "../trackers/ga4Tracker";
+import { AmpTrack, useAmpTracker } from "../trackers/amplitudeTracker";
+
+function ConditionalTracker({ userType, trackingConsent }: { userType: "free" | "premium"; trackingConsent: boolean }) {
+  if (!trackingConsent) {
+    return <div>트래킹이 비활성화되었습니다.</div>;
+  }
+
+  // 사용자 타입에 따라 다른 트래커 사용
+  if (userType === "premium") {
+    return (
+      <AmpTrack.Provider
+        initialContext={{
+          userId: "premium-user-123",
+          userProperties: {
+            plan: "premium",
+            features: ["advanced_analytics", "custom_events"],
+          },
+        }}
+      >
+        <PremiumUserContent />
+      </AmpTrack.Provider>
+    );
+  }
+
+  return (
+    <GATrack.Provider
+      initialContext={{
+        userId: "free-user-123",
+      }}
+    >
+      <FreeUserContent />
+    </GATrack.Provider>
+  );
+}
+
+function PremiumUserContent() {
+  const { track } = useAmpTracker();
+
+  const handlePremiumAction = async () => {
+    await track({
+      eventType: "Premium Feature Used",
+      eventProperties: {
+        feature_name: "advanced_analytics",
+        usage_count: 1,
+        timestamp: Date.now(),
+      },
+      userProperties: {
+        last_premium_action: new Date().toISOString(),
+      },
+    });
+  };
+
+  return (
+    <div>
+      <h2>프리미엄 사용자 콘텐츠</h2>
+      <button onClick={handlePremiumAction}>프리미엄 기능 사용</button>
+    </div>
+  );
+}
+
+function FreeUserContent() {
+  const { track } = useGATracker();
+
+  const handleUpgradeClick = async () => {
+    await track({
+      eventName: "upgrade_click",
+      eventCategory: "conversion",
+      eventAction: "click",
+      eventLabel: "upgrade_button",
+      customParameters: {
+        button_location: "header",
+        current_plan: "free",
+      },
+    });
+  };
+
+  return (
+    <div>
+      <h2>무료 사용자 콘텐츠</h2>
+      <button onClick={handleUpgradeClick}>프리미엄으로 업그레이드</button>
+    </div>
+  );
+}
+```
+
+### 3. 인스턴스 팩토리 패턴
+
+```tsx
+// utils/trackerFactory.ts
+import { createTracker } from "@offlegacy/event-tracker";
+
+interface TrackerConfig {
+  type: "ga4" | "amplitude" | "performance" | "error";
+  enabled: boolean;
+  apiKey?: string;
+  customConfig?: Record<string, any>;
+}
+
+// 트래커 팩토리 클래스
+class TrackerFactory {
+  private static instances = new Map<string, any>();
+
+  static createTracker(config: TrackerConfig) {
+    const key = `${config.type}_${config.enabled}`;
+
+    if (this.instances.has(key)) {
+      return this.instances.get(key);
+    }
+
+    let tracker;
+
+    switch (config.type) {
+      case "ga4":
+        tracker = this.createGA4Tracker(config);
+        break;
+      case "amplitude":
+        tracker = this.createAmplitudeTracker(config);
+        break;
+      case "performance":
+        tracker = this.createPerformanceTracker(config);
+        break;
+      case "error":
+        tracker = this.createErrorTracker(config);
+        break;
+      default:
+        throw new Error(`Unknown tracker type: ${config.type}`);
+    }
+
+    this.instances.set(key, tracker);
+    return tracker;
+  }
+
+  private static createGA4Tracker(config: TrackerConfig) {
+    return createTracker({
+      // GA4 설정
+      init: (initialContext, setContext) => {
+        if (!config.enabled) return;
+
+        // GA4 초기화 로직
+        if (config.apiKey) {
+          window.gtag("config", config.apiKey);
+        }
+
+        setContext({
+          ...initialContext,
+          sessionId: `ga_${Date.now()}`,
+        });
+      },
+
+      send: (params, context) => {
+        if (!config.enabled) return;
+
+        window.gtag("event", params.eventName, {
+          ...params,
+          user_id: context.userId,
+        });
+      },
+
+      DOMEvents: {
+        onClick: (params, context) => {
+          if (!config.enabled) return;
+
+          window.gtag("event", "click", {
+            button_id: params.buttonId,
+            user_id: context.userId,
+          });
+        },
+      },
+    });
+  }
+
+  private static createAmplitudeTracker(config: TrackerConfig) {
+    return createTracker({
+      // Amplitude 설정
+      init: (initialContext, setContext) => {
+        if (!config.enabled || !config.apiKey) return;
+
+        // Amplitude 초기화 로직
+        import("@amplitude/analytics-browser").then(({ default: amplitude }) => {
+          amplitude.init(config.apiKey!);
+        });
+
+        setContext({
+          ...initialContext,
+          sessionId: Date.now(),
+        });
+      },
+
+      send: (params, context) => {
+        if (!config.enabled) return;
+
+        // Amplitude 이벤트 전송
+        import("@amplitude/analytics-browser").then(({ default: amplitude }) => {
+          amplitude.track(params.eventType, {
+            ...params.eventProperties,
+            user_id: context.userId,
+          });
+        });
+      },
+    });
+  }
+
+  private static createPerformanceTracker(config: TrackerConfig) {
+    return createTracker({
+      // 성능 모니터링 설정
+      init: (initialContext, setContext) => {
+        if (!config.enabled) return;
+
+        setContext({
+          ...initialContext,
+          sessionId: `perf_${Date.now()}`,
+        });
+      },
+
+      send: (params, context) => {
+        if (!config.enabled) return;
+
+        // 성능 메트릭 전송
+        console.log("Performance metric:", params);
+      },
+    });
+  }
+
+  private static createErrorTracker(config: TrackerConfig) {
+    return createTracker({
+      // 에러 추적 설정
+      init: (initialContext, setContext) => {
+        if (!config.enabled) return;
+
+        setContext({
+          ...initialContext,
+          sessionId: `error_${Date.now()}`,
+        });
+
+        // 전역 에러 핸들러 설정
+        window.addEventListener("error", (event) => {
+          console.error("Global error:", event);
+        });
+      },
+
+      send: (params, context) => {
+        if (!config.enabled) return;
+
+        // 에러 이벤트 전송
+        console.error("Error event:", params);
+      },
+    });
+  }
+
+  static clearInstances() {
+    this.instances.clear();
+  }
+}
+
+export { TrackerFactory };
+```
+
+## 고급 패턴
+
+### 1. 인스턴스 조합 훅
+
+```tsx
+// hooks/useMultiTracker.ts
+import { useGATracker } from "../trackers/ga4Tracker";
+import { useAmpTracker } from "../trackers/amplitudeTracker";
+import { usePerfTracker } from "../trackers/performanceTracker";
+import { useErrorTracker } from "../trackers/errorTracker";
+
+export function useMultiTracker() {
+  const gaTracker = useGATracker();
+  const ampTracker = useAmpTracker();
+  const perfTracker = usePerfTracker();
+  const errorTracker = useErrorTracker();
+
+  const trackAll = async (eventName: string, params: any) => {
+    try {
+      // 모든 트래커에 이벤트 전송
+      await Promise.allSettled([
+        gaTracker.track({ eventName, ...params }),
+        ampTracker.track({ eventType: eventName, eventProperties: params }),
+        perfTracker.track({ metricName: eventName, value: 1, category: "custom" }),
+      ]);
+    } catch (error) {
+      await errorTracker.track({
+        errorType: "custom",
+        errorMessage: `Failed to track event: ${eventName}`,
+        errorStack: error.stack,
+        severity: "medium",
+        metadata: { eventName, params },
+      });
+    }
+  };
+
+  const trackConditional = async (
+    eventName: string,
+    params: any,
+    conditions: { ga?: boolean; amp?: boolean; perf?: boolean },
+  ) => {
+    const promises = [];
+
+    if (conditions.ga) {
+      promises.push(gaTracker.track({ eventName, ...params }));
+    }
+
+    if (conditions.amp) {
+      promises.push(ampTracker.track({ eventType: eventName, eventProperties: params }));
+    }
+
+    if (conditions.perf) {
+      promises.push(perfTracker.track({ metricName: eventName, value: 1, category: "custom" }));
+    }
+
+    try {
+      await Promise.allSettled(promises);
+    } catch (error) {
+      await errorTracker.track({
+        errorType: "custom",
+        errorMessage: `Failed to track conditional event: ${eventName}`,
+        errorStack: error.stack,
+        severity: "medium",
+        metadata: { eventName, params, conditions },
+      });
+    }
+  };
+
+  return {
+    gaTracker,
+    ampTracker,
+    perfTracker,
+    errorTracker,
+    trackAll,
+    trackConditional,
+  };
+}
+```
+
+### 2. 인스턴스 관리자
+
+```tsx
+// managers/TrackerManager.ts
+class TrackerManager {
+  private trackers = new Map<string, any>();
+  private configs = new Map<string, any>();
+
+  register(name: string, tracker: any, config: any) {
+    this.trackers.set(name, tracker);
+    this.configs.set(name, config);
+  }
+
+  get(name: string) {
+    return this.trackers.get(name);
+  }
+
+  enable(name: string) {
+    const config = this.configs.get(name);
+    if (config) {
+      config.enabled = true;
+    }
+  }
+
+  disable(name: string) {
+    const config = this.configs.get(name);
+    if (config) {
+      config.enabled = false;
+    }
+  }
+
+  trackAll(eventName: string, params: any) {
+    this.trackers.forEach((tracker, name) => {
+      const config = this.configs.get(name);
+      if (config?.enabled) {
+        try {
+          tracker.track({ eventName, ...params });
+        } catch (error) {
+          console.error(`Failed to track with ${name}:`, error);
+        }
+      }
+    });
+  }
+
+  getStatus() {
+    const status: Record<string, boolean> = {};
+    this.configs.forEach((config, name) => {
+      status[name] = config.enabled;
+    });
+    return status;
+  }
+}
+
+export const trackerManager = new TrackerManager();
+```

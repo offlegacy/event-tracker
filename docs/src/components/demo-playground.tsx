@@ -65,7 +65,7 @@ export function DemoCode() {
       <div className="relative overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
         <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800/50">
           <div className="flex items-center space-x-2">
-            <span className="ml-2 text-sm font-medium text-gray-600 dark:text-gray-400">basic-example.tsx</span>
+            <span className="ml-2 text-sm font-medium text-gray-600 dark:text-gray-400">example-basic.tsx</span>
           </div>
         </div>
         <div className="relative overflow-x-auto p-6">

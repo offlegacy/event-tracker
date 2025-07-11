@@ -1,32 +1,49 @@
+import { Callout } from "nextra/components";
+
 # useTracker
 
-[`createTracker`](/docs/create-tracker)에서 두 번째 배열 항목으로 반환되는 커스텀 React hook입니다. 이 훅은 컴포넌트 내에서 이벤트 트래킹 기능과 컨텍스트 관리에 접근할 수 있게 합니다.
+React 컴포넌트 내부에서 트래킹 컨텍스트를 설정하거나, 명령형 방식으로 이벤트를 추적할 수 있습니다. `useTracker`는 [`createTracker`](/docs/create-tracker)에서 반환되는 두 번째 항목입니다.
 
-예를 들어, 특정 비동기 작업이 완료된 후 또는 사용자의 특정 입력 값에 따라 이벤트를 발생시켜야 할 때 유용합니다.
+주로 컴포넌트 마운트 이후, 사용자 입력이나 비동기 작업이 완료된 시점에서 수동으로 이벤트를 트리거할 때 사용됩니다.
 
 ```tsx
 import { createTracker } from "@offlegacy/event-tracker";
 
-const [Track, useTracker] = createTracker({...})
+const [Track, useTracker] = createTracker({...});
 
 function MyComponent() {
   const { setContext, getContext, track, trackWithSchema } = useTracker();
 
-  return (
-    // 컴포넌트 내용
-  );
+  // 명령형 이벤트 트래킹
 }
 ```
 
-### 반환 값
+## Signature
 
-이 hook은 다음 속성을 포함하는 객체를 반환합니다:
+```ts
+function useTracker(): {
+  send: (params: EventParamsWithContext<TContext, TEventParams>) => TaskReturnType<TTaskResult> | undefined;
+  setContext: (context: TContext | ((prevContext: TContext) => TContext)) => void;
+  getContext: () => TContext;
+  trackWithSchema: TUseTrackerTrackWithSchema;
+  track: TUseTrackerTrack;
+};
+```
 
-#### setContext
+## Reference
 
-- Type: `(context: Context) => void`
-- 현재 트래킹 컨텍스트를 설정하거나 업데이트합니다.
-- 사용자 정보, 세션 데이터 등을 업데이트하는 데 사용할 수 있습니다.
+### Returns
+
+| 속성              | 타입                                                            | 설명                                        |
+| ----------------- | --------------------------------------------------------------- | ------------------------------------------- |
+| `setContext`      | `(context: Context \| (prev: Context) => Context) => void`      | 트래킹 컨텍스트 설정 또는 업데이트          |
+| `getContext`      | `() => Context`                                                 | 현재 트래킹 컨텍스트 반환                   |
+| `track`           | `Record<keyof EventNames, (params, options?) => void>`          | 일반 이벤트 추적 함수 집합                  |
+| `trackWithSchema` | `Record<keyof Schemas, ({ schema, params }, options?) => void>` | 스키마 기반 검증 포함 이벤트 추적 함수 집합 |
+
+---
+
+#### `setContext`
 
 ```tsx
 const { setContext } = useTracker();
@@ -41,11 +58,10 @@ setContext((prev) => ({
 }));
 ```
 
-#### getContext
+- 현재 트래킹 컨텍스트를 설정하거나 업데이트합니다.
+- 사용자 정보, 세션 데이터 등을 업데이트하는 데 사용할 수 있습니다.
 
-- Type: `() => Context`
-- 현재 트래킹 컨텍스트를 반환합니다.
-- 현재 트래킹 상태에 접근하는 데 유용합니다.
+#### `getContext`
 
 ```tsx
 const { getContext } = useTracker();
@@ -54,12 +70,10 @@ const currentContext = getContext();
 console.log("Current user:", currentContext.userId);
 ```
 
-#### track
+- 현재 트래킹 컨텍스트를 반환합니다.
+- 현재 트래킹 상태에 접근하는 데 유용합니다.
 
-- Type: `Record<keyof EventNames, (params: EventParams, options?: TrackingOptions) => void>`
-- 모든 구성된 이벤트 트래킹 함수를 포함하는 객체
-- key는 트래커 구성에 정의된 이벤트 이름과 일치합니다.
-- 고급 제어를 위한 선택적 `TrackingOptions`를 허용합니다.
+#### `track`
 
 ```tsx
 const { track } = useTracker();
@@ -95,12 +109,11 @@ track.onClick(
 track.onImpression({ elementId: "hero" });
 ```
 
-#### trackWithSchema
-
-- Type: `Record<keyof Schemas, (params: SchemaParams, options?: TrackingOptions) => void>`
-- 스키마 검증이 포함된 모든 구성된 이벤트 트래킹 함수를 포함하는 객체
+- 모든 구성된 이벤트 트래킹 함수를 포함하는 객체
 - key는 트래커 구성에 정의된 이벤트 이름과 일치합니다.
-- 고급 제어를 위한 선택적 `TrackingOptions`를 허용합니다.
+- 고급 제어를 위한 선택적 TrackingOptions를 허용합니다.
+
+#### `trackWithSchema`
 
 ```tsx
 const { trackWithSchema } = useTracker();
@@ -131,39 +144,65 @@ trackWithSchema.onImpression(
 );
 ```
 
-### TrackingOptions
+- 스키마 검증이 포함된 모든 구성된 이벤트 트래킹 함수를 포함하는 객체
+- key는 트래커 구성에 정의된 이벤트 이름과 일치합니다.
+- 고급 제어를 위한 선택적 TrackingOptions를 허용합니다.
 
-`track`과 `trackWithSchema` 메서드 모두 다음 옵션을 포함하는 선택적 두 번째 매개변수를 허용합니다:
+## TrackingOptions
 
-- `enabled?: boolean | ((context: Context, params: EventParams) => boolean)` - 이벤트 추적을 조건부로 활성화/비활성화
-- `debounce?: DebounceConfig` - 연속적인 이벤트 발생을 방지하는 디바운스 설정
-- `throttle?: ThrottleConfig` - 이벤트 발생 빈도를 제한하는 스로틀 설정
+`track`, `trackWithSchema` 함수는 모두 아래 옵션을 선택적으로 받을 수 있습니다:
 
-**참고:** `debounce`와 `throttle`은 상호 배타적이며 함께 사용할 수 없습니다.
+| 옵션       | 타입                                        | 설명                                  |
+| ---------- | ------------------------------------------- | ------------------------------------- |
+| `enabled`  | `boolean \| ((context, params) => boolean)` | 조건부로 이벤트 추적 활성화 여부 설정 |
+| `debounce` | `DebounceConfig`                            | 연속된 이벤트를 제한 (후행 호출 1회)  |
+| `throttle` | `ThrottleConfig`                            | 짧은 시간 내 중복 호출 방지           |
 
-#### DebounceConfig
+<Callout type="info">
+  참고: `debounce`와 `throttle`은 상호 배타적이며 함께 사용할 수 없습니다. 타입 에러를 발생시켜 사전에 방지합니다.
+</Callout>
 
-```tsx
+#### `DebounceConfig`
+
+```ts
 interface DebounceConfig {
-  delay: number; // 밀리초 단위의 지연 시간
-  leading?: boolean; // 선행 에지에서 실행 (기본값: false)
-  trailing?: boolean; // 후행 에지에서 실행 (기본값: true)
+  delay: number;
+  leading?: boolean; // 기본값: false
+  trailing?: boolean; // 기본값: true
 }
 ```
 
-#### ThrottleConfig
+#### `ThrottleConfig`
 
-```tsx
+```ts
 interface ThrottleConfig {
-  delay: number; // 밀리초 단위의 지연 시간
-  leading?: boolean; // 선행 에지에서 실행 (기본값: true)
-  trailing?: boolean; // 후행 에지에서 실행 (기본값: false)
+  delay: number;
+  leading?: boolean; // 기본값: true
+  trailing?: boolean; // 기본값: false
 }
 ```
 
-### 사용 예제
+## Best Practices
 
-다음은 이 hook을 사용하는 예제입니다:
+### 컨텍스트 관리
+
+- 여러 이벤트에 영향을 주는 전역 상태를 업데이트하기 위해 `setContext`를 사용하세요.
+- 이전 상태에 기반한 업데이트를 위해 `setContext`의 함수 형태를 고려하세요.
+
+### 이벤트 트래킹
+
+- 가능한 경우 `track` 또는 `trackWithSchema`에서 이벤트 함수를 사용하세요.
+
+### 성능 최적화
+
+- 렌더링 중에 이벤트 트래킹 함수를 호출하지 마세요.
+- 콜백 또는 효과를 사용하세요.
+- [배칭](/docs/batching)을 사용하여 성능을 향상시키세요.
+- [데이터 타입 검증](/docs/data-type-validation)을 사용하여 데이터 타입 안전성을 확인하세요.
+
+## Examples
+
+### 기본
 
 ```tsx
 import { createTracker } from "@offlegacy/event-tracker";
@@ -205,21 +244,3 @@ function UserProfile({ userId }) {
   );
 }
 ```
-
-### Best Practices
-
-1. **컨텍스트 업데이트**
-
-   - 여러 이벤트에 영향을 주는 전역 상태를 업데이트하기 위해 `setContext`를 사용하세요.
-   - 이전 상태에 기반한 업데이트를 위해 `setContext`의 함수 형태를 고려하세요.
-
-2. **이벤트 트래킹**
-
-   - 가능한 경우 `track` 또는 `trackWithSchema`에서 이벤트 함수를 사용하세요.
-
-3. **성능**
-
-   - 렌더링 중에 이벤트 트래킹 함수를 호출하지 마세요.
-   - 콜백 또는 효과를 사용하세요.
-   - [배칭](/docs/batching)을 사용하여 성능을 향상시키세요.
-   - [데이터 타입 검증](/docs/data-type-validation)을 사용하여 데이터 타입 안전성을 확인하세요.

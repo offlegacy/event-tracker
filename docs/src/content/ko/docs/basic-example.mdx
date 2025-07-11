@@ -1,27 +1,774 @@
-# 가이드
+# 기본
 
-다음은 `event-tracker`를 사용하는 간단한 예제입니다:
+`event-tracker`의 기본적인 사용법과 핵심 개념을 알아보겠습니다. 이 가이드를 통해 선언적 이벤트 트래킹의 강력함을 경험해보세요.
+
+## 빠른 시작
+
+### 1. 기본 설정
 
 ```tsx
 import { createTracker } from "@offlegacy/event-tracker";
 
 // 트래커 인스턴스 생성
 const [Track, useTracker] = createTracker({
+  // 초기화 함수
+  init: (initialContext, setContext) => {
+    // 세션 ID 생성
+    const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    setContext({ ...initialContext, sessionId });
+  },
+
+  // 이벤트 전송 함수
+  send: (params, context) => {
+    console.log("이벤트 전송:", params, context);
+    // 실제 애널리틱스 서비스로 전송
+    analytics.track(params.eventName, {
+      ...params,
+      userId: context.userId,
+      sessionId: context.sessionId,
+      timestamp: Date.now(),
+    });
+  },
+
+  // DOM 이벤트 핸들러
   DOMEvents: {
     onClick: (params, context) => {
-      log("Click event:", params, context);
+      console.log("클릭 이벤트:", params, context);
+    },
+  },
+
+  // 노출 이벤트 설정
+  impression: {
+    onImpression: (params, context) => {
+      console.log("노출 이벤트:", params, context);
+    },
+    options: {
+      threshold: 0.5, // 50% 이상 보일 때 트리거
+      freezeOnceVisible: true, // 한 번 보이면 더 이상 트리거하지 않음
+    },
+  },
+
+  // 페이지 뷰 설정
+  pageView: {
+    onPageView: (params, context) => {
+      console.log("페이지 뷰:", params, context);
     },
   },
 });
 
-// 앱에서 사용하기
+export { Track, useTracker };
+```
+
+### 2. 기본 사용법
+
+```tsx
+// App.tsx
+import { Track, useTracker } from "./tracker";
+
 function App() {
   return (
     <Track.Provider initialContext={{ userId: "user-123" }}>
-      <Track.Click params={{ buttonId: "submit" }}>
-        <button>Submit</button>
-      </Track.Click>
+      <HomePage />
     </Track.Provider>
   );
 }
+
+function HomePage() {
+  const { track } = useTracker();
+
+  const handleCustomEvent = async () => {
+    await track({
+      eventName: "custom_action",
+      category: "engagement",
+      action: "button_click",
+      label: "homepage_cta",
+      value: 1,
+    });
+  };
+
+  return (
+    <div>
+      <h1>홈페이지</h1>
+
+      {/* 페이지 뷰 자동 트래킹 */}
+      <Track.PageView
+        params={{
+          pagePath: "/",
+          pageTitle: "홈페이지",
+          category: "main",
+        }}
+      />
+
+      {/* 버튼 클릭 트래킹 */}
+      <Track.Click
+        params={{
+          buttonId: "cta-button",
+          buttonText: "시작하기",
+          category: "conversion",
+        }}
+      >
+        <button onClick={handleCustomEvent}>시작하기</button>
+      </Track.Click>
+
+      {/* 배너 노출 트래킹 */}
+      <Track.Impression
+        params={{
+          elementId: "hero-banner",
+          elementType: "banner",
+          visibilityPercentage: 80,
+        }}
+      >
+        <div className="hero-banner">
+          <h2>환영합니다!</h2>
+          <p>새로운 경험을 시작해보세요.</p>
+        </div>
+      </Track.Impression>
+    </div>
+  );
+}
+```
+
+## 핵심 컴포넌트
+
+### 1. Track.Provider
+
+트래킹 컨텍스트를 제공하는 최상위 컴포넌트입니다.
+
+```tsx
+<Track.Provider
+  initialContext={{
+    userId: "user-123",
+    userType: "premium",
+    trackingConsent: true,
+    page: "homepage",
+  }}
+>
+  {/* 자식 컴포넌트들 */}
+</Track.Provider>
+```
+
+**주요 속성:**
+
+- `initialContext`: 초기 컨텍스트 객체
+- `enabled`: 트래킹 활성화 여부 (기본값: true)
+
+### 2. Track.Click
+
+클릭 이벤트를 자동으로 트래킹하는 컴포넌트입니다.
+
+```tsx
+<Track.Click
+  params={{
+    buttonId: "submit-button",
+    buttonText: "제출",
+    category: "form",
+    action: "submit",
+  }}
+  enabled={(context) => context.trackingConsent}
+  debounce={{ delay: 300 }}
+>
+  <button>제출</button>
+</Track.Click>
+```
+
+**주요 속성:**
+
+- `params`: 이벤트 파라미터 (객체 또는 함수)
+- `enabled`: 트래킹 활성화 조건
+- `debounce`: 디바운스 설정
+- `throttle`: 스로틀 설정
+
+### 3. Track.Impression
+
+요소가 화면에 노출될 때 트래킹하는 컴포넌트입니다.
+
+```tsx
+<Track.Impression
+  params={{
+    elementId: "product-card-1",
+    elementType: "product",
+    position: 1,
+    category: "product_list",
+  }}
+  options={{
+    threshold: 0.5,
+    freezeOnceVisible: true,
+    rootMargin: "0px 0px -100px 0px",
+  }}
+>
+  <div className="product-card">
+    <img src="/product1.jpg" alt="상품 1" />
+    <h3>상품명</h3>
+    <p>₩29,900</p>
+  </div>
+</Track.Impression>
+```
+
+**주요 속성:**
+
+- `params`: 이벤트 파라미터
+- `options`: Intersection Observer 옵션
+- `enabled`: 트래킹 활성화 조건
+
+### 4. Track.PageView
+
+페이지 뷰를 자동으로 트래킹하는 컴포넌트입니다.
+
+```tsx
+<Track.PageView
+  params={{
+    pagePath: "/products",
+    pageTitle: "상품 목록",
+    category: "product",
+    referrer: document.referrer,
+  }}
+/>
+```
+
+## 실제 사용 시나리오
+
+### 1. 전자상거래 사이트
+
+```tsx
+// components/ProductList.tsx
+import { Track, useTracker } from "../tracker";
+
+function ProductList({ products }) {
+  const { track } = useTracker();
+
+  const handleAddToCart = async (product) => {
+    try {
+      // 장바구니 추가 로직
+      await addToCart(product.id);
+
+      // 트래킹
+      await track({
+        eventName: "add_to_cart",
+        productId: product.id,
+        productName: product.name,
+        price: product.price,
+        currency: "KRW",
+        quantity: 1,
+        category: product.category,
+      });
+    } catch (error) {
+      console.error("장바구니 추가 실패:", error);
+    }
+  };
+
+  return (
+    <Track.Provider initialContext={{ userId: "user-123", page: "product-list" }}>
+      {/* 페이지 뷰 트래킹 */}
+      <Track.PageView
+        params={{
+          pagePath: "/products",
+          category: "product_list",
+          productCount: products.length,
+        }}
+      />
+
+      <div className="product-grid">
+        {products.map((product, index) => (
+          <Track.Impression
+            key={product.id}
+            params={{
+              productId: product.id,
+              position: index + 1,
+              elementType: "product",
+              category: product.category,
+            }}
+          >
+            <div className="product-card">
+              <img src={product.image} alt={product.name} />
+              <h3>{product.name}</h3>
+              <p>₩{product.price.toLocaleString()}</p>
+
+              {/* 장바구니 버튼 */}
+              <Track.Click
+                params={{
+                  productId: product.id,
+                  action: "add_to_cart",
+                  price: product.price,
+                  position: index + 1,
+                }}
+              >
+                <button onClick={() => handleAddToCart(product)}>장바구니 담기</button>
+              </Track.Click>
+
+              {/* 상세보기 버튼 */}
+              <Track.Click
+                params={{
+                  productId: product.id,
+                  action: "view_detail",
+                  position: index + 1,
+                }}
+              >
+                <button>상세보기</button>
+              </Track.Click>
+            </div>
+          </Track.Impression>
+        ))}
+      </div>
+    </Track.Provider>
+  );
+}
+```
+
+### 2. 블로그/콘텐츠 사이트
+
+```tsx
+// components/BlogPost.tsx
+import { Track, useTracker } from "../tracker";
+
+function BlogPost({ post }) {
+  const { track } = useTracker();
+
+  const handleShare = async (platform) => {
+    await track({
+      eventName: "share_article",
+      articleId: post.id,
+      articleTitle: post.title,
+      platform: platform,
+      category: "social_sharing",
+    });
+  };
+
+  const handleComment = async () => {
+    await track({
+      eventName: "comment_article",
+      articleId: post.id,
+      category: "engagement",
+    });
+  };
+
+  return (
+    <Track.Provider initialContext={{ userId: "user-123", articleId: post.id }}>
+      {/* 페이지 뷰 트래킹 */}
+      <Track.PageView
+        params={{
+          pagePath: `/blog/${post.id}`,
+          pageTitle: post.title,
+          category: "blog",
+          author: post.author,
+          publishDate: post.publishDate,
+        }}
+      />
+
+      <article>
+        <h1>{post.title}</h1>
+        <p>작성자: {post.author}</p>
+
+        {/* 본문 노출 트래킹 */}
+        <Track.Impression
+          params={{
+            elementId: "article-content",
+            elementType: "content",
+            category: "blog_content",
+          }}
+        >
+          <div className="article-content">{post.content}</div>
+        </Track.Impression>
+
+        {/* 공유 버튼들 */}
+        <div className="share-buttons">
+          <Track.Click
+            params={{
+              action: "share",
+              platform: "facebook",
+              articleId: post.id,
+            }}
+          >
+            <button onClick={() => handleShare("facebook")}>Facebook 공유</button>
+          </Track.Click>
+
+          <Track.Click
+            params={{
+              action: "share",
+              platform: "twitter",
+              articleId: post.id,
+            }}
+          >
+            <button onClick={() => handleShare("twitter")}>Twitter 공유</button>
+          </Track.Click>
+        </div>
+
+        {/* 댓글 버튼 */}
+        <Track.Click
+          params={{
+            action: "comment",
+            articleId: post.id,
+          }}
+        >
+          <button onClick={handleComment}>댓글 작성</button>
+        </Track.Click>
+      </article>
+    </Track.Provider>
+  );
+}
+```
+
+### 3. 폼 및 사용자 입력
+
+```tsx
+// components/ContactForm.tsx
+import { Track, useTracker } from "../tracker";
+import { useState } from "react";
+
+function ContactForm() {
+  const { track } = useTracker();
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      // 폼 제출 로직
+      await submitForm(formData);
+
+      // 성공 트래킹
+      await track({
+        eventName: "form_submit",
+        formId: "contact-form",
+        formType: "contact",
+        fieldCount: Object.keys(formData).length,
+        category: "conversion",
+      });
+    } catch (error) {
+      // 실패 트래킹
+      await track({
+        eventName: "form_error",
+        formId: "contact-form",
+        errorType: error.message,
+        category: "error",
+      });
+    }
+  };
+
+  return (
+    <Track.Provider initialContext={{ userId: "user-123", formId: "contact-form" }}>
+      <form onSubmit={handleSubmit}>
+        {/* 이름 입력 필드 */}
+        <Track.Click
+          params={{
+            action: "focus_field",
+            fieldName: "name",
+            formId: "contact-form",
+          }}
+        >
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            placeholder="이름"
+          />
+        </Track.Click>
+
+        {/* 이메일 입력 필드 */}
+        <Track.Click
+          params={{
+            action: "focus_field",
+            fieldName: "email",
+            formId: "contact-form",
+          }}
+        >
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            placeholder="이메일"
+          />
+        </Track.Click>
+
+        {/* 메시지 입력 필드 */}
+        <Track.Click
+          params={{
+            action: "focus_field",
+            fieldName: "message",
+            formId: "contact-form",
+          }}
+        >
+          <textarea
+            name="message"
+            value={formData.message}
+            onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+            placeholder="메시지"
+          />
+        </Track.Click>
+
+        {/* 제출 버튼 */}
+        <Track.Click
+          params={{
+            action: "submit_form",
+            formId: "contact-form",
+            fieldCount: Object.keys(formData).length,
+          }}
+        >
+          <button type="submit">제출</button>
+        </Track.Click>
+      </form>
+    </Track.Provider>
+  );
+}
+```
+
+## 성능 최적화
+
+### 1. 조건부 트래킹
+
+```tsx
+// 사용자 타입에 따른 조건부 트래킹
+<Track.Click
+  params={{ feature: "premium-download" }}
+  enabled={(context) => context.userType === "premium"}
+>
+  <button>프리미엄 다운로드</button>
+</Track.Click>
+
+// 트래킹 동의에 따른 조건부 트래킹
+<Track.Click
+  params={{ action: "tracking_consent" }}
+  enabled={(context) => context.trackingConsent}
+>
+  <button>동의하기</button>
+</Track.Click>
+
+// 환경에 따른 조건부 트래킹
+<Track.Click
+  params={{ action: "debug_action" }}
+  enabled={() => process.env.NODE_ENV === "development"}
+>
+  <button>디버그 액션</button>
+</Track.Click>
+```
+
+### 2. 디바운스와 스로틀
+
+```tsx
+// 검색 입력 디바운스
+<Track.Click
+  params={{ action: "search" }}
+  debounce={{ delay: 300, leading: false, trailing: true }}
+>
+  <button>검색</button>
+</Track.Click>
+
+// 빠른 액션 스로틀
+<Track.Click
+  params={{ action: "rapid_action" }}
+  throttle={{ delay: 1000, leading: true, trailing: false }}
+>
+  <button>빠른 액션</button>
+</Track.Click>
+
+// 스크롤 이벤트 스로틀
+<Track.Click
+  params={{ action: "scroll" }}
+  throttle={{ delay: 100, leading: false, trailing: true }}
+>
+  <div className="scrollable-content">
+    {/* 스크롤 가능한 콘텐츠 */}
+  </div>
+</Track.Click>
+```
+
+### 3. 동적 파라미터
+
+```tsx
+// 컨텍스트 기반 동적 파라미터
+<Track.Click
+  params={(context) => ({
+    action: "custom_action",
+    userId: context.userId,
+    timestamp: Date.now(),
+    userType: context.userType,
+    page: context.page
+  })}
+>
+  <button>동적 액션</button>
+</Track.Click>
+
+// 이벤트 기반 동적 파라미터
+<Track.Click
+  params={(context, event) => ({
+    action: "button_click",
+    buttonId: event.target.id,
+    buttonText: event.target.textContent,
+    clickX: event.clientX,
+    clickY: event.clientY,
+    timestamp: Date.now()
+  })}
+>
+  <button id="dynamic-button">동적 버튼</button>
+</Track.Click>
+```
+
+## useTracker 훅 활용
+
+### 1. 기본 사용법
+
+```tsx
+function AdvancedComponent() {
+  const { track, context, setContext } = useTracker();
+
+  const handleComplexAction = async () => {
+    try {
+      // 복잡한 비즈니스 로직
+      const result = await processComplexAction();
+
+      // 성공 트래킹
+      await track({
+        eventName: "complex_action_completed",
+        result: result.status,
+        duration: result.duration,
+        userId: context.userId,
+        sessionId: context.sessionId,
+      });
+
+      // 컨텍스트 업데이트
+      setContext({
+        ...context,
+        lastAction: result,
+        actionCount: (context.actionCount || 0) + 1,
+      });
+    } catch (error) {
+      // 에러 트래킹
+      await track({
+        eventName: "complex_action_failed",
+        error: error.message,
+        userId: context.userId,
+      });
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={handleComplexAction}>복잡한 액션</button>
+      <p>액션 횟수: {context.actionCount || 0}</p>
+    </div>
+  );
+}
+```
+
+### 2. 배치 트래킹
+
+```tsx
+function BatchTrackingExample() {
+  const { track } = useTracker();
+
+  const handleBatchAction = async () => {
+    const events = [
+      { eventName: "step_1", step: 1 },
+      { eventName: "step_2", step: 2 },
+      { eventName: "step_3", step: 3 },
+    ];
+
+    // 순차적 트래킹
+    for (const event of events) {
+      await track(event);
+      await new Promise((resolve) => setTimeout(resolve, 100)); // 지연
+    }
+
+    // 또는 병렬 트래킹
+    await Promise.all(events.map((event) => track(event)));
+  };
+
+  return <button onClick={handleBatchAction}>배치 액션</button>;
+}
+```
+
+## 에러 처리 및 디버깅
+
+### 1. 에러 처리
+
+```tsx
+const [Track, useTracker] = createTracker({
+  send: async (params, context) => {
+    try {
+      await analytics.track(params.eventName, {
+        ...params,
+        userId: context.userId,
+        timestamp: Date.now(),
+      });
+    } catch (error) {
+      console.error("트래킹 에러:", error);
+
+      // 에러 추적 서비스로 전송
+      errorTracking.captureException(error);
+
+      // 로컬 스토리지에 저장하여 나중에 재전송
+      saveFailedEvent(params, context);
+    }
+  },
+});
+
+// 실패한 이벤트 저장
+const saveFailedEvent = (params, context) => {
+  try {
+    const failedEvents = JSON.parse(localStorage.getItem("failedEvents") || "[]");
+    failedEvents.push({ params, context, timestamp: Date.now() });
+    localStorage.setItem("failedEvents", JSON.stringify(failedEvents.slice(-50))); // 최대 50개
+  } catch (error) {
+    console.error("실패한 이벤트 저장 실패:", error);
+  }
+};
+```
+
+### 2. 디버깅 모드
+
+```tsx
+const [Track, useTracker] = createTracker({
+  send: (params, context) => {
+    // 개발 환경에서 상세 로깅
+    if (process.env.NODE_ENV === "development") {
+      console.group("🔍 이벤트 트래킹");
+      console.log("이벤트명:", params.eventName);
+      console.log("파라미터:", params);
+      console.log("컨텍스트:", context);
+      console.log("타임스탬프:", new Date().toISOString());
+      console.groupEnd();
+    }
+
+    // 실제 트래킹 로직
+    analytics.track(params.eventName, {
+      ...params,
+      userId: context.userId,
+      timestamp: Date.now(),
+    });
+  },
+});
+```
+
+### 3. 성능 모니터링
+
+```tsx
+const [Track, useTracker] = createTracker({
+  send: async (params, context) => {
+    const startTime = performance.now();
+
+    try {
+      await analytics.track(params.eventName, {
+        ...params,
+        userId: context.userId,
+        timestamp: Date.now(),
+      });
+
+      const duration = performance.now() - startTime;
+
+      // 성능 메트릭 기록
+      if (duration > 1000) {
+        // 1초 이상 걸린 경우
+        console.warn("느린 트래킹:", params.eventName, duration);
+      }
+    } catch (error) {
+      const duration = performance.now() - startTime;
+      console.error("트래킹 실패:", params.eventName, duration, error);
+    }
+  },
+});
 ```

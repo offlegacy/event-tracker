@@ -1,6 +1,8 @@
+import { Callout } from "nextra/components";
+
 # Impression
 
-Intersection Observer API를 사용하여 노출 이벤트를 추적합니다. `createTracker`의 리턴 배열의 첫 번쨰 요소인 이벤트 컴포넌트 중 하나입니다.
+Intersection Observer API를 사용하여 노출 이벤트를 추적합니다. `createTracker`의 리턴 배열의 첫 번째 요소인 이벤트 컴포넌트 중 하나입니다.
 
 ```tsx
 import { createTracker } from "@offlegacy/event-tracker";
@@ -27,23 +29,97 @@ function App() {
 }
 ```
 
+## Signature
+
+```ts
+function Impression<TKey extends keyof TSchemas>({
+  children,
+  options,
+  enabled,
+  ...props
+}: {
+  children: ReactNode;
+  options?: ImpressionOptions;
+  enabled?: EnabledCondition<TContext, TEventParams>;
+} & TrackingOptions<TContext, TEventParams> &
+  UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>): JSX.Element;
+```
+
+## Reference
+
 ### Props
 
-- `options?: ImpressionOptions` - 선택적 설정 (전역 옵션을 덮어씀)
-- 스키마와 함께 사용하는 경우
-  - `params: SchemaParams | (context: Context) => SchemaParams` - 스키마 기반 노출 이벤트 매개변수
-  - `schema: string` - 이벤트 매개변수 검증을 위한 스키마 이름
-- 스키마와 함께 사용하지 않는 경우
-  - `params: EventParams | (context: Context) => EventParams` - 노출 이벤트 매개변수
-- `enabled?: boolean | ((context: Context, params: EventParams) => boolean)` - 이벤트 추적을 조건부로 활성화/비활성화 (기본값: `true`)
-- `debounce?: DebounceConfig` - 연속적인 이벤트 발생을 방지하는 디바운스 설정
-- `throttle?: ThrottleConfig` - 이벤트 발생 빈도를 제한하는 스로틀 설정
+| Props      | 타입                                                              | 설명                                                    | 필수 |
+| ---------- | ----------------------------------------------------------------- | ------------------------------------------------------- | ---- |
+| `enabled`  | `boolean \| ((context: Context, params: EventParams) => boolean)` | 이벤트 추적을 조건부로 활성화/비활성화 (기본값: `true`) | -    |
+| `debounce` | `DebounceConfig`                                                  | 연속적인 이벤트 발생을 방지하는 디바운스 설정           | -    |
+| `throttle` | `ThrottleConfig`                                                  | 이벤트 발생 빈도를 제한하는 스로틀 설정                 | -    |
+| `options`  | `ImpressionOptions`                                               | `IntersectionObserver` 설정. 전역 옵션을 덮어씀         | -    |
+| `schema`   | `string`                                                          | 이벤트 매개변수 검증을 위한 스키마 이름                 | O    |
 
-**참고:** `debounce`와 `throttle`은 상호 배타적이며 함께 사용할 수 없습니다.
+<Callout type="info">
+  참고: `debounce`와 `throttle`은 상호 배타적이며 함께 사용할 수 없습니다. 타입 에러를 발생시켜 사전에 방지합니다.
+</Callout>
 
-### 추적 옵션 예제
+스키마와 함께 사용하는 경우와 아닐 경우 타입이 달라지는 속성이 있습니다.
 
-#### 조건부 추적
+스키마가 있을 경우:
+
+| Props    | 타입                                                 | 설명                 | 필수 |
+| -------- | ---------------------------------------------------- | -------------------- | ---- |
+| `params` | `SchemaParams \| (context: Context) => SchemaParams` | 스키마 기반 매개변수 | O    |
+
+스키마가 없을 경우:
+
+| Props    | 타입                                               | 설명            | 필수 |
+| -------- | -------------------------------------------------- | --------------- | ---- |
+| `params` | `EventParams \| (context: Context) => EventParams` | 이벤트 매개변수 | O    |
+
+---
+
+#### `params` (필수)
+
+스키마와 함께 사용하는 경우:
+
+- 타입: `SchemaParams | (context: Context) => SchemaParams`
+- 설명: 스키마 기반 매개변수
+
+스키마와 함께 사용하지 않는 경우:
+
+- 타입: `EventParams | (context: Context) => EventParams`
+- 설명: 이벤트 매개변수
+
+#### `enabled`
+
+- 타입: `boolean | ((context: Context, params: EventParams) => boolean)`
+- 설명: 이벤트 추적을 조건부로 활성화/비활성화 (기본값: `true`)
+
+#### `debounce`
+
+- 타입: `DebounceConfig`
+- 설명: 연속적인 이벤트 발생을 방지하는 디바운스 설정
+
+#### `throttle`
+
+- 타입: `ThrottleConfig`
+- 설명: 이벤트 발생 빈도를 제한하는 스로틀 설정
+
+#### `options`
+
+- 타입: `ImpressionOptions`
+- 설명: [`IntersectionObserver`](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API) 동작을 제어하는 옵션입니다. 예: `threshold`, `rootMargin` 등
+  전역 설정을 덮어쓰며 개별 노출 이벤트에 대해 세부 설정할 수 있습니다.
+
+#### `schema`
+
+스키마와 함께 사용하는 경우:
+
+- 타입: `string`
+- 설명: 이벤트 매개변수 검증을 위한 스키마 이름
+
+## Examples
+
+### 조건부 추적
 
 ```tsx
 <Track.Impression
@@ -55,7 +131,7 @@ function App() {
 </Track.Impression>
 ```
 
-#### 스로틀 노출 추적
+### 스로틀 노출 추적
 
 ```tsx
 <Track.Impression

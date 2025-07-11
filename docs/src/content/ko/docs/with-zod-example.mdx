@@ -1,0 +1,770 @@
+# Zod와 함께 사용하기
+
+[Zod](https://zod.dev/)와 함께 `event-tracker`를 사용하여 강력한 데이터 타입 검증을 구현하는 방법을 알아보겠습니다. Zod를 통한 스키마 기반 검증으로 런타임 이전에 오류를 방지하고 데이터 신뢰성을 보장할 수 있습니다.
+
+## 기본 설정
+
+### 1. 스키마 정의
+
+```tsx
+// schemas/eventSchemas.ts
+import { z } from "zod";
+
+// 사용자 컨텍스트 스키마
+export const userContextSchema = z.object({
+  userId: z.string().min(1, "사용자 ID는 필수입니다"),
+  userType: z.enum(["free", "premium", "enterprise"]).optional(),
+  sessionId: z.string().optional(),
+  trackingConsent: z.boolean().default(true),
+});
+
+// 페이지 뷰 이벤트 스키마
+export const pageViewSchema = z.object({
+  pagePath: z.string().min(1, "페이지 경로는 필수입니다"),
+  pageTitle: z.string().optional(),
+  referrer: z.string().optional(),
+  category: z.enum(["home", "product", "blog", "admin"]).optional(),
+  customData: z.record(z.unknown()).optional(),
+});
+
+// 클릭 이벤트 스키마
+export const clickSchema = z.object({
+  buttonId: z.string().min(1, "버튼 ID는 필수입니다"),
+  buttonText: z.string().optional(),
+  buttonType: z.enum(["primary", "secondary", "danger", "link"]).optional(),
+  elementPosition: z
+    .object({
+      x: z.number(),
+      y: z.number(),
+    })
+    .optional(),
+  customData: z.record(z.unknown()).optional(),
+});
+
+// 노출 이벤트 스키마
+export const impressionSchema = z.object({
+  elementId: z.string().min(1, "요소 ID는 필수입니다"),
+  elementType: z.enum(["banner", "product", "article", "video"]),
+  visibilityPercentage: z.number().min(0).max(100),
+  timeInView: z.number().positive().optional(),
+  customData: z.record(z.unknown()).optional(),
+});
+
+// 전자상거래 이벤트 스키마
+export const ecommerceSchema = z.object({
+  productId: z.string().min(1, "상품 ID는 필수입니다"),
+  productName: z.string().min(1, "상품명은 필수입니다"),
+  price: z.number().positive("가격은 양수여야 합니다"),
+  currency: z.string().length(3, "통화는 3자리여야 합니다"),
+  quantity: z.number().int().positive("수량은 양의 정수여야 합니다"),
+  category: z.string().optional(),
+  brand: z.string().optional(),
+});
+
+// 구매 이벤트 스키마
+export const purchaseSchema = z.object({
+  transactionId: z.string().min(1, "거래 ID는 필수입니다"),
+  value: z.number().positive("거래 금액은 양수여야 합니다"),
+  currency: z.string().length(3, "통화는 3자리여야 합니다"),
+  items: z.array(ecommerceSchema).min(1, "최소 1개의 상품이 필요합니다"),
+  shipping: z.number().nonnegative().optional(),
+  tax: z.number().nonnegative().optional(),
+});
+
+// 검색 이벤트 스키마
+export const searchSchema = z.object({
+  query: z.string().min(1, "검색어는 필수입니다"),
+  category: z.string().optional(),
+  filters: z.record(z.unknown()).optional(),
+  resultCount: z.number().int().nonnegative().optional(),
+});
+
+// 폼 제출 이벤트 스키마
+export const formSubmitSchema = z.object({
+  formId: z.string().min(1, "폼 ID는 필수입니다"),
+  formType: z.enum(["contact", "signup", "checkout", "feedback"]),
+  fieldCount: z.number().int().positive("필드 수는 양의 정수여야 합니다"),
+  validationErrors: z.number().int().nonnegative().optional(),
+  customData: z.record(z.unknown()).optional(),
+});
+
+// 스키마 모음
+export const eventSchemas = {
+  page_view: pageViewSchema,
+  click: clickSchema,
+  impression: impressionSchema,
+  add_to_cart: ecommerceSchema,
+  purchase: purchaseSchema,
+  search: searchSchema,
+  form_submit: formSubmitSchema,
+} as const;
+
+// 타입 추론
+export type UserContext = z.infer<typeof userContextSchema>;
+export type PageViewEvent = z.infer<typeof pageViewSchema>;
+export type ClickEvent = z.infer<typeof clickSchema>;
+export type ImpressionEvent = z.infer<typeof impressionSchema>;
+export type EcommerceEvent = z.infer<typeof ecommerceSchema>;
+export type PurchaseEvent = z.infer<typeof purchaseSchema>;
+export type SearchEvent = z.infer<typeof searchSchema>;
+export type FormSubmitEvent = z.infer<typeof formSubmitSchema>;
+```
+
+### 2. 트래커 설정
+
+```tsx
+// tracker/validatedTracker.ts
+import { createTracker } from "@offlegacy/event-tracker";
+import { eventSchemas, UserContext } from "../schemas/eventSchemas";
+
+// 이벤트 전송 함수
+const sendEvent = async (eventName: string, params: any, context: UserContext) => {
+  try {
+    // 실제 애널리틱스 서비스로 전송
+    await analytics.track(eventName, {
+      ...params,
+      userId: context.userId,
+      sessionId: context.sessionId,
+      timestamp: Date.now(),
+    });
+
+    console.log(`✅ 이벤트 전송 성공: ${eventName}`, params);
+  } catch (error) {
+    console.error(`❌ 이벤트 전송 실패: ${eventName}`, error);
+  }
+};
+
+// 검증된 트래커 인스턴스 생성
+export const [Track, useTracker] = createTracker<UserContext, any, typeof eventSchemas>({
+  // 초기화 함수
+  init: (initialContext, setContext) => {
+    // 세션 ID 생성
+    const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    // 컨텍스트 검증 및 설정
+    const validatedContext = userContextSchema.parse({
+      ...initialContext,
+      sessionId,
+    });
+
+    setContext(validatedContext);
+  },
+
+  // 이벤트 전송 함수
+  send: (params, context) => {
+    sendEvent("custom_event", params, context);
+  },
+
+  // DOM 이벤트 핸들러
+  DOMEvents: {
+    onClick: (params, context) => {
+      sendEvent("click", params, context);
+    },
+  },
+
+  // 노출 이벤트 설정
+  impression: {
+    onImpression: (params, context) => {
+      sendEvent("impression", params, context);
+    },
+    options: {
+      threshold: 0.5,
+      freezeOnceVisible: true,
+    },
+  },
+
+  // 페이지 뷰 설정
+  pageView: {
+    onPageView: (params, context) => {
+      sendEvent("page_view", params, context);
+    },
+  },
+
+  // 스키마 검증 설정
+  schemas: {
+    schemas: eventSchemas,
+    onSchemaError: (error) => {
+      console.error("🚨 스키마 검증 오류:", {
+        message: error.message,
+        issues: error.issues,
+        path: error.issues.map((issue) => issue.path.join(".")),
+      });
+
+      // 개발 환경에서는 더 자세한 정보 출력
+      if (process.env.NODE_ENV === "development") {
+        console.group("🔍 상세 오류 정보");
+        error.issues.forEach((issue, index) => {
+          console.log(`${index + 1}. 경로: ${issue.path.join(".")}`);
+          console.log(`   메시지: ${issue.message}`);
+          console.log(`   코드: ${issue.code}`);
+          console.log(`   받은 값:`, issue.received);
+        });
+        console.groupEnd();
+      }
+    },
+    abortOnError: true, // 검증 실패 시 이벤트 중단
+  },
+});
+
+export { Track, useTracker };
+```
+
+## 실제 사용 예제
+
+### 1. 전자상거래 사이트
+
+```tsx
+// components/ProductPage.tsx
+import { Track, useTracker } from "../tracker/validatedTracker";
+import { userContextSchema } from "../schemas/eventSchemas";
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  brand: string;
+}
+
+function ProductPage({ product }: { product: Product }) {
+  const { track } = useTracker();
+
+  const handleAddToCart = async () => {
+    try {
+      // 장바구니 추가 로직
+      await addToCart(product.id);
+
+      // 검증된 이벤트 전송
+      await track({
+        eventName: "add_to_cart",
+        productId: product.id,
+        productName: product.name,
+        price: product.price,
+        currency: "KRW",
+        quantity: 1,
+        category: product.category,
+        brand: product.brand,
+      });
+    } catch (error) {
+      console.error("장바구니 추가 실패:", error);
+    }
+  };
+
+  const handlePurchase = async () => {
+    try {
+      // 구매 로직
+      const purchaseResult = await processPurchase(product.id);
+
+      if (purchaseResult.success) {
+        // 검증된 구매 이벤트 전송
+        await track({
+          eventName: "purchase",
+          transactionId: purchaseResult.transactionId,
+          value: product.price,
+          currency: "KRW",
+          items: [
+            {
+              productId: product.id,
+              productName: product.name,
+              price: product.price,
+              currency: "KRW",
+              quantity: 1,
+              category: product.category,
+              brand: product.brand,
+            },
+          ],
+          shipping: 0,
+          tax: 0,
+        });
+      }
+    } catch (error) {
+      console.error("구매 처리 실패:", error);
+    }
+  };
+
+  return (
+    <Track.Provider
+      initialContext={{
+        userId: "user-123",
+        userType: "premium",
+        trackingConsent: true,
+      }}
+    >
+      {/* 페이지 뷰 트래킹 */}
+      <Track.PageView
+        schema="page_view"
+        params={{
+          pagePath: `/products/${product.id}`,
+          pageTitle: `${product.name} - 상품 상세`,
+          category: "product",
+          customData: {
+            product_id: product.id,
+            product_category: product.category,
+          },
+        }}
+      />
+
+      <div className="product-detail">
+        <h1>{product.name}</h1>
+        <p>₩{product.price.toLocaleString()}</p>
+
+        {/* 상품 이미지 노출 트래킹 */}
+        <Track.Impression
+          schema="impression"
+          params={{
+            elementId: `product-image-${product.id}`,
+            elementType: "product",
+            visibilityPercentage: 80,
+            customData: {
+              product_id: product.id,
+              image_position: "main",
+            },
+          }}
+        >
+          <img src={product.imageUrl} alt={product.name} className="product-image" />
+        </Track.Impression>
+
+        {/* 장바구니 버튼 클릭 트래킹 */}
+        <Track.Click
+          schema="click"
+          params={{
+            buttonId: "add-to-cart",
+            buttonText: "장바구니 담기",
+            buttonType: "primary",
+            customData: {
+              product_id: product.id,
+              product_name: product.name,
+              product_price: product.price,
+            },
+          }}
+        >
+          <button onClick={handleAddToCart}>장바구니 담기</button>
+        </Track.Click>
+
+        {/* 구매 버튼 - useTracker 사용 */}
+        <button onClick={handlePurchase}>바로 구매</button>
+      </div>
+    </Track.Provider>
+  );
+}
+```
+
+### 2. 검색 기능
+
+```tsx
+// components/SearchComponent.tsx
+import { Track, useTracker } from "../tracker/validatedTracker";
+
+function SearchComponent() {
+  const { track } = useTracker();
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState([]);
+
+  const handleSearch = async (searchQuery: string) => {
+    try {
+      const searchResults = await performSearch(searchQuery);
+      setResults(searchResults);
+
+      // 검증된 검색 이벤트 전송
+      await track({
+        eventName: "search",
+        query: searchQuery,
+        category: "products",
+        resultCount: searchResults.length,
+        filters: {
+          category: "all",
+          price_range: "all",
+        },
+      });
+    } catch (error) {
+      console.error("검색 실패:", error);
+    }
+  };
+
+  return (
+    <Track.Provider
+      initialContext={{
+        userId: "user-123",
+        userType: "free",
+        trackingConsent: true,
+      }}
+    >
+      <div className="search-container">
+        <Track.Click
+          schema="click"
+          params={{
+            buttonId: "search-button",
+            buttonText: "검색",
+            buttonType: "primary",
+            customData: {
+              search_context: "header",
+            },
+          }}
+        >
+          <button onClick={() => handleSearch(query)}>검색</button>
+        </Track.Click>
+
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="검색어를 입력하세요..."
+        />
+      </div>
+    </Track.Provider>
+  );
+}
+```
+
+### 3. 폼 제출
+
+```tsx
+// components/ContactForm.tsx
+import { Track, useTracker } from "../tracker/validatedTracker";
+
+function ContactForm() {
+  const { track } = useTracker();
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+  const [errors, setErrors] = useState({});
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      // 폼 검증
+      const validationErrors = validateForm(formData);
+      setErrors(validationErrors);
+
+      if (Object.keys(validationErrors).length === 0) {
+        // 폼 제출 로직
+        await submitForm(formData);
+
+        // 검증된 폼 제출 이벤트 전송
+        await track({
+          eventName: "form_submit",
+          formId: "contact-form",
+          formType: "contact",
+          fieldCount: Object.keys(formData).length,
+          validationErrors: 0,
+          customData: {
+            form_name: "contact_form",
+            submission_method: "web",
+          },
+        });
+      } else {
+        // 검증 오류가 있는 경우
+        await track({
+          eventName: "form_submit",
+          formId: "contact-form",
+          formType: "contact",
+          fieldCount: Object.keys(formData).length,
+          validationErrors: Object.keys(validationErrors).length,
+          customData: {
+            form_name: "contact_form",
+            error_fields: Object.keys(validationErrors),
+          },
+        });
+      }
+    } catch (error) {
+      console.error("폼 제출 실패:", error);
+    }
+  };
+
+  return (
+    <Track.Provider
+      initialContext={{
+        userId: "user-123",
+        userType: "free",
+        trackingConsent: true,
+      }}
+    >
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          name="name"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          placeholder="이름"
+        />
+        <input
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          placeholder="이메일"
+        />
+        <textarea
+          name="message"
+          value={formData.message}
+          onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+          placeholder="메시지"
+        />
+
+        <Track.Click
+          schema="click"
+          params={{
+            buttonId: "submit-contact",
+            buttonText: "제출",
+            buttonType: "primary",
+            customData: {
+              form_id: "contact-form",
+            },
+          }}
+        >
+          <button type="submit">제출</button>
+        </Track.Click>
+      </form>
+    </Track.Provider>
+  );
+}
+```
+
+## 고급 기능
+
+### 1. 동적 스키마 검증
+
+```tsx
+// schemas/dynamicSchemas.ts
+import { z } from "zod";
+
+// 조건부 스키마 생성 함수
+export const createConditionalSchema = (userType: string) => {
+  const baseSchema = z.object({
+    eventName: z.string(),
+    timestamp: z.number(),
+  });
+
+  if (userType === "premium") {
+    return baseSchema.extend({
+      premiumFeature: z.string(),
+      usageCount: z.number().positive(),
+    });
+  }
+
+  return baseSchema;
+};
+
+// 동적 이벤트 스키마
+export const dynamicEventSchemas = {
+  conditional_event: z.object({
+    eventName: z.string(),
+    userType: z.enum(["free", "premium"]),
+    // 조건부 필드
+    premiumData: z
+      .object({
+        feature: z.string(),
+        usage: z.number(),
+      })
+      .optional(),
+  }),
+
+  // 배열 기반 스키마
+  batch_events: z.array(
+    z.object({
+      eventName: z.string(),
+      params: z.record(z.unknown()),
+      timestamp: z.number(),
+    }),
+  ),
+
+  // 유니온 타입 스키마
+  mixed_event: z.union([
+    z.object({
+      type: z.literal("click"),
+      buttonId: z.string(),
+      position: z.object({ x: z.number(), y: z.number() }),
+    }),
+    z.object({
+      type: z.literal("scroll"),
+      scrollDepth: z.number(),
+      direction: z.enum(["up", "down"]),
+    }),
+  ]),
+};
+```
+
+### 2. 커스텀 검증 로직
+
+```tsx
+// utils/customValidation.ts
+import { z } from "zod";
+
+// 커스텀 검증 함수
+export const customValidators = {
+  // 이메일 도메인 검증
+  emailDomain: (allowedDomains: string[]) =>
+    z
+      .string()
+      .email()
+      .refine((email) => allowedDomains.some((domain) => email.endsWith(domain)), {
+        message: `허용되지 않는 이메일 도메인입니다. 허용: ${allowedDomains.join(", ")}`,
+      }),
+
+  // 비밀번호 복잡도 검증
+  strongPassword: z
+    .string()
+    .min(8, "비밀번호는 최소 8자 이상이어야 합니다")
+    .regex(/[A-Z]/, "대문자가 포함되어야 합니다")
+    .regex(/[a-z]/, "소문자가 포함되어야 합니다")
+    .regex(/[0-9]/, "숫자가 포함되어야 합니다")
+    .regex(/[^A-Za-z0-9]/, "특수문자가 포함되어야 합니다"),
+
+  // 한국어 전화번호 검증
+  koreanPhoneNumber: z.string().regex(/^01[0-9]-\d{3,4}-\d{4}$/, "올바른 한국 전화번호 형식이 아닙니다"),
+
+  // 가격 범위 검증
+  priceRange: (min: number, max: number) =>
+    z
+      .number()
+      .positive()
+      .refine((price) => price >= min && price <= max, { message: `가격은 ${min}원에서 ${max}원 사이여야 합니다` }),
+};
+
+// 조건부 스키마
+export const conditionalSchemas = {
+  // 사용자 타입에 따른 다른 검증 규칙
+  userAction: (userType: string) => {
+    const baseSchema = z.object({
+      action: z.string(),
+      timestamp: z.number(),
+    });
+
+    if (userType === "premium") {
+      return baseSchema.extend({
+        premiumFeature: z.string(),
+        usageLimit: z.number().optional(),
+      });
+    }
+
+    return baseSchema.extend({
+      feature: z.string(),
+      upgradePrompt: z.boolean().optional(),
+    });
+  },
+};
+```
+
+### 3. 에러 처리 및 복구
+
+```tsx
+// tracker/errorHandlingTracker.ts
+import { createTracker } from "@offlegacy/event-tracker";
+import { eventSchemas } from "../schemas/eventSchemas";
+
+export const [Track, useTracker] = createTracker({
+  // ... 기존 설정 ...
+
+  schemas: {
+    schemas: eventSchemas,
+    onSchemaError: (error) => {
+      // 1. 로그 기록
+      console.error("스키마 검증 오류:", error);
+
+      // 2. 에러 추적 서비스로 전송
+      errorTracking.captureException(error);
+
+      // 3. 사용자에게 알림 (개발 환경)
+      if (process.env.NODE_ENV === "development") {
+        toast.error(`스키마 검증 실패: ${error.message}`);
+      }
+
+      // 4. 대체 데이터로 이벤트 전송
+      const fallbackData = createFallbackData(error);
+      if (fallbackData) {
+        analytics.track("schema_validation_fallback", {
+          originalEvent: error.issues[0]?.path[0],
+          errorMessage: error.message,
+          fallbackData,
+        });
+      }
+    },
+    abortOnError: false, // 오류 시에도 이벤트 전송 계속
+  },
+});
+
+// 대체 데이터 생성 함수
+function createFallbackData(error: z.ZodError) {
+  const firstIssue = error.issues[0];
+  if (!firstIssue) return null;
+
+  const eventName = firstIssue.path[0];
+  const receivedData = firstIssue.received;
+
+  // 기본 구조로 대체 데이터 생성
+  return {
+    eventName,
+    timestamp: Date.now(),
+    originalData: receivedData,
+    validationErrors: error.issues.map((issue) => ({
+      path: issue.path.join("."),
+      message: issue.message,
+    })),
+  };
+}
+```
+
+## 성능 최적화
+
+### 1. 스키마 캐싱
+
+```tsx
+// utils/schemaCache.ts
+import { z } from "zod";
+
+class SchemaCache {
+  private cache = new Map<string, z.ZodSchema>();
+
+  getSchema(schemaName: string, schemaFactory: () => z.ZodSchema): z.ZodSchema {
+    if (!this.cache.has(schemaName)) {
+      this.cache.set(schemaName, schemaFactory());
+    }
+    return this.cache.get(schemaName)!;
+  }
+
+  clear() {
+    this.cache.clear();
+  }
+}
+
+export const schemaCache = new SchemaCache();
+
+// 사용 예시
+const cachedSchema = schemaCache.getSchema("dynamic_event", () =>
+  z.object({
+    eventName: z.string(),
+    dynamicField: z.string(),
+  }),
+);
+```
+
+### 2. 배치 검증
+
+```tsx
+// utils/batchValidation.ts
+import { z } from 'zod';
+
+export const batchValidate = <T>(
+  schema: z.ZodSchema<T>,
+  dataArray: unknown[]
+): { valid: T[], invalid: { data: unknown; error: z.ZodError }[] } => {
+  const valid: T[] = [];
+  const invalid: { data: unknown; error: z.ZodError }[] = [];
+
+  dataArray.forEach(data => {
+    try {
+      const validated = schema.parse(data);
+      valid.push(validated);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        invalid.push({ data, error });
+      }
+    }
+  });
+
+  return { valid, invalid };
+};
+```

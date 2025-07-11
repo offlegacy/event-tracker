@@ -15,7 +15,7 @@ const [Track] = createTracker({
 export function DemoButton({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <Toaster position="top-center" offset={60} />
+      <Toaster position="top-right" />
       <Track.Provider initialContext={{ userId: "demo-user" }}>
         <Track.Click params={{ buttonId: "click-me" }} throttle={{ delay: 1000 }}>
           <motion.button
