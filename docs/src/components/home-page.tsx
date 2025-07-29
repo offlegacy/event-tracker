@@ -14,12 +14,16 @@ type FeatureCardText = {
 type Props = {
   description: string;
   get_started: string;
-  featureCardsTitle: string;
-  featureCards: FeatureCardText[];
+  featureSectionTitle: string;
+  featureSectionContents: FeatureCardText[];
 };
 
-export default async function HomePage(props: Props) {
-  const { description, get_started, featureCardsTitle, featureCards } = props;
+export default async function HomePage({
+  description,
+  get_started,
+  featureSectionTitle: featureCardsTitle,
+  featureSectionContents: featureCards,
+}: Props) {
   return (
     <main className="mx-auto flex max-w-screen-xl flex-col gap-48 break-keep px-6 py-32">
       <TrackPageView params={{ title: "Home" }} />

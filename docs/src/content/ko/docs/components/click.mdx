@@ -59,15 +59,15 @@ function Click<TKey extends keyof TSchemas>({
 
 스키마가 있을 경우:
 
-| Props    | 타입                                                 | 설명                 | 필수 |
-| -------- | ---------------------------------------------------- | -------------------- | ---- |
-| `params` | `SchemaParams \| (context: Context) => SchemaParams` | 스키마 기반 매개변수 | O    |
+| Props    | 타입                                                 | 설명                 | 
+| -------- | ---------------------------------------------------- | -------------------- | 
+| `params` | `SchemaParams \| (context: Context) => SchemaParams` | 스키마 기반 매개변수 | 
 
 스키마가 없을 경우:
 
-| Props    | 타입                                               | 설명            | 필수 |
-| -------- | -------------------------------------------------- | --------------- | ---- |
-| `params` | `EventParams \| (context: Context) => EventParams` | 이벤트 매개변수 | O    |
+| Props    | 타입                                               | 설명            | 
+| -------- | -------------------------------------------------- | --------------- | 
+| `params` | `EventParams \| (context: Context) => EventParams` | 이벤트 매개변수 | 
 
 ---
 
@@ -125,10 +125,9 @@ function App() {
 }
 ```
 
-`eventName` 속성을 사용하면 사용자 정의 클릭 이벤트 핸들러 이름을 지정할 수 있습니다.  
-이 속성을 사용하면 핸들러 이름이 변경되어도 유연하게 대처할 수 있습니다.
+`eventName` 속성을 사용하면 사용자 정의 클릭 이벤트 핸들러 이름을 지정할 수 있습니다. 이 속성을 사용하면 핸들러 이름이 변경되어도 유연하게 대처할 수 있습니다.
 
-### 조건부 추적
+### 조건부 이벤트
 
 ```tsx
 <Track.Click params={{ buttonId: "premium-feature" }} enabled={(context, params) => context.user?.isPremium}>
@@ -136,7 +135,7 @@ function App() {
 </Track.Click>
 ```
 
-### 디바운스 추적
+### 디바운스 이벤트
 
 ```tsx
 <Track.Click params={{ buttonId: "search" }} debounce={{ delay: 300, leading: false, trailing: true }}>
@@ -144,7 +143,7 @@ function App() {
 </Track.Click>
 ```
 
-### 스로틀 추적
+### 스로틀 이벤트
 
 ```tsx
 <Track.Click params={{ buttonId: "rapid-action" }} throttle={{ delay: 1000, leading: true, trailing: false }}>

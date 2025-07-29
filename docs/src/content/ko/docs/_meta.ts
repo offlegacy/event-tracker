@@ -26,6 +26,7 @@ export default {
       layout: "default",
     },
   },
+  // TODO: Quick Start
   "api-reference-separator": {
     title: "API 레퍼런스",
     type: "separator",
@@ -57,7 +58,7 @@ export default {
     },
   },
   "data-type-validation": {
-    title: "데이터 타입 검증",
+    title: "데이터 검증",
     theme: {
       toc: true,
       layout: "default",
@@ -74,22 +75,8 @@ export default {
       layout: "default",
     },
   },
-  "instance-example": {
-    title: "트래킹 인스턴스 만들기",
-    theme: {
-      toc: true,
-      layout: "default",
-    },
-  },
   "with-google-analytics-example": {
     title: "Google Analytics 연동하기",
-    theme: {
-      toc: true,
-      layout: "default",
-    },
-  },
-  "with-selfhost-server-example": {
-    title: "자체 서버 연동하기",
     theme: {
       toc: true,
       layout: "default",

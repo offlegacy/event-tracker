@@ -34,29 +34,29 @@ function createTracker<
 
 ### Parameters
 
-`createTracker`는 하나의 설정 객체를 인자로 받습니다.
+`createTracker`는 하나의 객체를 인자로 받습니다.
 
-| 설정         | 타입                                                                                                                     | 설명                                                        |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
-| `init`       | `(initialContext: Context, setContext: SetContext) => void \| Promise<void>`                                             | 모든 이벤트 발생 전에 실행되는 초기화 함수. Promise 지원.   |
-| `send`       | `(params: EventParams \| (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType` | 이벤트 전송 함수. Promise 지원.                             |
-| `DOMEvents`  | [`DOMEvents`](https://developer.mozilla.org/docs/Web/API/Event)                                                          | React DOM 이벤트 핸들러 모음 (`onClick`, `onMouseEnter` 등) |
-| `impression` | `ImpressionOptions`                                                                                                      | 노출 이벤트 트래킹 설정                                     |
-| `pageView`   | `PageViewOptions`                                                                                                        | 페이지 뷰 트래킹 설정                                       |
-| `batch`      | `BatchConfig`                                                                                                            | 이벤트 배칭 설정                                            |
-| `schemas`    | `SchemaConfig`                                                                                                           | 이벤트 스키마 검증 설정                                     |
+| 속성 (Property) | 타입                                                                                                                     | 설명                                                        |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| `init`          | `(initialContext: Context, setContext: SetContext) => void \| Promise<void>`                                             | 모든 이벤트 발생 전에 실행되는 초기화 함수. (비동기 지원)   |
+| `send`          | `(params: EventParams \| (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType` | 이벤트 전송 함수. (비동기 지원)                             |
+| `DOMEvents`     | [`DOMEvents`](https://developer.mozilla.org/docs/Web/API/Event)                                                          | React DOM 이벤트 핸들러 모음 (`onClick`, `onMouseEnter` 등) |
+| `impression`    | `ImpressionOptions`                                                                                                      | 노출 이벤트 트래킹 설정                                     |
+| `pageView`      | `PageViewOptions`                                                                                                        | 페이지 뷰 트래킹 설정                                       |
+| `batch`         | `BatchConfig`                                                                                                            | 이벤트 배칭 설정                                            |
+| `schemas`       | `SchemaConfig`                                                                                                           | 이벤트 스키마 검증 설정                                     |
 
 ---
 
 #### `init`
 
 - 타입: `(initialContext: Context, setContext: SetContext) => void | Promise<void>`
-- 설명: 모든 이벤트가 발생하기 전, 초기 컨텍스트를 설정하는 함수입니다. 비동기 함수 지원.
+- 설명: 모든 이벤트가 발생하기 전, 초기 컨텍스트를 설정하는 함수입니다. (비동기를 지원합니다.)
 
 #### `send`
 
 - 타입: `(params: EventParams | (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType`
-- 설명: 이벤트를 외부로 전송하는 함수입니다. 비동기 처리 가능.
+- 설명: 이벤트를 외부로 전송하는 함수입니다. (비동기를 지원합니다.)
 
 #### `DOMEvents`
 
@@ -68,7 +68,7 @@ function createTracker<
 - `impression.onImpression`
 
   - 타입: `(params: EventParams | (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType`
-  - 설명: `<Track.Impression>` 발생 시 실행되는 콜백
+  - 설명: `<Track.Impression>` 발생 시 실행되는 콜백 함수입니다.
 
 - `impression.options`
 
@@ -84,7 +84,7 @@ function createTracker<
 - `pageView.onPageView`
 
   - 타입: `(params: EventParams | (context: Context) => EventParams, context: Context, setContext: SetContext) => TaskReturnType`
-  - 설명: `<Track.PageView>` 마운트 시 실행됩니다.
+  - 설명: `<Track.PageView>` 컴포넌트가 마운트 시 실행됩니다.
 
 #### `batch`
 
@@ -95,7 +95,7 @@ function createTracker<
   - `batch.interval`: 전송 간격(ms, 기본값: `3000`)
   - `batch.thresholdSize`: 최대 배치 크기 (기본값: `25`)
   - `batch.onFlush`: 이벤트 전송 처리 함수
-  - `batch.onError`: 오류 발생 시 처리 함수 (옵셔널)
+  - `batch.onError`: 오류 발생 시 처리 함수 (선택)
 
 #### `schemas`
 

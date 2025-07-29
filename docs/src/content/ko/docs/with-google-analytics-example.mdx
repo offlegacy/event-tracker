@@ -1,624 +1,115 @@
+import { Steps } from "nextra/components";
+
 # Google Analytics 연동하기
 
-Google Analytics 4(GA4)와 함께 `event-tracker`를 사용하는 방법을 알아보겠습니다. GA4의 이벤트 기반 모델과 완벽하게 호환되어 효과적인 사용자 행동 분석이 가능합니다.
+GA4(Google Analytics 4)와 쉽게 통합해 사용자 행동을 추적하는 방법을 단계별로 안내합니다.
 
-## GA4 설정
+<Steps>
 
-먼저 Google Analytics 4를 설정하고 `gtag` 함수를 사용할 수 있도록 준비합니다.
+## GA4 스크립트 설정
 
-### 1. GA4 스크립트 추가
+`index.html` `<head>`에 GA4 스크립트를 추가하여 `gtag`를 사용할 준비를 합니다.
 
 ```html
 <!-- index.html -->
-<!DOCTYPE html>
-<html>
-  <head>
-    <!-- Google Analytics 4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
-      gtag("config", "GA_MEASUREMENT_ID");
-    </script>
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
-</html>
+<head>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    gtag("js", new Date());
+    gtag("config", "GA_MEASUREMENT_ID");
+  </script>
+</head>
 ```
 
-### 2. TypeScript 타입 정의
+## `sendGA4` 함수 정의하기
 
-```tsx
-// types/gtag.d.ts
-declare global {
-  interface Window {
-    gtag: (command: "config" | "event" | "set" | "consent", targetId: string, config?: Record<string, any>) => void;
+`gtag` 호출 전 확인 및 경고 로직을 포함한 전송 함수를 정의합니다.
+
+```ts
+export function sendGA4(eventName: string, eventParams: Record<string, unknown> = {}): void {
+  if (typeof window === "undefined") return;
+  if (typeof window.gtag !== "function") {
+    console.warn("[GA4] gtag 함수가 로드되지 않았습니다.");
+    return;
   }
+  window.gtag("event", eventName, eventParams);
 }
-
-export {};
 ```
 
-## 기본 설정
+## 트래킹 이벤트 정의하기
 
-### GA4 트래커 생성
+`createTracker`를 통해 GA4 전송 로직과 DOM/노출/페이지뷰 이벤트를 설정합니다.
 
 ```tsx
-// tracker/ga4Tracker.ts
 import { createTracker } from "@offlegacy/event-tracker";
+import { sendGA4 } from "./sendGA4";
 
 interface GA4Context {
-  userId?: string;
-  sessionId?: string;
-  pageTitle?: string;
-  pagePath?: string;
-  userProperties?: Record<string, any>;
+  userId: string;
 }
 
 interface GA4EventParams {
   eventName: string;
-  eventCategory?: string;
-  eventAction?: string;
-  eventLabel?: string;
-  eventValue?: number;
-  customParameters?: Record<string, any>;
 }
 
-// GA4 이벤트 전송 함수
-const sendGA4Event = (params: GA4EventParams, context: GA4Context) => {
-  const { eventName, customParameters = {} } = params;
-
-  // GA4 이벤트 전송
-  window.gtag("event", eventName, {
-    // 기본 파라미터
-    event_category: params.eventCategory,
-    event_action: params.eventAction,
-    event_label: params.eventLabel,
-    value: params.eventValue,
-
-    // 사용자 속성
-    user_id: context.userId,
-    session_id: context.sessionId,
-
-    // 페이지 정보
-    page_title: context.pageTitle,
-    page_path: context.pagePath,
-
-    // 커스텀 파라미터
-    ...customParameters,
-  });
-};
-
-// GA4 트래커 인스턴스 생성
 export const [Track, useTracker] = createTracker<GA4Context, GA4EventParams>({
-  // 초기화 함수
-  init: (initialContext, setContext) => {
-    // 세션 ID 생성
-    const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-    // 페이지 정보 설정
-    const pageTitle = document.title;
-    const pagePath = window.location.pathname;
-
-    setContext({
-      ...initialContext,
-      sessionId,
-      pageTitle,
-      pagePath,
-    });
-  },
-
-  // 이벤트 전송 함수
-  send: (params, context) => {
-    sendGA4Event(params, context);
-  },
-
-  // DOM 이벤트 핸들러
   DOMEvents: {
-    onClick: (params, context) => {
-      sendGA4Event(
-        {
-          eventName: "click",
-          eventCategory: "engagement",
-          eventAction: "click",
-          eventLabel: params.eventLabel || "button_click",
-          customParameters: {
-            button_id: params.buttonId,
-            button_text: params.buttonText,
-            page_location: context.pagePath,
-            ...params.customParameters,
-          },
-        },
-        context,
-      );
-    },
+    onClick: (params, ctx) => sendGA4(params.eventName, { ...params, user_id: ctx.userId }),
   },
-
-  // 노출 이벤트 설정
   impression: {
-    onImpression: (params, context) => {
-      sendGA4Event(
-        {
-          eventName: "impression",
-          eventCategory: "engagement",
-          eventAction: "view",
-          eventLabel: params.elementId,
-          customParameters: {
-            element_id: params.elementId,
-            element_type: params.elementType,
-            visibility_percentage: params.visibilityPercentage,
-            ...params.customParameters,
-          },
-        },
-        context,
-      );
-    },
-    options: {
-      threshold: 0.5,
-      freezeOnceVisible: true,
-    },
-  },
-
-  // 페이지 뷰 설정
-  pageView: {
-    onPageView: (params, context) => {
-      sendGA4Event(
-        {
-          eventName: "page_view",
-          eventCategory: "navigation",
-          eventAction: "page_view",
-          eventLabel: params.pagePath || context.pagePath,
-          customParameters: {
-            page_title: params.pageTitle || context.pageTitle,
-            page_path: params.pagePath || context.pagePath,
-            referrer: params.referrer,
-            ...params.customParameters,
-          },
-        },
-        context,
-      );
-    },
+    onImpression: (params, ctx) => sendGA4("impression", { ...params, user_id: ctx.userId }),
+    options: { threshold: 0.5, freezeOnceVisible: true },
   },
 });
-
-export { Track, useTracker };
 ```
 
-## 실제 사용 예제
+## 블로그 페이지에서 사용하기
 
-### 1. 전자상거래 사이트
+`Track.Provider`로 컨텍스트를 감싸고, `<Track.PageView>`, `<Track.Impression>`, `<Track.Click>` 컴포넌트를 사용해 이벤트를 선언적으로 기록합니다.
 
 ```tsx
-// components/ProductPage.tsx
-import { Track, useTracker } from "../tracker/ga4Tracker";
+import { Track } from "./event-tracker";
 
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
+function App() {
+  return (
+    <Track.Provider initialContext={{ userId: "test-user" }}>
+      <Post post={{ id: 1, title: "Hello World", slug: "hello-world", content: "This is a test post." }} />
+    </Track.Provider>
+  );
 }
 
-function ProductPage({ product }: { product: Product }) {
-  const { track } = useTracker();
+interface PostProps {
+  id: number;
+  title: string;
+  slug: string;
+  content: string;
+}
 
-  const handleAddToCart = async () => {
-    // 장바구니 추가 로직
-    await addToCart(product.id);
-
-    // GA4 이벤트 전송
-    await track({
-      eventName: "add_to_cart",
-      eventCategory: "ecommerce",
-      eventAction: "add",
-      eventLabel: product.name,
-      customParameters: {
-        currency: "KRW",
-        value: product.price,
-        items: [
-          {
-            item_id: product.id,
-            item_name: product.name,
-            item_category: product.category,
-            price: product.price,
-            quantity: 1,
-          },
-        ],
-      },
-    });
-  };
-
-  const handlePurchase = async () => {
-    // 구매 로직
-    const purchaseResult = await processPurchase(product.id);
-
-    if (purchaseResult.success) {
-      await track({
-        eventName: "purchase",
-        eventCategory: "ecommerce",
-        eventAction: "purchase",
-        eventLabel: product.name,
-        eventValue: product.price,
-        customParameters: {
-          currency: "KRW",
-          transaction_id: purchaseResult.transactionId,
-          value: product.price,
-          items: [
-            {
-              item_id: product.id,
-              item_name: product.name,
-              item_category: product.category,
-              price: product.price,
-              quantity: 1,
-            },
-          ],
-        },
-      });
-    }
-  };
-
+function Post({ post }: PostProps) {
   return (
-    <Track.Provider
-      initialContext={{
-        userId: "user-123",
-        userProperties: {
-          user_type: "premium",
-          subscription_status: "active",
-        },
-      }}
-    >
-      {/* 페이지 뷰 트래킹 */}
-      <Track.PageView
-        params={{
-          pagePath: `/products/${product.id}`,
-          pageTitle: `${product.name} - 상품 상세`,
-          customParameters: {
-            product_id: product.id,
-            product_category: product.category,
-          },
-        }}
-      />
+    <article>
+      <h1>{post.title}</h1>
 
-      <div className="product-detail">
-        <h1>{product.name}</h1>
-        <p>₩{product.price.toLocaleString()}</p>
+      <Track.Impression params={{ eventName: `content-${post.id}` }}>
+        <div>{post.content}</div>
+      </Track.Impression>
 
-        {/* 상품 이미지 노출 트래킹 */}
-        <Track.Impression
-          params={{
-            elementId: `product-image-${product.id}`,
-            elementType: "product_image",
-            visibilityPercentage: 80,
-            customParameters: {
-              product_id: product.id,
-              image_position: "main",
-            },
-          }}
-        >
-          <img src={product.imageUrl} alt={product.name} className="product-image" />
-        </Track.Impression>
-
-        {/* 장바구니 버튼 클릭 트래킹 */}
-        <Track.Click
-          params={{
-            buttonId: "add-to-cart",
-            buttonText: "장바구니 담기",
-            eventLabel: "add_to_cart_button",
-            customParameters: {
-              product_id: product.id,
-              product_name: product.name,
-              product_price: product.price,
-            },
-          }}
-        >
-          <button onClick={handleAddToCart}>장바구니 담기</button>
+      <div className="actions">
+        <Track.Click params={{ eventName: "share_twitter" }}>
+          <button>트위터 공유</button>
         </Track.Click>
 
-        {/* 구매 버튼 - useTracker 사용 */}
-        <button onClick={handlePurchase}>바로 구매</button>
+        <Track.Click params={{ eventName: "share_facebook" }}>
+          <button>페이스북 공유</button>
+        </Track.Click>
       </div>
-    </Track.Provider>
+    </article>
   );
 }
 ```
 
-### 2. 블로그/콘텐츠 사이트
-
-```tsx
-// components/BlogPost.tsx
-import { Track } from "../tracker/ga4Tracker";
-
-function BlogPost({ post }: { post: BlogPost }) {
-  return (
-    <Track.Provider
-      initialContext={{
-        userId: "user-123",
-        userProperties: {
-          content_preference: "tech",
-          reading_level: "intermediate",
-        },
-      }}
-    >
-      {/* 페이지 뷰 트래킹 */}
-      <Track.PageView
-        params={{
-          pagePath: `/blog/${post.slug}`,
-          pageTitle: `${post.title} - 블로그`,
-          customParameters: {
-            post_id: post.id,
-            post_category: post.category,
-            post_author: post.author,
-            reading_time: post.readingTime,
-          },
-        }}
-      />
-
-      <article className="blog-post">
-        <h1>{post.title}</h1>
-
-        {/* 콘텐츠 노출 트래킹 */}
-        <Track.Impression
-          params={{
-            elementId: `post-content-${post.id}`,
-            elementType: "blog_content",
-            visibilityPercentage: 50,
-            customParameters: {
-              post_id: post.id,
-              content_length: post.content.length,
-            },
-          }}
-        >
-          <div className="post-content">{post.content}</div>
-        </Track.Impression>
-
-        {/* 소셜 공유 버튼들 */}
-        <div className="social-share">
-          <Track.Click
-            params={{
-              buttonId: "share-twitter",
-              buttonText: "트위터 공유",
-              eventLabel: "social_share_twitter",
-              customParameters: {
-                post_id: post.id,
-                platform: "twitter",
-              },
-            }}
-          >
-            <button>트위터 공유</button>
-          </Track.Click>
-
-          <Track.Click
-            params={{
-              buttonId: "share-facebook",
-              buttonText: "페이스북 공유",
-              eventLabel: "social_share_facebook",
-              customParameters: {
-                post_id: post.id,
-                platform: "facebook",
-              },
-            }}
-          >
-            <button>페이스북 공유</button>
-          </Track.Click>
-        </div>
-
-        {/* 댓글 작성 트래킹 */}
-        <Track.Click
-          params={{
-            buttonId: "comment-submit",
-            buttonText: "댓글 작성",
-            eventLabel: "comment_submit",
-            customParameters: {
-              post_id: post.id,
-              comment_type: "user_comment",
-            },
-          }}
-        >
-          <button>댓글 작성</button>
-        </Track.Click>
-      </article>
-    </Track.Provider>
-  );
-}
-```
-
-### 3. 성능 최적화와 조건부 트래킹
-
-```tsx
-// components/OptimizedTracking.tsx
-import { Track } from "../tracker/ga4Tracker";
-
-function OptimizedTracking() {
-  return (
-    <Track.Provider
-      initialContext={{
-        userId: "user-123",
-        trackingConsent: true,
-        userType: "premium",
-      }}
-    >
-      {/* 조건부 트래킹 - 프리미엄 사용자만 */}
-      <Track.Click
-        params={{
-          buttonId: "premium-feature",
-          buttonText: "프리미엄 기능",
-          eventLabel: "premium_feature_access",
-        }}
-        enabled={(context) => context.userType === "premium"}
-      >
-        <button>프리미엄 기능</button>
-      </Track.Click>
-
-      {/* 디바운스 적용 - 검색 입력 */}
-      <Track.Click
-        params={{
-          buttonId: "search-button",
-          buttonText: "검색",
-          eventLabel: "search_submit",
-        }}
-        debounce={{ delay: 300, leading: false, trailing: true }}
-      >
-        <button>검색</button>
-      </Track.Click>
-
-      {/* 스로틀 적용 - 빠른 액션 */}
-      <Track.Click
-        params={{
-          buttonId: "rapid-action",
-          buttonText: "빠른 액션",
-          eventLabel: "rapid_action_click",
-        }}
-        throttle={{ delay: 1000, leading: true, trailing: false }}
-      >
-        <button>빠른 액션</button>
-      </Track.Click>
-    </Track.Provider>
-  );
-}
-```
-
-## GA4 이벤트 매핑
-
-### 표준 GA4 이벤트
-
-```tsx
-// GA4 표준 이벤트 매핑
-const GA4StandardEvents = {
-  // 페이지 뷰
-  page_view: {
-    eventName: "page_view",
-    eventCategory: "navigation",
-  },
-
-  // 클릭 이벤트
-  click: {
-    eventName: "click",
-    eventCategory: "engagement",
-  },
-
-  // 노출 이벤트
-  impression: {
-    eventName: "impression",
-    eventCategory: "engagement",
-  },
-
-  // 전자상거래 이벤트
-  add_to_cart: {
-    eventName: "add_to_cart",
-    eventCategory: "ecommerce",
-  },
-
-  purchase: {
-    eventName: "purchase",
-    eventCategory: "ecommerce",
-  },
-
-  // 사용자 참여 이벤트
-  login: {
-    eventName: "login",
-    eventCategory: "authentication",
-  },
-
-  sign_up: {
-    eventName: "sign_up",
-    eventCategory: "authentication",
-  },
-};
-```
-
-## 고급 설정
-
-### 배칭을 통한 성능 최적화
-
-```tsx
-// tracker/ga4BatchTracker.ts
-import { createTracker } from "@offlegacy/event-tracker";
-
-export const [Track, useTracker] = createTracker<GA4Context, GA4EventParams>({
-  // ... 기존 설정 ...
-
-  // 배칭 설정
-  batch: {
-    enable: true,
-    interval: 2000,
-    thresholdSize: 10,
-    onFlush: async (batch, isBrowserClosing) => {
-      if (isBrowserClosing) {
-        // 브라우저 종료 시 sendBeacon 사용
-        navigator.sendBeacon("/api/analytics/batch", JSON.stringify(batch));
-        return;
-      }
-
-      // 배치 이벤트를 GA4 Measurement Protocol로 전송
-      await fetch("/api/analytics/batch", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(batch),
-      });
-    },
-    onError: (error) => {
-      console.error("GA4 배치 전송 오류:", error);
-    },
-  },
-});
-```
-
-### 스키마 검증 추가
-
-```tsx
-import { z } from "zod";
-
-// GA4 이벤트 스키마 정의
-const ga4Schemas = {
-  page_view: z.object({
-    pagePath: z.string(),
-    pageTitle: z.string().optional(),
-    referrer: z.string().optional(),
-  }),
-
-  click: z.object({
-    buttonId: z.string(),
-    buttonText: z.string().optional(),
-    eventLabel: z.string().optional(),
-  }),
-
-  impression: z.object({
-    elementId: z.string(),
-    elementType: z.string(),
-    visibilityPercentage: z.number().min(0).max(100),
-  }),
-
-  purchase: z.object({
-    transactionId: z.string(),
-    value: z.number().positive(),
-    currency: z.string().length(3),
-    items: z.array(
-      z.object({
-        item_id: z.string(),
-        item_name: z.string(),
-        price: z.number().positive(),
-        quantity: z.number().positive(),
-      }),
-    ),
-  }),
-};
-
-export const [Track, useTracker] = createTracker<GA4Context, GA4EventParams, typeof ga4Schemas>({
-  // ... 기존 설정 ...
-
-  // 스키마 검증 설정
-  schemas: {
-    schemas: ga4Schemas,
-    onSchemaError: (error) => {
-      console.error("GA4 스키마 검증 오류:", error);
-    },
-    abortOnError: false, // 오류 시에도 이벤트 전송 계속
-  },
-});
-```
+</Steps>

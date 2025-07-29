@@ -2,7 +2,7 @@ import { Callout } from "nextra/components";
 
 # Impression
 
-Intersection Observer API를 사용하여 노출 이벤트를 추적합니다. `createTracker`의 리턴 배열의 첫 번째 요소인 이벤트 컴포넌트 중 하나입니다.
+[Intersection Observer API](https://developer.mozilla.org/docs/Web/API/Intersection_Observer_API)를 사용하여 노출 이벤트를 추적합니다. `createTracker`의 리턴 배열의 첫 번째 요소인 이벤트 컴포넌트 중 하나입니다.
 
 ```tsx
 import { createTracker } from "@offlegacy/event-tracker";
@@ -65,15 +65,15 @@ function Impression<TKey extends keyof TSchemas>({
 
 스키마가 있을 경우:
 
-| Props    | 타입                                                 | 설명                 | 필수 |
-| -------- | ---------------------------------------------------- | -------------------- | ---- |
-| `params` | `SchemaParams \| (context: Context) => SchemaParams` | 스키마 기반 매개변수 | O    |
+| Props    | 타입                                                 | 설명                 |
+| -------- | ---------------------------------------------------- | -------------------- |
+| `params` | `SchemaParams \| (context: Context) => SchemaParams` | 스키마 기반 매개변수 |
 
 스키마가 없을 경우:
 
-| Props    | 타입                                               | 설명            | 필수 |
-| -------- | -------------------------------------------------- | --------------- | ---- |
-| `params` | `EventParams \| (context: Context) => EventParams` | 이벤트 매개변수 | O    |
+| Props    | 타입                                               | 설명            |
+| -------- | -------------------------------------------------- | --------------- |
+| `params` | `EventParams \| (context: Context) => EventParams` | 이벤트 매개변수 |
 
 ---
 
@@ -119,7 +119,7 @@ function Impression<TKey extends keyof TSchemas>({
 
 ## Examples
 
-### 조건부 추적
+### 조건부 이벤트
 
 ```tsx
 <Track.Impression
@@ -131,7 +131,7 @@ function Impression<TKey extends keyof TSchemas>({
 </Track.Impression>
 ```
 
-### 스로틀 노출 추적
+### 스로틀 이벤트
 
 ```tsx
 <Track.Impression

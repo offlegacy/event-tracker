@@ -7,8 +7,8 @@ import HomePage from "@/components/home-page";
 <HomePage
   description="React 애플리케이션을 위한 완전한 이벤트 트래킹 시스템"
   get_started="시작하기"
-  featureCardsTitle="‘어떻게 트래킹할지’가 아닌 ‘무엇을 트래킹할지’에 집중하세요!"
-  featureCards={[
+  featureSectionTitle="‘어떻게 트래킹할지’가 아닌 ‘무엇을 트래킹할지’에 집중하세요!"
+  featureSectionContents={[
     {
       title: "선언적 API",
       description: "트래킹을 위한 별도의 설정이나 복잡한 코드 없이, 컴포넌트 형태로 직관적으로 선언할 수 있습니다.",
@@ -34,9 +34,9 @@ import HomePage from "@/components/home-page";
         "비동기 상황에서도 이벤트가 의도한 순서대로 처리되도록 설계되어, 복잡한 사용자 흐름에서도 정확한 트래킹이 가능합니다.",
     },
     {
-      title: "강력한 데이터 타입 검증",
+      title: "데이터 검증",
       description:
-        "Zod 기반의 정적 스키마 검증으로 런타임 이전에 오류를 방지하고, 수집되는 이벤트 데이터의 신뢰도를 보장합니다.",
+        "Zod 기반의 정적 스키마 검증으로 빌드 타임에서 오류를 방지하고, 수집되는 이벤트 데이터의 신뢰도를 보장합니다.",
     },
   ]}
 />
