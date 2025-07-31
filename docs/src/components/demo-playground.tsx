@@ -4,7 +4,7 @@ import { highlight, Pre, type HighlightedCode } from "codehike/code";
 import { DemoButton } from "./demo-button";
 import { useTheme } from "nextra-theme-docs";
 import { useSystemDarkMode } from "../logo/useSystemDarkMode";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
 
 const code = `import { createTracker } from "@offlegacy/event-tracker";
@@ -69,7 +69,8 @@ export function DemoCode() {
           </div>
         </div>
         <div className="relative overflow-x-auto p-6">
-          <Pre className="relative z-0 !m-0 !bg-transparent !p-0 text-sm leading-relaxed" code={highlighted} />
+          {/* @ts-expect-error - Pre is not a valid JSX element */}
+          <Pre code={highlighted} className="relative z-0 !m-0 !bg-transparent !p-0 text-sm leading-relaxed" />
         </div>
       </div>
       <div className="absolute bottom-6 right-6 z-10">

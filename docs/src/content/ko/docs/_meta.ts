@@ -39,8 +39,8 @@ export default {
     },
   },
   components: { title: "Components" },
-  "use-tracker": {
-    title: "useTracker",
+  hook: {
+    title: "Hook",
     theme: {
       toc: true,
       layout: "default",
