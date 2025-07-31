@@ -4,7 +4,7 @@ import { highlight, Pre, type HighlightedCode } from "codehike/code";
 import { DemoButton } from "./demo-button";
 import { useTheme } from "nextra-theme-docs";
 import { useSystemDarkMode } from "../logo/useSystemDarkMode";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 
 const code = `import { createTracker } from "@offlegacy/event-tracker";
