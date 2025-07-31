@@ -67,9 +67,9 @@ React의 Context API를 기반으로 구현되었습니다. 애플리케이션 �
 
 이 외에도 다양한 사용자 인터랙션 및 생명주기 이벤트에 대응하는 컴포넌트를 제공하거나 커스텀하여 사용할 수 있습니다. 각 컴포넌트는 `context`, `params` prop을 통해 해당 이벤트와 관련된 특정 데이터를 전달받고 활용할 수 있습니다.
 
-### 커스텀 훅 (`useTracker`)
+### 커스텀 훅
 
-컴포넌트의 생명주기나 DOM 이벤트와 직접적으로 관련되지 않은, 보다 복잡하거나 조건부적인 이벤트 트래킹이 필요할 때 사용합니다. `useTracker` 훅을 사용하면 `Track.Provider`로부터 컨텍스트 정보를 가져오고, 정의된 트래킹 로직을 명령형으로 사용할 수 있습니다.
+컴포넌트의 생명주기나 DOM 이벤트와 직접적으로 관련되지 않은, 보다 복잡하거나 조건부적인 이벤트 트래킹이 필요할 때 사용합니다. 훅을 사용하면 `Track.Provider`로부터 컨텍스트 정보를 가져오고, 정의된 트래킹 로직을 명령형으로 사용할 수 있습니다.
 
 ## 다음 단계
 
@@ -78,6 +78,6 @@ React의 Context API를 기반으로 구현되었습니다. 애플리케이션 �
 - [왜 Event Tracker인가요?](/docs/why-event-tracker): Event Tracker의 필요성과 주요 기능 알아보기
 - [`createTracker`](/docs/create-tracker): 트래커 인스턴스 생성 및 설정 방법 알아보기
 - [Components](/docs/components): 사용 가능한 모든 트래킹 컴포넌트와 사용 예시 살펴보기
-- [`useTracker`](/docs/use-tracker): 커스텀 훅을 활용한 사용자 지정 트래킹 방법 알아보기
+- [Hook](/docs/hook): 커스텀 훅을 활용한 사용자 지정 트래킹 방법 알아보기
 - [배칭](/docs/batching): 이벤트 배칭을 통한 성능 최적화 전략 알아보기
 - [데이터 검증](/docs/data-type-validation): Zod 스키마를 활용한 데이터 유효성 검증하기
