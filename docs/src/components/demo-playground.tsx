@@ -69,7 +69,6 @@ export function DemoCode() {
           </div>
         </div>
         <div className="relative overflow-x-auto p-6">
-          {/* @ts-expect-error - Pre is not a valid JSX element */}
           <Pre code={highlighted} className="relative z-0 !m-0 !bg-transparent !p-0 text-sm leading-relaxed" />
         </div>
       </div>
