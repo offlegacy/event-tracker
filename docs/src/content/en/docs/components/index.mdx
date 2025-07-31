@@ -1,6 +1,6 @@
 # Provider
 
-The `Provider` component attaches and provides the initial context to your application. It is one of the event components included as the first element of the tuple returned by `createTracker`.
+The `Provider` component initializes and supplies context to the application. It is one of the event components returned as the first element of the `createTracker` tuple.
 
 ```tsx
 import { createTracker } from '@offlegacy/event-tracker'
@@ -16,17 +16,54 @@ function App() {
 }
 ```
 
+## Signature
+
+```ts
+function Provider({ children, initialContext }: { children: ReactNode; initialContext?: TContext }): JSX.Element;
+```
+
 ## Reference
 
 ### Props
 
-| Props            | Type      | Description           | Example             |
-| ---------------- | --------- | --------------------- | ------------------- |
-| `initialContext` | `Context` | Initial context value | `{ userId: '123' }` |
+| Prop             | Type      | Description           | Required |
+| ---------------- | --------- | --------------------- | -------- |
+| `initialContext` | `Context` | Initial context value | Yes      |
 
 ---
 
-#### `initialContext` (required)
+#### `initialContext` (Required)
 
-- Type: `Context`
-- Description: The initial context value provided to the application.
+- **Type:** `Context`
+- **Description:** Defines the initial context value.
+
+## Examples
+
+### With Initial Context
+
+```tsx
+import { createTracker } from "@offlegacy/event-tracker";
+
+type Context = {
+  userId: string;
+  trackingEnabled: boolean;
+};
+
+const [Track] = createTracker<Context>({});
+
+function App() {
+  return (
+    <Track.Provider
+      initialContext={{
+        userId: "user-123",
+        trackingEnabled: true,
+      }}
+    >
+      <MainPage />
+    </Track.Provider>
+  );
+}
+```
+
+`initialContext` defines the initial state accessible to all nested tracking components.
+This context can be used within `enabled`, `params`, and `SetContext`.

@@ -1,0 +1,115 @@
+import { Steps } from "nextra/components";
+
+# Integrating with Google Analytics
+
+This guide walks you through integrating GA4 (Google Analytics 4) to track user behavior step by step.
+
+<Steps>
+
+## Set Up GA4 Script
+
+Add the GA4 script to the `<head>` of your `index.html` to enable `gtag`.
+
+```html
+<!-- index.html -->
+<head>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    gtag("js", new Date());
+    gtag("config", "GA_MEASUREMENT_ID");
+  </script>
+</head>
+```
+
+## Define `sendGA4` Function
+
+Create a wrapper function to safely call `gtag` with validation and warnings.
+
+```ts
+export function sendGA4(eventName: string, eventParams: Record<string, unknown> = {}): void {
+  if (typeof window === "undefined") return;
+  if (typeof window.gtag !== "function") {
+    console.warn("[GA4] gtag function is not loaded.");
+    return;
+  }
+  window.gtag("event", eventName, eventParams);
+}
+```
+
+## Define Tracking Events
+
+Configure `createTracker` with GA4 event sending logic and set up DOM, impression, and page view events.
+
+```tsx
+import { createTracker } from "@offlegacy/event-tracker";
+import { sendGA4 } from "./sendGA4";
+
+interface GA4Context {
+  userId: string;
+}
+
+interface GA4EventParams {
+  eventName: string;
+}
+
+export const [Track, useTracker] = createTracker<GA4Context, GA4EventParams>({
+  DOMEvents: {
+    onClick: (params, ctx) => sendGA4(params.eventName, { ...params, user_id: ctx.userId }),
+  },
+  impression: {
+    onImpression: (params, ctx) => sendGA4("impression", { ...params, user_id: ctx.userId }),
+    options: { threshold: 0.5, freezeOnceVisible: true },
+  },
+});
+```
+
+## Use in a Blog Page
+
+Wrap your app in `Track.Provider` and use `<Track.PageView>`, `<Track.Impression>`, and `<Track.Click>` components to declaratively record events.
+
+```tsx
+import { Track } from "./event-tracker";
+
+function App() {
+  return (
+    <Track.Provider initialContext={{ userId: "test-user" }}>
+      <Post post={{ id: 1, title: "Hello World", slug: "hello-world", content: "This is a test post." }} />
+    </Track.Provider>
+  );
+}
+
+interface PostProps {
+  id: number;
+  title: string;
+  slug: string;
+  content: string;
+}
+
+function Post({ post }: PostProps) {
+  return (
+    <article>
+      <h1>{post.title}</h1>
+
+      <Track.Impression params={{ eventName: `content-${post.id}` }}>
+        <div>{post.content}</div>
+      </Track.Impression>
+
+      <div className="actions">
+        <Track.Click params={{ eventName: "share_twitter" }}>
+          <button>Share on Twitter</button>
+        </Track.Click>
+
+        <Track.Click params={{ eventName: "share_facebook" }}>
+          <button>Share on Facebook</button>
+        </Track.Click>
+      </div>
+    </article>
+  );
+}
+```
+
+</Steps>

@@ -1,0 +1,72 @@
+import { Steps } from "nextra/components";
+
+# Using with Zod
+
+Learn how to implement powerful data type validation by integrating [Zod](https://zod.dev/).  
+Schema-based validation with Zod helps prevent errors before runtime and ensures data reliability.
+
+<Steps>
+
+## Define Schemas
+
+Declare event-specific fields and types using Zod objects.
+
+```tsx {4-5}
+import { z } from "zod";
+
+export const schemas = {
+  page_view: z.object({ title: z.string() }),
+  click_button: z.object({ target: z.string() }),
+};
+```
+
+## Define Tracking Events
+
+Connect the schemas to `createTracker` to automatically validate event parameters.
+
+```tsx {5-9}
+import { createTracker } from "@offlegacy/event-tracker";
+import { schemas } from "./schemas";
+
+export const [Track, useTracker] = createTracker<{}, {}, typeof schemas>({
+  schemas: {
+    schemas,
+    onSchemaError: (error) => console.error("Schema validation failed:", error),
+    abortOnError: true,
+  },
+});
+```
+
+## Use Validated Events
+
+Send type-safe events via declarative components and the `track` function.
+
+```tsx {11, 17-19}
+import { Track } from "./event-tracker";
+
+function HomePage() {
+  return (
+    <main>
+      <h1>Homepage</h1>
+
+      {/* ✅ Valid with Zod schema, no type error */}
+      <Track.PageView params={{ title: "Homepage" }} />
+
+      {/* 🚨 Invalid with Zod schema, type error */}
+      {/* <Track.PageView params={{ title: 123 }} /> */}
+
+      {/* ✅ Valid with Zod schema, no type error */}
+      <Track.Click params={{ target: "start-button" }}>
+        <button>Get Started</button>
+      </Track.Click>
+
+      {/* 🚨 Invalid with Zod schema, type error */}
+      {/* <Track.Click params={{}}>
+          <button onClick={() => track({ target: "start-button" })}>Get Started</button>
+        </Track.Click> */}
+    </main>
+  );
+}
+```
+
+</Steps>

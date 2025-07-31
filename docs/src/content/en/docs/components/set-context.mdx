@@ -1,23 +1,54 @@
+import { Callout } from "nextra/components";
+
 # SetContext
 
-Sets or updates the tracking context.
+Sets or updates the tracking context. It is one of the utility components returned as the first element of the `createTracker` tuple.
 
 ```tsx
-import { createTracker } from '@offlegacy/event-tracker'
+import { createTracker } from "@offlegacy/event-tracker";
 
-const [Track] = createTracker({...})
+const [Track] = createTracker({ ... });
 
 function App() {
   return (
-    <Track.Provider initialContext={{ userId: 'user-1' }}>
-      <Track.SetContext
-        context={{ lastActive: new Date() }}
-      />
+    <Track.Provider initialContext={{ userId: "user-1" }}>
+      <Track.SetContext context={{ lastActive: new Date() }} />
     </Track.Provider>
-  )
+  );
 }
 ```
 
+## Signature
+
+```ts
+function SetContext({ context }: { context: TContext | ((prevContext: TContext) => TContext) }): null;
+```
+
+## Reference
+
 ### Props
 
-- `context: Context | ((prevContext: Context) => Context)` - New context value or update function
+| Prop      | Type                                             | Description                                                             | Required |
+| --------- | ------------------------------------------------ | ----------------------------------------------------------------------- | -------- |
+| `context` | `Context \| ((prevContext: Context) => Context)` | New context value or a function to update based on the previous context | Yes      |
+
+---
+
+#### `context` (Required)
+
+- **Type:** `Context | ((prevContext: Context) => Context)`
+- **Description:** You can either specify a new context directly or update it based on the previous context. Once rendered, this component updates the tracking context with the specified value.
+
+## Examples
+
+### Set Static Context
+
+```tsx
+<Track.SetContext context={{ userId: "user-123" }} />
+```
+
+### Update Based on Previous Context
+
+```tsx
+<Track.SetContext context={(prev) => ({ ...prev, lastSeen: new Date() })} />
+```

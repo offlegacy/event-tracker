@@ -13,16 +13,16 @@ type FeatureCardText = {
 
 type Props = {
   description: string;
-  get_started: string;
+  startedText: string;
   featureSectionTitle: string;
   featureSectionContents: FeatureCardText[];
 };
 
 export default async function HomePage({
   description,
-  get_started,
-  featureSectionTitle: featureCardsTitle,
-  featureSectionContents: featureCards,
+  startedText,
+  featureSectionTitle,
+  featureSectionContents,
 }: Props) {
   return (
     <main className="mx-auto flex max-w-screen-xl flex-col gap-48 break-keep px-6 py-32">
@@ -40,7 +40,7 @@ export default async function HomePage({
                 href="/docs/introduction"
                 className="flex items-center justify-center rounded-lg bg-blue-500 px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-600"
               >
-                {get_started}
+                {startedText}
               </Link>
             </TrackClick>
             <InstallCopyButton />
@@ -51,9 +51,9 @@ export default async function HomePage({
         </div>
       </div>
       <div className="flex flex-col items-center justify-center gap-16">
-        <p className="text-center text-3xl font-bold">{featureCardsTitle}</p>
+        <p className="text-center text-3xl font-bold">{featureSectionTitle}</p>
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {featureCards.map((card) => (
+          {featureSectionContents.map((card) => (
             <FeatureCard key={card.title} title={card.title} description={card.description} />
           ))}
         </div>

@@ -1,69 +1,98 @@
-# Data Type Validation
+import { Callout, Steps } from "nextra/components";
 
-## Overview
+# Data Validation
 
-Ensuring accurate data types in event tracking is crucial for data reliability and meaningful analysis.  
-`event-tracker` provides built-in data type validation using [Zod](https://zod.dev/), a TypeScript-first schema validation library.
-This feature allows you to define schemas for your event parameters, ensuring that the data conforms to the expected structure before processing.
-This is particularly useful for maintaining consistency and preventing errors in event tracking.
+Event Tracker provides schema-based data type validation using [Zod](https://zod.dev/) to ensure the accuracy of event parameters.  
+With this feature, events are validated against predefined structures before being collected, helping to ensure data reliability, prevent errors, and provide a foundation for structured analytics.
 
-## Configuration
+## Usage
 
-To configure data type validation in `event-tracker`, you need to define your schemas using Zod and pass them to the tracker configuration.
+Define Zod schemas and pass them to the `schemas` option in the `createTracker` configuration.
 
-### Options
+```tsx
+import { createTracker } from "@offlegacy/event-tracker";
+import { z } from "zod";
 
-- **schemas**: A record of Zod schemas that define the structure of your event parameters.
-- **onSchemaError**: A callback function that is invoked when schema validation fails.
-- **abortOnError**: A boolean indicating whether to abort the event processing on validation error. `false` by default.
+const schemas = {
+  page_view: z.object({
+    title: z.string(),
+  }),
+  click_button: z.object({
+    target: z.string(),
+  }),
+};
 
-## Example Flow
+const [Track] = createTracker<{}, {}, typeof schemas>({
+  schemas: {
+    schemas,
+    onSchemaError: (error) => {
+      console.error("Schema validation failed:", error);
+    },
+    abortOnError: true,
+  },
+});
+```
 
-1. **Define Schemas**: Use Zod to define the expected structure of your event parameters.
+## Reference
 
-   ```typescript
-   import { z } from "zod";
+| Option          | Type                                         | Description                                           | Default  |
+| --------------- | -------------------------------------------- | ----------------------------------------------------- | -------- |
+| `schemas`       | `Record<string, ZodSchema>`                  | Mapping of event names to Zod schemas                 | Required |
+| `onSchemaError` | `(error: ZodError) => void \| Promise<void>` | Function called when schema validation fails          | Optional |
+| `abortOnError`  | `boolean`                                    | Whether to abort event processing on validation error | `false`  |
 
-   const page_view = z.object({
-     title: z.string(),
-   });
+<Callout type="info">
+  When `abortOnError` is set to `true`, events that fail schema validation will not be tracked.
+</Callout>
 
-   const click_button = z.object({
-     target: z.string(),
-   });
-   ```
+## Examples
 
-2. **Configure Tracker**: Pass the schemas to the `createTracker` function.
+<Steps>
 
-   ```tsx
-   import { createTracker } from "@offlegacy/event-tracker";
+### Define Zod Schemas
 
-   type schemas = {
-     page_view;
-     clic_button;
-   };
+```ts
+import { z } from "zod";
 
-   const [Track] = createTracker<{}, {}, typeof schemas>({
-     schema: {
-       schemas,
-       onSchemaError: (error) => {
-         console.error("Schema validation error:", error);
-       },
-       abortOnError: true,
-     },
-     // other configurations...
-   });
-   ```
+const schemas = {
+  page_view: z.object({
+    title: z.string(),
+  }),
+  click_button: z.object({
+    target: z.string(),
+  }),
+};
+```
 
-3. **Validate Events**: When events are tracked, they are validated against the defined schemas. It will also be validated in advance using TypeScript.
-   ```tsx
-   <Track.PageView schema='page_view' params={{ title: "Home Page" }} />
-   <Track.Click schema='click_button' params={{ target: "submit-button" }} />
-   ```
+### Register with `createTracker`
 
-## Important Notes
+```tsx
+const [Track] = createTracker<{}, {}, typeof schemas>({
+  schemas: {
+    schemas,
+    abortOnError: true,
+    onSchemaError: (error) => {
+      console.error("Schema error occurred", error);
+    },
+  },
+});
+```
 
-- Zod schemas are by default validated with [`.parse()`](https://zod.dev/?id=parse).
-- We recommend defining schemas outside of `createTracker` function, then assigning `typeof schemas` in the third generic type argument of `createTracker` for smooth type inference.
+### Schema-Based Event Tracking
 
-_We plan to support other schema validation libraries in the future._
+```tsx
+<Track.PageView schema="page_view" params={{ title: "Home" }} />
+<Track.Click schema="click_button" params={{ target: "submit-button" }} />
+```
+
+If schema validation passes, the event is sent to `send` or the respective handler.
+If it fails, `onSchemaError` is triggered, and if `abortOnError` is `true`, the event is discarded.
+
+</Steps>
+
+## Notes
+
+- Zod schemas use [parse](https://zod.dev/?id=parse) for validation by default.
+- For better type inference, define schemas outside of the `createTracker` function and pass `typeof schemas` as the third type argument to `createTracker`.
+
+_Support for additional schema validation libraries is planned for the future._

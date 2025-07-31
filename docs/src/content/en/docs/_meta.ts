@@ -26,6 +26,7 @@ export default {
       layout: "default",
     },
   },
+  // TODO: Quick Start
   "api-reference-separator": {
     title: "API Reference",
     type: "separator",
@@ -46,7 +47,7 @@ export default {
     },
   },
   "advanced-separator": {
-    title: "Guides",
+    title: "Guide",
     type: "separator",
   },
   batching: {
@@ -57,7 +58,7 @@ export default {
     },
   },
   "data-type-validation": {
-    title: "Data Type Validation",
+    title: "Data Validation",
     theme: {
       toc: true,
       layout: "default",
@@ -69,6 +70,20 @@ export default {
   },
   "basic-example": {
     title: "Basic",
+    theme: {
+      toc: true,
+      layout: "default",
+    },
+  },
+  "with-google-analytics-example": {
+    title: "w/ Google Analytics",
+    theme: {
+      toc: true,
+      layout: "default",
+    },
+  },
+  "with-zod-example": {
+    title: "w/ Zod",
     theme: {
       toc: true,
       layout: "default",

@@ -1,51 +1,67 @@
+import { Callout } from "nextra/components";
+
 # useTracker
 
-[`createTracker`](/docs/create-tracker)에서 두 번째 배열 항목으로 반환되는 커스텀 React hook입니다. 이 훅은 컴포넌트 내에서 이벤트 트래킹 기능과 컨텍스트 관리에 접근할 수 있게 합니다.
+Inside a React component, you can configure the tracking context or imperatively trigger events. `useTracker` is the second item returned from [`createTracker`](/docs/create-tracker).
 
-예를 들어, 특정 비동기 작업이 완료된 후 또는 사용자의 특정 입력 값에 따라 이벤트를 발생시켜야 할 때 유용합니다.
+It is primarily used to manually trigger events after a component mounts, upon user input, or after asynchronous tasks complete.
 
 ```tsx
 import { createTracker } from "@offlegacy/event-tracker";
 
-const [Track, useTracker] = createTracker({...})
+const [Track, useTracker] = createTracker({...});
 
 function MyComponent() {
   const { setContext, getContext, track, trackWithSchema } = useTracker();
 
-  return (
-    // 컴포넌트 내용
-  );
+  // Imperative event tracking
 }
 ```
 
-### 반환 값
+## Signature
 
-이 hook은 다음 속성을 포함하는 객체를 반환합니다:
+```ts
+function useTracker(): {
+  send: (params: EventParamsWithContext<TContext, TEventParams>) => TaskReturnType<TTaskResult> | undefined;
+  setContext: (context: TContext | ((prevContext: TContext) => TContext)) => void;
+  getContext: () => TContext;
+  trackWithSchema: TUseTrackerTrackWithSchema;
+  track: TUseTrackerTrack;
+};
+```
 
-#### setContext
+## Reference
 
-- Type: `(context: Context) => void`
-- 현재 트래킹 컨텍스트를 설정하거나 업데이트합니다.
-- 사용자 정보, 세션 데이터 등을 업데이트하는 데 사용할 수 있습니다.
+### Returns
+
+| Property          | Type                                                            | Description                                         |
+| ----------------- | --------------------------------------------------------------- | --------------------------------------------------- |
+| `setContext`      | `(context: Context \| (prev: Context) => Context) => void`      | Sets or updates the tracking context                |
+| `getContext`      | `() => Context`                                                 | Returns the current tracking context                |
+| `track`           | `Record<keyof EventNames, (params, options?) => void>`          | Collection of standard event tracking functions     |
+| `trackWithSchema` | `Record<keyof Schemas, ({ schema, params }, options?) => void>` | Collection of schema-validated event tracking funcs |
+
+---
+
+#### `setContext`
 
 ```tsx
 const { setContext } = useTracker();
 
-// 새로운 컨텍스트 설정
+// Set a new context
 setContext({ userId: "user-123" });
 
-// 이전 값에 기반한 컨텍스트 업데이트
+// Update context based on previous value
 setContext((prev) => ({
   ...prev,
   lastActive: new Date(),
 }));
 ```
 
-#### getContext
+- Sets or updates the current tracking context.
+- Useful for updating user information, session data, etc.
 
-- Type: `() => Context`
-- 현재 트래킹 컨텍스트를 반환합니다.
-- 현재 트래킹 상태에 접근하는 데 유용합니다.
+#### `getContext`
 
 ```tsx
 const { getContext } = useTracker();
@@ -54,20 +70,18 @@ const currentContext = getContext();
 console.log("Current user:", currentContext.userId);
 ```
 
-#### track
+- Returns the current tracking context.
+- Useful for accessing the current tracking state.
 
-- Type: `Record<keyof EventNames, (params: EventParams, options?: TrackingOptions) => void>`
-- 모든 구성된 이벤트 트래킹 함수를 포함하는 객체
-- key는 트래커 구성에 정의된 이벤트 이름과 일치합니다.
-- 고급 제어를 위한 선택적 `TrackingOptions`를 허용합니다.
+#### `track`
 
 ```tsx
 const { track } = useTracker();
 
-// 간단한 클릭 이벤트 추적
+// Simple click event tracking
 track.onClick({ buttonId: "submit" });
 
-// 조건부 로직과 함께 추적
+// Conditional tracking
 track.onClick(
   { buttonId: "premium" },
   {
@@ -75,7 +89,7 @@ track.onClick(
   },
 );
 
-// 디바운싱과 함께 추적
+// Tracking with debouncing
 track.onClick(
   { buttonId: "search" },
   {
@@ -83,7 +97,7 @@ track.onClick(
   },
 );
 
-// 스로틀링과 함께 추적
+// Tracking with throttling
 track.onClick(
   { buttonId: "rapid-action" },
   {
@@ -91,24 +105,23 @@ track.onClick(
   },
 );
 
-// 노출 이벤트 추적
+// Impression event tracking
 track.onImpression({ elementId: "hero" });
 ```
 
-#### trackWithSchema
+- An object containing all configured event tracking functions.
+- Keys match event names defined in the tracker configuration.
+- Supports optional `TrackingOptions` for advanced control.
 
-- Type: `Record<keyof Schemas, (params: SchemaParams, options?: TrackingOptions) => void>`
-- 스키마 검증이 포함된 모든 구성된 이벤트 트래킹 함수를 포함하는 객체
-- key는 트래커 구성에 정의된 이벤트 이름과 일치합니다.
-- 고급 제어를 위한 선택적 `TrackingOptions`를 허용합니다.
+#### `trackWithSchema`
 
 ```tsx
 const { trackWithSchema } = useTracker();
 
-// 스키마와 함께 클릭 이벤트 추적
+// Track a click event with schema validation
 trackWithSchema.onClick({ schema: "click", params: { buttonId: "submit" } });
 
-// 조건부 로직과 스키마와 함께 추적
+// Conditional tracking with schema
 trackWithSchema.onClick(
   {
     schema: "premium_click",
@@ -119,7 +132,7 @@ trackWithSchema.onClick(
   },
 );
 
-// 스로틀링과 스키마와 함께 추적
+// Tracking with schema and throttling
 trackWithSchema.onImpression(
   {
     schema: "impression",
@@ -131,51 +144,76 @@ trackWithSchema.onImpression(
 );
 ```
 
-### TrackingOptions
+- An object containing all schema-validated event tracking functions.
+- Keys match event names defined in the tracker configuration.
+- Supports optional `TrackingOptions` for advanced control.
 
-`track`과 `trackWithSchema` 메서드 모두 다음 옵션을 포함하는 선택적 두 번째 매개변수를 허용합니다:
+## TrackingOptions
 
-- `enabled?: boolean | ((context: Context, params: EventParams) => boolean)` - 이벤트 추적을 조건부로 활성화/비활성화
-- `debounce?: DebounceConfig` - 연속적인 이벤트 발생을 방지하는 디바운스 설정
-- `throttle?: ThrottleConfig` - 이벤트 발생 빈도를 제한하는 스로틀 설정
+Both `track` and `trackWithSchema` accept the following optional configuration:
 
-**참고:** `debounce`와 `throttle`은 상호 배타적이며 함께 사용할 수 없습니다.
+| Option     | Type                                        | Description                                         |
+| ---------- | ------------------------------------------- | --------------------------------------------------- |
+| `enabled`  | `boolean \| ((context, params) => boolean)` | Enables/disables event tracking conditionally       |
+| `debounce` | `DebounceConfig`                            | Limits consecutive events (triggers last call only) |
+| `throttle` | `ThrottleConfig`                            | Prevents repeated calls in a short time window      |
 
-#### DebounceConfig
+<Callout type="info">
+  Note: `debounce` and `throttle` are mutually exclusive and cannot be used together. A type error will prevent invalid
+  usage.
+</Callout>
 
-```tsx
+#### `DebounceConfig`
+
+```ts
 interface DebounceConfig {
-  delay: number; // 밀리초 단위의 지연 시간
-  leading?: boolean; // 선행 에지에서 실행 (기본값: false)
-  trailing?: boolean; // 후행 에지에서 실행 (기본값: true)
+  delay: number;
+  leading?: boolean; // Default: false
+  trailing?: boolean; // Default: true
 }
 ```
 
-#### ThrottleConfig
+#### `ThrottleConfig`
 
-```tsx
+```ts
 interface ThrottleConfig {
-  delay: number; // 밀리초 단위의 지연 시간
-  leading?: boolean; // 선행 에지에서 실행 (기본값: true)
-  trailing?: boolean; // 후행 에지에서 실행 (기본값: false)
+  delay: number;
+  leading?: boolean; // Default: true
+  trailing?: boolean; // Default: false
 }
 ```
 
-### 사용 예제
+## Best Practices
 
-다음은 이 hook을 사용하는 예제입니다:
+### Context Management
+
+- Use `setContext` to update global state that affects multiple events.
+- Consider the functional form of `setContext` for updates based on previous state.
+
+### Event Tracking
+
+- Use the event functions from `track` or `trackWithSchema` wherever possible.
+
+### Performance Optimization
+
+- Avoid calling event tracking functions during rendering.
+- Use [Batching](/docs/batching) to improve performance.
+- Use [Data Validation](/docs/data-type-validation) to ensure data safety.
+
+## Examples
+
+### Basic
 
 ```tsx
 import { createTracker } from "@offlegacy/event-tracker";
 
 const [Track, useTracker] = createTracker({
   onClick: (params) => {
-    // 이벤트를 애널리틱스 서비스로 전송
+    // Send event to analytics service
     analytics.track(params);
   },
   pageView: {
     onPageView: (params) => {
-      // Send event to analytics service
       analytics.pageView(params);
     },
   },
@@ -185,15 +223,15 @@ function UserProfile({ userId }) {
   const { setContext, track, trackWithSchema } = useTracker();
 
   useEffect(() => {
-    // 사용자 ID가 변경될 때 컨텍스트 업데이트
+    // Update context when userId changes
     setContext({ userId });
 
-    // 페이지 뷰 이벤트 트래킹
+    // Track page view event
     track.onPageView({ page: "profile" });
   }, [userId]);
 
   const handleSettingsClick = () => {
-    // 사용자 설정 이벤트 트래킹
+    // Track user settings event
     trackWithSchema.onClick({ schema: "settings", params: { userId } });
   };
 
@@ -205,21 +243,3 @@ function UserProfile({ userId }) {
   );
 }
 ```
-
-### Best Practices
-
-1. **컨텍스트 업데이트**
-
-   - 여러 이벤트에 영향을 주는 전역 상태를 업데이트하기 위해 `setContext`를 사용하세요.
-   - 이전 상태에 기반한 업데이트를 위해 `setContext`의 함수 형태를 고려하세요.
-
-2. **이벤트 트래킹**
-
-   - 가능한 경우 `track` 또는 `trackWithSchema`에서 이벤트 함수를 사용하세요.
-
-3. **성능**
-
-   - 렌더링 중에 이벤트 트래킹 함수를 호출하지 마세요.
-   - 콜백 또는 효과를 사용하세요.
-   - [배칭](/docs/batching)을 사용하여 성능을 향상시키세요.
-   - [데이터 타입 검증](/docs/data-type-validation)을 사용하여 데이터 타입 안전성을 확인하세요.

@@ -1,6 +1,9 @@
+import { Callout } from "nextra/components";
+
 # DOMEvent
 
-Used for tracking DOM events. Wraps a child component and fires the specified event handler.
+Used to track DOM events. Wraps a child component and triggers the specified event handler.  
+It is one of the event components returned as the first element of the `createTracker` tuple.
 
 ```tsx
 import { createTracker } from "@offlegacy/event-tracker";
@@ -16,7 +19,7 @@ const [Track] = createTracker({
 function App() {
   return (
     <Track.Provider initialContext={{}}>
-      <Track.DOMEvent type="onFocus" params={{...}}>
+      <Track.DOMEvent type="onFocus" params={{ ... }}>
         <input />
       </Track.DOMEvent>
     </Track.Provider>
@@ -24,23 +27,114 @@ function App() {
 }
 ```
 
+## Signature
+
+```ts
+function DOMEvent<TKey extends keyof TSchemas>({
+  children,
+  type,
+  eventName,
+  enabled,
+  ...props
+}: {
+  children: React.ReactNode;
+  type: DOMEventNames;
+  eventName?: string;
+  enabled?: EnabledCondition<TContext, TEventParams>;
+} & TrackingOptions<TContext, TEventParams> &
+  UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>): JSX.Element;
+```
+
+## Reference
+
 ### Props
 
-- `type: DOMEventNames` - Event name (e.g., onClick, onFocus)
-- With schema
-  - `params: SchemaParams | (context: Context) => SchemaParams` - Parameters based on schema
-  - `schema: string` - A name of schema that will be used to validate the event parameters
-- Without schema
-  - `params: EventParams | (context: Context) => EventParams` - Event parameters
-- `enabled?: boolean | ((context: Context, params: EventParams) => boolean)` - Conditionally enable/disable event tracking (default: `true`)
-- `debounce?: DebounceConfig` - Debounce configuration to prevent rapid successive events
-- `throttle?: ThrottleConfig` - Throttle configuration to limit event frequency
+| Prop       | Type                                                              | Description                                                | Required |
+| ---------- | ----------------------------------------------------------------- | ---------------------------------------------------------- | -------- |
+| `type`     | `DOMEventNames`                                                   | Event name (e.g., `"onClick"`, `"onFocus"`)                | Yes      |
+| `enabled`  | `boolean \| ((context: Context, params: EventParams) => boolean)` | Conditionally enable/disable tracking (default: `true`)    | -        |
+| `debounce` | `DebounceConfig`                                                  | Debounce configuration to prevent rapid consecutive events | -        |
+| `throttle` | `ThrottleConfig`                                                  | Throttle configuration to limit event frequency            | -        |
+| `schema`   | `string`                                                          | Schema name for validating event parameters                | -        |
 
-**Note:** `debounce` and `throttle` are mutually exclusive and cannot be used together.
+<Callout type="info">
+  Note: `debounce` and `throttle` are mutually exclusive and cannot be used together. A type error prevents invalid
+  usage.
+</Callout>
 
-### Tracking Options Examples
+The type of the `params` prop differs depending on whether a schema is used.
 
-#### Conditional Tracking
+With schema:
+
+| Prop     | Type                                                 | Description             |
+| -------- | ---------------------------------------------------- | ----------------------- |
+| `params` | `SchemaParams \| (context: Context) => SchemaParams` | Schema-based parameters |
+
+Without schema:
+
+| Prop     | Type                                               | Description      |
+| -------- | -------------------------------------------------- | ---------------- |
+| `params` | `EventParams \| (context: Context) => EventParams` | Event parameters |
+
+---
+
+#### `params` (Required)
+
+With schema:
+
+- **Type:** `SchemaParams | (context: Context) => SchemaParams`
+- **Description:** Schema-based parameters.
+
+Without schema:
+
+- **Type:** `EventParams | (context: Context) => EventParams`
+- **Description:** Standard event parameters.
+
+#### `enabled`
+
+- **Type:** `boolean | ((context: Context, params: EventParams) => boolean)`
+- **Description:** Conditionally enable or disable event tracking (default: `true`).
+
+#### `debounce`
+
+- **Type:** `DebounceConfig`
+- **Description:** Configure debouncing to avoid multiple rapid event triggers.
+
+#### `throttle`
+
+- **Type:** `ThrottleConfig`
+- **Description:** Configure throttling to limit event frequency.
+
+#### `schema`
+
+When using schemas:
+
+- **Type:** `string`
+- **Description:** Schema name used to validate event parameters.
+
+## Examples
+
+### Custom Event Handler Name
+
+```tsx {8, 10}
+function MyInput({ onInputFocus }: { onInputFocus?: () => void }) {
+  return <input onFocus={onInputFocus} />;
+}
+
+function App() {
+  return (
+    <Track.Provider initialContext={{}}>
+      <Track.DOMEvent type="onFocus" params={{ ... }} eventName="onInputFocus">
+        <MyInput />
+      </Track.DOMEvent>
+    </Track.Provider>
+  );
+}
+```
+
+Using the `eventName` prop lets you specify a custom handler name, providing flexibility if the handler name differs from the DOM event name.
+
+### Conditional Event
 
 ```tsx
 <Track.DOMEvent type="onFocus" params={{ inputId: "email" }} enabled={(context) => context.trackingEnabled}>
@@ -48,7 +142,7 @@ function App() {
 </Track.DOMEvent>
 ```
 
-#### Debounced Tracking
+### Debounced Event
 
 ```tsx
 <Track.DOMEvent
@@ -60,7 +154,7 @@ function App() {
 </Track.DOMEvent>
 ```
 
-#### Throttled Tracking
+### Throttled Event
 
 ```tsx
 <Track.DOMEvent
@@ -68,27 +162,6 @@ function App() {
   params={{ elementId: "main-content" }}
   throttle={{ delay: 100, leading: true, trailing: false }}
 >
-  <div>Scrollable content</div>
+  <div>Scrollable Content</div>
 </Track.DOMEvent>
-```
-
-## Handling Renamed Event Props
-
-The `eventName` prop allows you to specify a custom event handler name.  
-It allows you to dynamically specify the new event handler name, ensuring flexibility even when the handler names change.
-
-```tsx {8, 10}
-function MyInput({ onInputFocus }: { onInputFocus?: () => void }) {
-  return <input onFocus={onInputFocus} />;
-}
-
-function App() {
-  return (
-    <Track.Provider initialContext={{}}>
-      <Track.DOMEvent type="onFocus" params={{...}} eventName="onInputFocus">
-        <MyInput />
-      </Track.DOMEvent>
-    </Track.Provider>
-  );
-}
 ```
