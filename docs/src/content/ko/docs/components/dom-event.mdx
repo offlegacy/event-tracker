@@ -26,24 +26,6 @@ function App() {
 }
 ```
 
-## Signature
-
-```ts
-function DOMEvent<TKey extends keyof TSchemas>({
-  children,
-  type,
-  eventName,
-  enabled,
-  ...props
-}: {
-  children: React.ReactNode;
-  type: DOMEventNames;
-  eventName?: string;
-  enabled?: EnabledCondition<TContext, TEventParams>;
-} & TrackingOptions<TContext, TEventParams> &
-  UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>): JSX.Element;
-```
-
 ## Reference
 
 ### Props

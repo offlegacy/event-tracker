@@ -26,20 +26,6 @@ function App() {
 }
 ```
 
-## Signature
-
-```ts
-function Click<TKey extends keyof TSchemas>({
-  children,
-  enabled,
-  ...props
-}: {
-  children: ReactNode;
-  enabled?: EnabledCondition<TContext, TEventParams>;
-} & TrackingOptions<TContext, TEventParams> &
-  UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>): JSX.Element;
-```
-
 ## Reference
 
 ### Props
@@ -59,15 +45,15 @@ function Click<TKey extends keyof TSchemas>({
 
 스키마가 있을 경우:
 
-| Props    | 타입                                                 | 설명                 | 
-| -------- | ---------------------------------------------------- | -------------------- | 
-| `params` | `SchemaParams \| (context: Context) => SchemaParams` | 스키마 기반 매개변수 | 
+| Props    | 타입                                                 | 설명                 |
+| -------- | ---------------------------------------------------- | -------------------- |
+| `params` | `SchemaParams \| (context: Context) => SchemaParams` | 스키마 기반 매개변수 |
 
 스키마가 없을 경우:
 
-| Props    | 타입                                               | 설명            | 
-| -------- | -------------------------------------------------- | --------------- | 
-| `params` | `EventParams \| (context: Context) => EventParams` | 이벤트 매개변수 | 
+| Props    | 타입                                               | 설명            |
+| -------- | -------------------------------------------------- | --------------- |
+| `params` | `EventParams \| (context: Context) => EventParams` | 이벤트 매개변수 |
 
 ---
 

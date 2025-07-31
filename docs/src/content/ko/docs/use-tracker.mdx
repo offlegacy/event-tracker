@@ -18,18 +18,6 @@ function MyComponent() {
 }
 ```
 
-## Signature
-
-```ts
-function useTracker(): {
-  send: (params: EventParamsWithContext<TContext, TEventParams>) => TaskReturnType<TTaskResult> | undefined;
-  setContext: (context: TContext | ((prevContext: TContext) => TContext)) => void;
-  getContext: () => TContext;
-  trackWithSchema: TUseTrackerTrackWithSchema;
-  track: TUseTrackerTrack;
-};
-```
-
 ## Reference
 
 ### Returns

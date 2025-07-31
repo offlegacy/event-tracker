@@ -29,22 +29,6 @@ function App() {
 }
 ```
 
-## Signature
-
-```ts
-function Impression<TKey extends keyof TSchemas>({
-  children,
-  options,
-  enabled,
-  ...props
-}: {
-  children: ReactNode;
-  options?: ImpressionOptions;
-  enabled?: EnabledCondition<TContext, TEventParams>;
-} & TrackingOptions<TContext, TEventParams> &
-  UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>): JSX.Element;
-```
-
 ## Reference
 
 ### Props

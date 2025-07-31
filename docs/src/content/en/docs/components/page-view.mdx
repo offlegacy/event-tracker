@@ -24,18 +24,6 @@ function App() {
 }
 ```
 
-## Signature
-
-```ts
-function PageView<TKey extends keyof TSchemas>({
-  enabled,
-  ...props
-}: {
-  enabled?: EnabledCondition<TContext, TEventParams>;
-} & TrackingOptions<TContext, TEventParams> &
-  UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>): JSX.Element;
-```
-
 ## Reference
 
 ### Props
