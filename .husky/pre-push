@@ -1,1 +1,1 @@
-pnpm lint-staged && pnpm test
+pnpm lint-staged && pnpm ci:test
