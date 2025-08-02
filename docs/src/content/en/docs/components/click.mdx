@@ -1,0 +1,154 @@
+import { Callout } from "nextra/components";
+
+# Click
+
+A dedicated `DOMEvent` component for click events (`type="onClick"`).  
+It is one of the event components returned as the first element of the `createTracker` tuple.
+
+```tsx
+import { createTracker } from "@offlegacy/event-tracker";
+
+const [Track] = createTracker({
+  DOMEvents: {
+    onClick: (params, context) => {
+      // Handle click event
+    },
+  },
+});
+
+function App() {
+  return (
+    <Track.Provider initialContext={{}}>
+      <Track.Click params={{ buttonId: "submit" }}>
+        <button>Submit</button>
+      </Track.Click>
+    </Track.Provider>
+  );
+}
+```
+
+## Signature
+
+```ts
+function Click<TKey extends keyof TSchemas>({
+  children,
+  enabled,
+  ...props
+}: {
+  children: ReactNode;
+  enabled?: EnabledCondition<TContext, TEventParams>;
+} & TrackingOptions<TContext, TEventParams> &
+  UnionPropsWithAndWithoutSchema<TContext, TEventParams, TSchemas, TKey>): JSX.Element;
+```
+
+## Reference
+
+### Props
+
+| Prop       | Type                                                              | Description                                                | Required |
+| ---------- | ----------------------------------------------------------------- | ---------------------------------------------------------- | -------- |
+| `enabled`  | `boolean \| ((context: Context, params: EventParams) => boolean)` | Conditionally enable/disable tracking (default: `true`)    | -        |
+| `debounce` | `DebounceConfig`                                                  | Debounce configuration to prevent rapid consecutive clicks | -        |
+| `throttle` | `ThrottleConfig`                                                  | Throttle configuration to limit click frequency            | -        |
+| `schema`   | `string`                                                          | Schema name for validating event parameters                | O        |
+
+<Callout type="info">
+  Note: `debounce` and `throttle` are mutually exclusive and cannot be used together. A type error prevents invalid
+  usage.
+</Callout>
+
+The type of the `params` prop differs depending on whether a schema is used.
+
+With schema:
+
+| Prop     | Type                                                 | Description             |
+| -------- | ---------------------------------------------------- | ----------------------- |
+| `params` | `SchemaParams \| (context: Context) => SchemaParams` | Schema-based parameters |
+
+Without schema:
+
+| Prop     | Type                                               | Description      |
+| -------- | -------------------------------------------------- | ---------------- |
+| `params` | `EventParams \| (context: Context) => EventParams` | Event parameters |
+
+---
+
+#### `params` (Required)
+
+With schema:
+
+- **Type:** `SchemaParams | (context: Context) => SchemaParams`
+- **Description:** Schema-based parameters.
+
+Without schema:
+
+- **Type:** `EventParams | (context: Context) => EventParams`
+- **Description:** Standard event parameters.
+
+#### `enabled`
+
+- **Type:** `boolean | ((context: Context, params: EventParams) => boolean)`
+- **Description:** Conditionally enable or disable event tracking (default: `true`).
+
+#### `debounce`
+
+- **Type:** `DebounceConfig`
+- **Description:** Configure debouncing to avoid multiple rapid click triggers.
+
+#### `throttle`
+
+- **Type:** `ThrottleConfig`
+- **Description:** Configure throttling to limit click frequency.
+
+#### `schema`
+
+When using schemas:
+
+- **Type:** `string`
+- **Description:** Schema name used to validate event parameters.
+
+## Examples
+
+### Custom Event Handler Name
+
+```tsx {8, 10}
+function MyButton({ onButtonClick }: { onButtonClick?: () => void }) {
+  return <button onClick={onButtonClick} />;
+}
+
+function App() {
+  return (
+    <Track.Provider initialContext={{}}>
+      <Track.Click params={{ ... }} eventName="onButtonClick">
+        <MyButton />
+      </Track.Click>
+    </Track.Provider>
+  );
+}
+```
+
+Using the `eventName` prop lets you specify a custom click handler name, providing flexibility if the handler name differs.
+
+### Conditional Event
+
+```tsx
+<Track.Click params={{ buttonId: "premium-feature" }} enabled={(context, params) => context.user?.isPremium}>
+  <button>Premium Feature</button>
+</Track.Click>
+```
+
+### Debounced Event
+
+```tsx
+<Track.Click params={{ buttonId: "search" }} debounce={{ delay: 300, leading: false, trailing: true }}>
+  <button>Search</button>
+</Track.Click>
+```
+
+### Throttled Event
+
+```tsx
+<Track.Click params={{ buttonId: "rapid-action" }} throttle={{ delay: 1000, leading: true, trailing: false }}>
+  <button>Quick Action</button>
+</Track.Click>
+```

@@ -1,0 +1,115 @@
+import { Steps } from "nextra/components";
+
+# Google Analytics 연동하기
+
+GA4(Google Analytics 4)와 쉽게 통합해 사용자 행동을 추적하는 방법을 단계별로 안내합니다.
+
+<Steps>
+
+## GA4 스크립트 설정
+
+`index.html` `<head>`에 GA4 스크립트를 추가하여 `gtag`를 사용할 준비를 합니다.
+
+```html
+<!-- index.html -->
+<head>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    gtag("js", new Date());
+    gtag("config", "GA_MEASUREMENT_ID");
+  </script>
+</head>
+```
+
+## `sendGA4` 함수 정의하기
+
+`gtag` 호출 전 확인 및 경고 로직을 포함한 전송 함수를 정의합니다.
+
+```ts
+export function sendGA4(eventName: string, eventParams: Record<string, unknown> = {}): void {
+  if (typeof window === "undefined") return;
+  if (typeof window.gtag !== "function") {
+    console.warn("[GA4] gtag 함수가 로드되지 않았습니다.");
+    return;
+  }
+  window.gtag("event", eventName, eventParams);
+}
+```
+
+## 트래킹 이벤트 정의하기
+
+`createTracker`를 통해 GA4 전송 로직과 DOM/노출/페이지뷰 이벤트를 설정합니다.
+
+```tsx
+import { createTracker } from "@offlegacy/event-tracker";
+import { sendGA4 } from "./sendGA4";
+
+interface GA4Context {
+  userId: string;
+}
+
+interface GA4EventParams {
+  eventName: string;
+}
+
+export const [Track, useTracker] = createTracker<GA4Context, GA4EventParams>({
+  DOMEvents: {
+    onClick: (params, ctx) => sendGA4(params.eventName, { ...params, user_id: ctx.userId }),
+  },
+  impression: {
+    onImpression: (params, ctx) => sendGA4("impression", { ...params, user_id: ctx.userId }),
+    options: { threshold: 0.5, freezeOnceVisible: true },
+  },
+});
+```
+
+## 블로그 페이지에서 사용하기
+
+`Track.Provider`로 컨텍스트를 감싸고, `<Track.PageView>`, `<Track.Impression>`, `<Track.Click>` 컴포넌트를 사용해 이벤트를 선언적으로 기록합니다.
+
+```tsx
+import { Track } from "./event-tracker";
+
+function App() {
+  return (
+    <Track.Provider initialContext={{ userId: "test-user" }}>
+      <Post post={{ id: 1, title: "Hello World", slug: "hello-world", content: "This is a test post." }} />
+    </Track.Provider>
+  );
+}
+
+interface PostProps {
+  id: number;
+  title: string;
+  slug: string;
+  content: string;
+}
+
+function Post({ post }: PostProps) {
+  return (
+    <article>
+      <h1>{post.title}</h1>
+
+      <Track.Impression params={{ eventName: `content-${post.id}` }}>
+        <div>{post.content}</div>
+      </Track.Impression>
+
+      <div className="actions">
+        <Track.Click params={{ eventName: "share_twitter" }}>
+          <button>트위터 공유</button>
+        </Track.Click>
+
+        <Track.Click params={{ eventName: "share_facebook" }}>
+          <button>페이스북 공유</button>
+        </Track.Click>
+      </div>
+    </article>
+  );
+}
+```
+
+</Steps>

@@ -1,0 +1,75 @@
+import { Steps } from "nextra/components";
+
+# 기본
+
+Event Tracker 라이브러리의 전체 흐름과 사용방법을 단계별로 살펴봅니다.  
+각 단계별로 필요한 설정과 컴포넌트 사용법, 그리고 이벤트 처리 과정을 이해할 수 있도록 구성했습니다.
+
+<Steps>
+
+## 트래킹 이벤트 정의하기
+
+Tracker 인스턴스를 생성하고, DOM 이벤트에 대한 콜백을 정의합니다.
+
+```tsx {12}
+import { createTracker } from "@offlegacy/event-tracker";
+
+interface Context {
+  userId: string;
+}
+
+interface Params {
+  eventName: string;
+}
+
+// 트래커 인스턴스 생성
+export const [Track, useTracker] = createTracker<Context, Params>({
+  // 트래킹 이벤트 정의
+  DOMEvents: {
+    onClick: (params: Params) => {
+      console.log("click:", params);
+    },
+  },
+});
+```
+
+## Provider 추가하기
+
+애플리케이션 최상단에 `Track.Provider`를 추가하고 전역 컨텍스트를 설정합니다.
+
+```tsx {5, 7}
+import { Track, useTracker } from "./tracker";
+
+function App() {
+  return (
+    <Track.Provider initialContext={{ userId: "test-user" }}>
+      <HomePage />
+    </Track.Provider>
+  );
+}
+```
+
+## 정의한 이벤트 사용하기
+
+`Track.Click` 컴포넌트를 이용해 선언적으로 클릭 이벤트를 트래킹합니다.
+
+```tsx {7-11, 13}
+function HomePage() {
+  return (
+    <main>
+      <h1>홈페이지</h1>
+
+      {/* 버튼 클릭 트래킹 */}
+      <Track.Click
+        params={{
+          eventName: "clicked-start-button",
+        }}
+      >
+        <button>시작하기</button>
+      </Track.Click>
+    </main>
+  );
+}
+```
+
+</Steps>

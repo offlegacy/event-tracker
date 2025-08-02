@@ -1,0 +1,48 @@
+import { Callout } from "nextra/components";
+
+# SetContext
+
+트래킹 컨텍스트를 설정하거나 업데이트합니다. `createTracker`의 리턴 배열의 첫 번째 요소인 유틸리티 컴포넌트 중 하나입니다.
+
+```tsx
+import { createTracker } from "@offlegacy/event-tracker";
+
+const [Track] = createTracker({ ... });
+
+function App() {
+  return (
+    <Track.Provider initialContext={{ userId: "user-1" }}>
+      <Track.SetContext context={{ lastActive: new Date() }} />
+    </Track.Provider>
+  );
+}
+```
+
+## Reference
+
+### Props
+
+| Props     | 타입                                             | 설명                                                         | 필수 |
+| --------- | ------------------------------------------------ | ------------------------------------------------------------ | ---- |
+| `context` | `Context \| ((prevContext: Context) => Context)` | 새로운 컨텍스트 값 또는 기존 값을 기반으로 업데이트하는 함수 | O    |
+
+---
+
+#### `context` (필수)
+
+- 타입: `Context | ((prevContext: Context) => Context)`
+- 설명: 새 컨텍스트 값을 직접 지정하거나, 이전 컨텍스트 값을 기반으로 업데이트할 수 있습니다. 이 컴포넌트는 한 번 렌더링되면 지정된 컨텍스트로 추적 컨텍스트가 갱신됩니다.
+
+## Examples
+
+### 정적 컨텍스트 설정
+
+```tsx
+<Track.SetContext context={{ userId: "user-123" }} />
+```
+
+### 이전 컨텍스트 기반 업데이트
+
+```tsx
+<Track.SetContext context={(prev) => ({ ...prev, lastSeen: new Date() })} />
+```

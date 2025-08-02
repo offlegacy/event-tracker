@@ -1,0 +1,129 @@
+import { Callout } from "nextra/components";
+
+# 배칭
+
+이벤트 배칭은 여러 개의 이벤트를 일정 조건 하에 하나의 네트워크 요청으로 묶어 전송하는 기능입니다. 다음과 같은 경우에 유용하게 사용할 수 있습니다.
+
+- Amplitude, Google Analytics 등 내부 배칭 기능이 없는 애널리틱스 서비스를 사용하는 경우
+- 네트워크 요청 수를 줄이고 싶은 경우
+- 브라우저 종료 시 이벤트 유실을 방지하고 싶은 경우
+
+## Usage
+
+`createTracker` 설정에서 `batch` 옵션을 활성화하면 사용할 수 있습니다.
+
+```tsx
+const [Track, useTracker] = createTracker({
+  // ... 다른 설정
+  batch: {
+    enable: true,
+    interval: 2000,
+    thresholdSize: 100,
+    onFlush: (batch, isBrowserClosing) => {
+      if (isBrowserClosing) {
+        navigator.sendBeacon("/analytics/collect/batch", JSON.stringify(batch));
+        return;
+      }
+
+      fetch("/analytics/collect/batch", {
+        method: "POST",
+        body: JSON.stringify(batch),
+      });
+    },
+  },
+});
+```
+
+## Options
+
+| 옵션            | 타입                                                 | 설명                                       | 기본값  |
+| --------------- | ---------------------------------------------------- | ------------------------------------------ | ------- |
+| `enable`        | `boolean`                                            | 배칭 기능 활성화 여부                      | `false` |
+| `interval`      | `number`                                             | 배치 전송 간격 (밀리초 단위)               | `3000`  |
+| `thresholdSize` | `number`                                             | 배치 전송 전에 쌓일 수 있는 최대 이벤트 수 | `25`    |
+| `onFlush`       | `(batch, isBrowserClosing) => void \| Promise<void>` | 배치 전송 처리 함수. 필수                  | -       |
+| `onError`       | `(error: Error) => void \| Promise<void>`            | 전송 중 오류 발생 시 호출되는 함수 (선택)  | -       |
+
+<Callout type="info">`onFlush`는 **필수 항목**이며, 배치된 이벤트를 실제로 어떻게 전송할지를 정의합니다.</Callout>
+
+## How It Works
+
+1. 각 이벤트의 **핸들러 반환값**은 메모리에 수집됩니다.
+2. 아래 중 하나가 발생하면 `onFlush`가 호출됩니다:
+
+   - `interval` 시간이 경과했을 때
+   - 수집된 이벤트 수가 `thresholdSize`에 도달했을 때
+   - 브라우저가 닫히는 이벤트가 감지되었을 때
+
+## Examples
+
+```tsx
+const [Track, useTracker] = createTracker({
+  DOMEvents: {
+    onClick: (params, context) => {
+      return {
+        ...params,
+        ...context,
+        event_type: "click",
+        timestamp: Date.now(),
+      };
+    },
+  },
+  batch: {
+    enable: true,
+    interval: 2000,
+    thresholdSize: 100,
+    onFlush: (batch, isBrowserClosing) => {
+      if (isBrowserClosing) {
+        navigator.sendBeacon("/analytics/collect/batch", JSON.stringify(batch));
+        return;
+      }
+
+      fetch("/analytics/collect/batch", {
+        method: "POST",
+        body: JSON.stringify(batch),
+      });
+    },
+  },
+});
+
+function App() {
+  return (
+    <Track.Provider initialContext={{ deviceId: "device-123" }}>
+      <Track.Click params={{ buttonId: "submit" }}>
+        <button>Submit</button>
+      </Track.Click>
+    </Track.Provider>
+  );
+}
+```
+
+1. `<Track.Click>`이 실행될 때마다 이벤트 핸들러가 반환하는 객체가 배치 큐에 저장됩니다.
+2. 2초 후 또는 100개의 이벤트가 쌓이면 `onFlush`가 호출되어 서버로 전송됩니다.
+3. 브라우저가 닫히는 시점에서는 `sendBeacon`으로 전송됩니다.
+
+## 브라우저 종료 시 처리
+
+브라우저가 닫힐 때도 이벤트 유실을 방지하기 위해
+[`navigator.sendBeacon`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon)을 활용할 수 있습니다:
+
+```tsx
+onFlush: (batch, isBrowserClosing) => {
+  if (isBrowserClosing) {
+    navigator.sendBeacon("/analytics/collect/batch", JSON.stringify(batch));
+    return;
+  }
+
+  fetch("/analytics/collect/batch", {
+    method: "POST",
+    body: JSON.stringify(batch),
+  });
+};
+```
+
+## Notes
+
+1. **이벤트 핸들러의 반환값만 배칭됩니다.** 이벤트 핸들러 자체는 항상 호출됩니다.
+2. **배치된 이벤트는 컨텍스트 정보를 포함한 상태로 저장됩니다.**
+3. **전송 순서를 보장합니다.** 클릭 → 노출 순으로 발생한 이벤트는 그 순서대로 전송됩니다.
+4. 브라우저 종료 시 `isBrowserClosing` 플래그가 `true`로 설정되어 `onFlush`에서 분기 처리할 수 있습니다.

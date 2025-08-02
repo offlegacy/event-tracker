@@ -1,0 +1,72 @@
+import { Steps } from "nextra/components";
+
+# Zod와 함께 사용하기
+
+[Zod](https://zod.dev/)와 함께 사용하여 강력한 데이터 타입 검증을 구현하는 방법을 알아보겠습니다.  
+Zod를 통한 스키마 기반 검증으로 런타임 이전에 오류를 방지하고 데이터 신뢰성을 보장할 수 있습니다.
+
+<Steps>
+
+## 스키마 정의하기
+
+이벤트별 필드와 타입을 Zod 객체로 선언합니다.
+
+```tsx {4-5}
+import { z } from "zod";
+
+export const schemas = {
+  page_view: z.object({ title: z.string() }),
+  click_button: z.object({ target: z.string() }),
+};
+```
+
+## 트래킹 이벤트 정의하기
+
+스키마를 createTracker에 연결해 이벤트 파라미터를 자동 검증합니다.
+
+```tsx {5-9}
+import { createTracker } from "@offlegacy/event-tracker";
+import { schemas } from "./schemas";
+
+export const [Track, useTracker] = createTracker<{}, {}, typeof schemas>({
+  schemas: {
+    schemas,
+    onSchemaError: (error) => console.error("스키마 검증 실패:", error),
+    abortOnError: true,
+  },
+});
+```
+
+## 검증된 이벤트 사용하기
+
+선언형 컴포넌트와 track 함수로 타입이 보장된 이벤트를 전송합니다.
+
+```tsx {11, 17-19}
+import { Track } from "./event-tracker";
+
+function HomePage() {
+  return (
+    <main>
+      <h1>홈페이지</h1>
+
+      {/* ✅ Zod Schema로 검사하여 타입 에러가 발생하지 않습니다. */}
+      <Track.PageView params={{ title: "홈페이지" }} />
+
+      {/* 🚨 Zod Schema로 검사하여 타입 에러가 발생합니다. */}
+      {/* <Track.PageView params={{ title: 123 }} /> *}
+
+      {/* ✅ Zod Schema로 검사하여 타입 에러가 발생하지 않습니다. */}
+      <Track.Click params={{ target: "start-button" }}>
+        <button>시작하기</button>
+      </Track.Click>
+
+      {/* 🚨 Zod Schema로 검사하여 타입 에러가 발생합니다. */}
+      {/* <Track.Click params={{}}>
+          <button onClick={() => track({ target: "start-button" })}>시작하기</button>
+        </Track.Click> */}
+    </main>
+  );
+}
+```
+
+</Steps>

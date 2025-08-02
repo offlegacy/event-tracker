@@ -1,0 +1,96 @@
+import { Callout, Steps } from "nextra/components";
+
+# 데이터 검증
+
+Event Tracker는 이벤트 파라미터의 정확성을 보장하기 위해 [Zod](https://zod.dev/)를 활용한 스키마 기반 데이터 타입 검증 기능을 제공합니다.  
+이 기능을 사용하면 이벤트가 수집되기 전에 사전 정의된 구조와 일치하는지 검증할 수 있으며, 이는 데이터 신뢰성과 오류 방지, 정형 분석을 위한 기반으로 유용합니다.
+
+## Usage
+
+Zod 스키마를 정의하고, `createTracker` 설정에서 `schemas` 옵션으로 전달하면 됩니다.
+
+```tsx
+import { createTracker } from "@offlegacy/event-tracker";
+import { z } from "zod";
+
+const schemas = {
+  page_view: z.object({
+    title: z.string(),
+  }),
+  click_button: z.object({
+    target: z.string(),
+  }),
+};
+
+const [Track] = createTracker<{}, {}, typeof schemas>({
+  schemas: {
+    schemas,
+    onSchemaError: (error) => {
+      console.error("스키마 검증 실패:", error);
+    },
+    abortOnError: true,
+  },
+});
+```
+
+## Reference
+
+| 옵션            | 타입                                         | 설명                                     | 기본값  |
+| --------------- | -------------------------------------------- | ---------------------------------------- | ------- |
+| `schemas`       | `Record<string, ZodSchema>`                  | 이벤트 이름과 Zod 스키마의 매핑          | 필수    |
+| `onSchemaError` | `(error: ZodError) => void \| Promise<void>` | 스키마 검증 실패 시 호출되는 함수        | 선택    |
+| `abortOnError`  | `boolean`                                    | 오류 발생 시 이벤트 처리를 중단할지 여부 | `false` |
+
+<Callout type="info">스키마 오류가 발생했을 때 `abortOnError: true`인 경우, 해당 이벤트는 추적되지 않습니다.</Callout>
+
+## Examples
+
+<Steps>
+
+### Zod 스키마 정의
+
+```ts
+import { z } from "zod";
+
+const schemas = {
+  page_view: z.object({
+    title: z.string(),
+  }),
+  click_button: z.object({
+    target: z.string(),
+  }),
+};
+```
+
+### `createTracker`에 등록
+
+```tsx
+const [Track] = createTracker<{}, {}, typeof schemas>({
+  schemas: {
+    schemas,
+    abortOnError: true,
+    onSchemaError: (error) => {
+      console.error("스키마 오류 발생", error);
+    },
+  },
+});
+```
+
+### 스키마 기반 이벤트 트래킹
+
+```tsx
+<Track.PageView schema="page_view" params={{ title: "Home" }} />
+<Track.Click schema="click_button" params={{ target: "submit-button" }} />
+```
+
+스키마 검증이 성공하면 이벤트는 `send` 또는 각 핸들러로 전달됩니다.
+실패하면 `onSchemaError`가 호출되고, `abortOnError`가 true일 경우 이벤트는 무시됩니다.
+
+</Steps>
+
+## Notes
+
+- Zod 스키마는 기본적으로 [parse](https://zod.dev/?id=parse)를 사용하여 검증됩니다.
+- 부드러운 타입 추론을 위해, createTracker 함수 외부에서 스키마를 정의하고 createTracker의 세 번째 타입 인자에 typeof schemas를 할당하길 권장합니다.
+
+_향후 다른 스키마 검증 라이브러리를 지원할 계획입니다._

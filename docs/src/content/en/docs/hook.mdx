@@ -1,0 +1,233 @@
+import { Callout } from "nextra/components";
+
+# Hook
+
+Inside a React component, you can configure the tracking context or imperatively trigger events. This hook is the second item returned from [`createTracker`](/docs/create-tracker).
+
+It is primarily used to manually trigger events after a component mounts, upon user input, or after asynchronous tasks complete.
+
+```tsx
+import { createTracker } from "@offlegacy/event-tracker";
+
+const [Track, useTracker] = createTracker({...});
+
+function MyComponent() {
+  const { setContext, getContext, track, trackWithSchema } = useTracker();
+
+  // Imperative event tracking
+}
+```
+
+## Reference
+
+### Returns
+
+| Property          | Type                                                            | Description                                         |
+| ----------------- | --------------------------------------------------------------- | --------------------------------------------------- |
+| `setContext`      | `(context: Context \| (prev: Context) => Context) => void`      | Sets or updates the tracking context                |
+| `getContext`      | `() => Context`                                                 | Returns the current tracking context                |
+| `track`           | `Record<keyof EventNames, (params, options?) => void>`          | Collection of standard event tracking functions     |
+| `trackWithSchema` | `Record<keyof Schemas, ({ schema, params }, options?) => void>` | Collection of schema-validated event tracking funcs |
+
+---
+
+#### `setContext`
+
+```tsx
+const { setContext } = useTracker();
+
+// Set a new context
+setContext({ userId: "user-123" });
+
+// Update context based on previous value
+setContext((prev) => ({
+  ...prev,
+  lastActive: new Date(),
+}));
+```
+
+- Sets or updates the current tracking context.
+- Useful for updating user information, session data, etc.
+
+#### `getContext`
+
+```tsx
+const { getContext } = useTracker();
+
+const currentContext = getContext();
+console.log("Current user:", currentContext.userId);
+```
+
+- Returns the current tracking context.
+- Useful for accessing the current tracking state.
+
+#### `track`
+
+```tsx
+const { track } = useTracker();
+
+// Simple click event tracking
+track.onClick({ buttonId: "submit" });
+
+// Conditional tracking
+track.onClick(
+  { buttonId: "premium" },
+  {
+    enabled: (context) => context.user?.isPremium,
+  },
+);
+
+// Tracking with debouncing
+track.onClick(
+  { buttonId: "search" },
+  {
+    debounce: { delay: 300, leading: false, trailing: true },
+  },
+);
+
+// Tracking with throttling
+track.onClick(
+  { buttonId: "rapid-action" },
+  {
+    throttle: { delay: 1000, leading: true, trailing: false },
+  },
+);
+
+// Impression event tracking
+track.onImpression({ elementId: "hero" });
+```
+
+- An object containing all configured event tracking functions.
+- Keys match event names defined in the tracker configuration.
+- Supports optional `TrackingOptions` for advanced control.
+
+#### `trackWithSchema`
+
+```tsx
+const { trackWithSchema } = useTracker();
+
+// Track a click event with schema validation
+trackWithSchema.onClick({ schema: "click", params: { buttonId: "submit" } });
+
+// Conditional tracking with schema
+trackWithSchema.onClick(
+  {
+    schema: "premium_click",
+    params: { buttonId: "premium", userId: "123" },
+  },
+  {
+    enabled: (context, params) => context.user?.id === params.userId,
+  },
+);
+
+// Tracking with schema and throttling
+trackWithSchema.onImpression(
+  {
+    schema: "impression",
+    params: { elementId: "hero", userId: "123" },
+  },
+  {
+    throttle: { delay: 2000, leading: true, trailing: false },
+  },
+);
+```
+
+- An object containing all schema-validated event tracking functions.
+- Keys match event names defined in the tracker configuration.
+- Supports optional `TrackingOptions` for advanced control.
+
+## TrackingOptions
+
+Both `track` and `trackWithSchema` accept the following optional configuration:
+
+| Option     | Type                                        | Description                                         |
+| ---------- | ------------------------------------------- | --------------------------------------------------- |
+| `enabled`  | `boolean \| ((context, params) => boolean)` | Enables/disables event tracking conditionally       |
+| `debounce` | `DebounceConfig`                            | Limits consecutive events (triggers last call only) |
+| `throttle` | `ThrottleConfig`                            | Prevents repeated calls in a short time window      |
+
+<Callout type="info">
+  Note: `debounce` and `throttle` are mutually exclusive and cannot be used together. A type error will prevent invalid
+  usage.
+</Callout>
+
+#### `DebounceConfig`
+
+```ts
+interface DebounceConfig {
+  delay: number;
+  leading?: boolean; // Default: false
+  trailing?: boolean; // Default: true
+}
+```
+
+#### `ThrottleConfig`
+
+```ts
+interface ThrottleConfig {
+  delay: number;
+  leading?: boolean; // Default: true
+  trailing?: boolean; // Default: false
+}
+```
+
+## Best Practices
+
+### Context Management
+
+- Use `setContext` to update global state that affects multiple events.
+- Consider the functional form of `setContext` for updates based on previous state.
+
+### Event Tracking
+
+- Use the event functions from `track` or `trackWithSchema` wherever possible.
+
+### Performance Optimization
+
+- Avoid calling event tracking functions during rendering.
+- Use [Batching](/docs/batching) to improve performance.
+- Use [Data Validation](/docs/data-type-validation) to ensure data safety.
+
+## Examples
+
+### Basic
+
+```tsx
+import { createTracker } from "@offlegacy/event-tracker";
+
+const [Track, useTracker] = createTracker({
+  onClick: (params) => {
+    // Send event to analytics service
+    analytics.track(params);
+  },
+  pageView: {
+    onPageView: (params) => {
+      analytics.pageView(params);
+    },
+  },
+});
+
+function UserProfile({ userId }) {
+  const { setContext, track, trackWithSchema } = useTracker();
+
+  useEffect(() => {
+    // Update context when userId changes
+    setContext({ userId });
+
+    // Track page view event
+    track.onPageView({ page: "profile" });
+  }, [userId]);
+
+  const handleSettingsClick = () => {
+    // Track user settings event
+    trackWithSchema.onClick({ schema: "settings", params: { userId } });
+  };
+
+  return (
+    <div>
+      <h1>User Profile</h1>
+      <button onClick={handleSettingsClick}>Settings</button>
+    </div>
+  );
+}
+```

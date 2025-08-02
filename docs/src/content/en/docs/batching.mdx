@@ -1,0 +1,128 @@
+import { Callout } from "nextra/components";
+
+# Batching
+
+Event batching allows you to group multiple events into a single network request under certain conditions. It is particularly useful in the following cases:
+
+- When using analytics services like Amplitude or Google Analytics that lack built-in batching
+- When you want to reduce the number of network requests
+- When you need to prevent event loss on browser close
+
+## Usage
+
+Enable the `batch` option in the `createTracker` configuration to use batching.
+
+```tsx
+const [Track, useTracker] = createTracker({
+  // ... other configuration
+  batch: {
+    enable: true,
+    interval: 2000,
+    thresholdSize: 100,
+    onFlush: (batch, isBrowserClosing) => {
+      if (isBrowserClosing) {
+        navigator.sendBeacon("/analytics/collect/batch", JSON.stringify(batch));
+        return;
+      }
+
+      fetch("/analytics/collect/batch", {
+        method: "POST",
+        body: JSON.stringify(batch),
+      });
+    },
+  },
+});
+```
+
+## Options
+
+| Option          | Type                                                 | Description                                       | Default |
+| --------------- | ---------------------------------------------------- | ------------------------------------------------- | ------- |
+| `enable`        | `boolean`                                            | Whether to enable batching                        | `false` |
+| `interval`      | `number`                                             | Interval between batch sends (in ms)              | `3000`  |
+| `thresholdSize` | `number`                                             | Maximum number of events before flushing batch    | `25`    |
+| `onFlush`       | `(batch, isBrowserClosing) => void \| Promise<void>` | Required. Function to process batched events      | -       |
+| `onError`       | `(error: Error) => void \| Promise<void>`            | Optional. Called when an error occurs during send | -       |
+
+<Callout type="info">`onFlush` is **required** and defines how batched events are actually sent.</Callout>
+
+## How It Works
+
+1. The **return value** of each event handler is collected in memory.
+2. `onFlush` is called when one of the following occurs:
+
+   - The `interval` time has elapsed
+   - The number of collected events reaches `thresholdSize`
+   - A browser close event is detected
+
+## Examples
+
+```tsx
+const [Track, useTracker] = createTracker({
+  DOMEvents: {
+    onClick: (params, context) => {
+      return {
+        ...params,
+        ...context,
+        event_type: "click",
+        timestamp: Date.now(),
+      };
+    },
+  },
+  batch: {
+    enable: true,
+    interval: 2000,
+    thresholdSize: 100,
+    onFlush: (batch, isBrowserClosing) => {
+      if (isBrowserClosing) {
+        navigator.sendBeacon("/analytics/collect/batch", JSON.stringify(batch));
+        return;
+      }
+
+      fetch("/analytics/collect/batch", {
+        method: "POST",
+        body: JSON.stringify(batch),
+      });
+    },
+  },
+});
+
+function App() {
+  return (
+    <Track.Provider initialContext={{ deviceId: "device-123" }}>
+      <Track.Click params={{ buttonId: "submit" }}>
+        <button>Submit</button>
+      </Track.Click>
+    </Track.Provider>
+  );
+}
+```
+
+1. Each time `<Track.Click>` runs, the object returned by the event handler is added to the batch queue.
+2. After 2 seconds or once 100 events accumulate, `onFlush` is called and the batch is sent to the server.
+3. On browser close, events are sent via `sendBeacon`.
+
+## Handling Browser Close
+
+To prevent event loss when the browser closes, you can use [`navigator.sendBeacon`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon):
+
+```tsx
+onFlush: (batch, isBrowserClosing) => {
+  if (isBrowserClosing) {
+    navigator.sendBeacon("/analytics/collect/batch", JSON.stringify(batch));
+    return;
+  }
+
+  fetch("/analytics/collect/batch", {
+    method: "POST",
+    body: JSON.stringify(batch),
+  });
+};
+```
+
+## Notes
+
+1. **Only the return value of event handlers is batched.** The handlers themselves are always executed.
+2. **Batched events are stored with context information.**
+3. **Event order is preserved.** For example, click → impression events are sent in the same order.
+4. When the browser closes, the `isBrowserClosing` flag is set to `true` to allow conditional logic in `onFlush`.

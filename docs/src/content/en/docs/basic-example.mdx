@@ -1,0 +1,75 @@
+import { Steps } from "nextra/components";
+
+# Getting Started
+
+This guide walks you through the overall flow and usage of the Event Tracker library step by step.  
+Each step explains the required configuration, component usage, and event handling process.
+
+<Steps>
+
+## Define Tracking Events
+
+Create a tracker instance and define callbacks for DOM events.
+
+```tsx {12}
+import { createTracker } from "@offlegacy/event-tracker";
+
+interface Context {
+  userId: string;
+}
+
+interface Params {
+  eventName: string;
+}
+
+// Create a tracker instance
+export const [Track, useTracker] = createTracker<Context, Params>({
+  // Define tracking events
+  DOMEvents: {
+    onClick: (params: Params) => {
+      console.log("click:", params);
+    },
+  },
+});
+```
+
+## Add a Provider
+
+Wrap your application with `Track.Provider` and set the global context.
+
+```tsx {5, 7}
+import { Track, useTracker } from "./tracker";
+
+function App() {
+  return (
+    <Track.Provider initialContext={{ userId: "test-user" }}>
+      <HomePage />
+    </Track.Provider>
+  );
+}
+```
+
+## Use the Defined Events
+
+Use the `Track.Click` component to declaratively track click events.
+
+```tsx {7-11, 13}
+function HomePage() {
+  return (
+    <main>
+      <h1>Homepage</h1>
+
+      {/* Track button click */}
+      <Track.Click
+        params={{
+          eventName: "clicked-start-button",
+        }}
+      >
+        <button>Get Started</button>
+      </Track.Click>
+    </main>
+  );
+}
+```
+
+</Steps>

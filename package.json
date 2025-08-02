@@ -38,6 +38,7 @@
   "scripts": {
     "dev": "tsup --watch",
     "build": "tsup",
+    "build:docs": "cd docs && pnpm build",
     "dev:docs": "cd docs && pnpm dev",
     "test": "vitest --run",
     "test:watch": "vitest",

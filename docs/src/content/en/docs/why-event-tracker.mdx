@@ -1,0 +1,196 @@
+import { Steps } from "nextra/components";
+
+# Why Event Tracker?
+
+Modern web applications must continuously analyze user behavior to improve service quality. However, traditional event tracking approaches come with several challenges.
+
+## Why You Need Event Tracker
+
+The following example highlights common issues with conventional event tracking.
+
+```tsx {8,15, 24-31}
+function Page() {
+  const { user, userId } = useUser(); // Fetch user info and ID.
+
+  return (
+    <div>
+      <p>User: {user.name}</p>
+      {/* Passing userId to Counter solely for event tracking */}
+      <Counter userId={userId} />
+    </div>
+  );
+}
+
+// Counter receives 'userId' only for tracking purposes.
+// If nested deeper, this causes severe prop drilling.
+function Counter({ userId }: { userId: string }) {
+  const [count, setCount] = useState(0);
+  const { track } = useTrackEvent(); // Hypothetical tracking hook
+
+  const handleIncrement = () => {
+    const newCount = count + 1;
+    setCount(newCount);
+
+    // Business logic (count increment) mixed with tracking logic.
+    track({
+      event: "click_increment",
+      params: {
+        type: "count",
+        value: newCount,
+        userId, // userId passed down from parent
+      },
+    });
+  };
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={handleIncrement}>Increment</button>
+    </div>
+  );
+}
+```
+
+<Steps>
+
+### The Pain of Prop Drilling
+
+To pass tracking-related data down to nested components, you often end up drilling props through multiple layers. This reduces code readability and complicates maintenance.
+
+### Tight Coupling of Logic
+
+Mixing business logic with tracking logic increases code complexity and makes independent testing and modification harder.
+
+### Increased Boilerplate
+
+Repetitive tracking code reduces developer productivity.
+
+</Steps>
+
+## A New Paradigm with Event Tracker
+
+Event Tracker introduces a new paradigm for event tracking. Its declarative approach simplifies the inherent complexity of traditional tracking and makes it accessible to all developers.
+
+<Steps>
+
+### Declarative Event Tracking
+
+```tsx {7, 10, 12, 32, 34}
+function Page() {
+  const { user, userId } = useUser();
+
+  // Provide tracking context (userId) to child components via Track.Provider.
+  // No more prop drilling required.
+  return (
+    <Track.Provider initialContext={{ userId }}>
+      <div>
+        <p>User: {user.name}</p>
+        <Counter /> {/* No need to pass userId as a prop */}
+      </div>
+    </Track.Provider>
+  );
+}
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  const handleIncrement = () => {
+    // handleIncrement is now purely responsible for incrementing count.
+    setCount(count + 1);
+  };
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      {/*
+        Track.Click wraps the button and tracks the click event
+        with the defined parameters. userId from context is automatically
+        included in the tracking data.
+      */}
+      <Track.Click params={{ value: count + 1, type: "count" }}>
+        <button onClick={handleIncrement}>Increment</button>
+      </Track.Click>
+    </div>
+  );
+}
+```
+
+With Event Tracker, declarative event tracking improves code readability and reduces complexity. This helps developers focus on _what_ to track rather than _how_ to track.
+The `handleIncrement` function now handles only count logic, while `<Track.Click />` manages tracking.
+**This declarative approach shifts the developer’s focus from implementation details to defining the intent of tracking.**
+How tracking is handled is defined outside the React app.
+
+### Improved Tracking Cohesion
+
+```tsx {4-10, 14-20}
+const [Track, useTracker] = createTracker({
+  // Callback for DOM events
+  DOMEvents: {
+    onClick: (params, context) => {
+      // Call actual tracking tools (Google Analytics, Amplitude, etc.)
+      logEvent("click_event", {
+        ...params, // { value: ..., type: "count" }
+        userId: context.userId, // Provided by the Provider
+      });
+    },
+    // You can also define onMouseOver, onFocus, etc.
+  },
+  // Callback for Impression events
+  onImpression: (params, context) => {
+    logEvent("impression_event", {
+      ...params,
+      userId: context.userId,
+      pagePath: window.location.pathname,
+    });
+  },
+});
+```
+
+Now, the code defining _how to track_ is separated from business logic. Since it's located outside the application, you can modify tracking logic without touching business code.
+
+### Data Validation
+
+```tsx {13-20, 24-33}
+import { z } from "zod";
+import { createTracker } from "@offlegacy/event-tracker";
+
+interface Context {
+  /* ... */
+}
+
+interface Params {
+  /* ... */
+}
+
+// Define schemas
+const schemas = {
+  page_view: z.object({
+    title: z.string(),
+  }),
+  click_button: z.object({
+    target: z.string(),
+  }),
+};
+
+// Configure tracker
+const [Track] = createTracker<Context, Params, typeof schemas>({
+  schema: {
+    schemas: {
+      page_view,
+      click_button,
+    },
+    onSchemaError: (error) => {
+      console.error("Schema validation error:", error);
+    },
+    abortOnError: true,
+  },
+});
+
+// Using schemas
+<Track.PageView schema="page_view" params={{ title: "Home Page" }} />;
+<Track.Click schema="click_button" params={{ target: "submit-button" }} />;
+```
+
+Event Tracker integrates with [Zod](https://zod.dev/) to provide robust schema-based data type validation. This prevents data errors during development and enhances the reliability of tracking data.
+
+</Steps>

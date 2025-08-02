@@ -1,0 +1,108 @@
+import { Callout } from "nextra/components";
+
+# PageView
+
+Tracks a page view event when the component mounts. It is one of the event components returned as the first element of the `createTracker` tuple.
+
+```tsx
+import { createTracker } from "@offlegacy/event-tracker";
+
+const [Track] = createTracker({
+  pageView: {
+    onPageView: (params, context) => {
+      // Handle page view event
+    },
+  },
+});
+
+function App() {
+  return (
+    <Track.Provider initialContext={{}}>
+      <Track.PageView params={{ page: "/home" }} />
+    </Track.Provider>
+  );
+}
+```
+
+## Reference
+
+### Props
+
+| Prop       | Type                                                              | Description                                                   | Required |
+| ---------- | ----------------------------------------------------------------- | ------------------------------------------------------------- | -------- |
+| `enabled`  | `boolean \| ((context: Context, params: EventParams) => boolean)` | Conditionally enable/disable event tracking (default: `true`) | -        |
+| `debounce` | `DebounceConfig`                                                  | Debounce configuration to prevent rapid consecutive events    | -        |
+| `throttle` | `ThrottleConfig`                                                  | Throttle configuration to limit event frequency               | -        |
+| `schema`   | `string`                                                          | Schema name for validating event parameters                   | O        |
+
+<Callout type="info">
+  Note: `debounce` and `throttle` are mutually exclusive and cannot be used together. A type error will prevent invalid
+  usage.
+</Callout>
+
+When using with schemas vs. without schemas, the `params` prop type differs.
+
+With schema:
+
+| Prop     | Type                                                 | Description             |
+| -------- | ---------------------------------------------------- | ----------------------- |
+| `params` | `SchemaParams \| (context: Context) => SchemaParams` | Schema-based parameters |
+
+Without schema:
+
+| Prop     | Type                                               | Description         |
+| -------- | -------------------------------------------------- | ------------------- |
+| `params` | `EventParams \| (context: Context) => EventParams` | Standard parameters |
+
+---
+
+#### `params` (Required)
+
+With schema:
+
+- **Type:** `SchemaParams | (context: Context) => SchemaParams`
+- **Description:** Schema-based parameters
+
+Without schema:
+
+- **Type:** `EventParams | (context: Context) => EventParams`
+- **Description:** Event parameters
+
+#### `enabled`
+
+- **Type:** `boolean | ((context: Context, params: EventParams) => boolean)`
+- **Description:** Conditionally enable or disable event tracking (default: `true`)
+
+#### `debounce`
+
+- **Type:** `DebounceConfig`
+- **Description:** Configure debouncing to avoid multiple rapid event triggers.
+
+#### `throttle`
+
+- **Type:** `ThrottleConfig`
+- **Description:** Configure throttling to limit event frequency.
+
+#### `schema`
+
+When using schemas:
+
+- **Type:** `string`
+- **Description:** Schema name used to validate event parameters.
+
+## Examples
+
+### Conditional Event
+
+```tsx
+<Track.PageView
+  params={{ page: "/dashboard", userId: "123" }}
+  enabled={(context) => context.trackingConsent === true}
+/>
+```
+
+### Debounced Page View
+
+```tsx
+<Track.PageView params={{ page: "/search-results" }} debounce={{ delay: 1000, leading: true, trailing: false }} />
+```

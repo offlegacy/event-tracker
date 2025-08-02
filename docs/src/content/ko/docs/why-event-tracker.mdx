@@ -1,0 +1,198 @@
+import { Steps } from "nextra/components";
+
+# 왜 Event Tracker인가요?
+
+현대 웹 애플리케이션은 사용자의 행동을 분석하여 서비스 품질을 지속적으로 개선해야 합니다. 그러나 기존의 이벤트 트래킹 방식은 여러 문제점이 나타납니다.
+
+## Event Tracker가 필요한 이유
+
+다음은 전통적인 이벤트 트래킹 방식의 문제점을 보여주는 예시입니다.
+
+```tsx {8,15, 24-31}
+function Page() {
+  const { user, userId } = useUser(); // 사용자 정보와 ID를 가져옵니다.
+
+  return (
+    <div>
+      <p>User: {user.name}</p>
+      {/* Counter 컴포넌트에 이벤트 트래킹을 위해 userId를 전달합니다. */}
+      <Counter userId={userId} />
+    </div>
+  );
+}
+
+// 오직 이벤트 트래킹만을 위해서 'userId'를 prop으로 전달받습니다.
+// 만약 Counter가 더 깊은 곳에 있다면, prop drilling은 더욱 심해집니다.
+function Counter({ userId }: { userId: string }) {
+  const [count, setCount] = useState(0);
+  const { track } = useTrackEvent(); // 가상의 트래킹 훅
+
+  const handleIncrement = () => {
+    const newCount = count + 1;
+    setCount(newCount);
+
+    // 비즈니스 로직 (카운트 증가)과 트래킹 로직이 혼재합니다.
+    track({
+      event: "click_increment",
+      params: {
+        type: "count",
+        value: newCount,
+        userId, // 상위로부터 전달받은 userId 사용
+      },
+    });
+  };
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={handleIncrement}>Increment</button>
+    </div>
+  );
+}
+```
+
+<Steps>
+
+### Prop Drilling의 고통
+
+이벤트 트래킹에 필요한 데이터를 하위 컴포넌트까지 전달하기 위해 수많은 계층을 거쳐 prop을 내려보내야 하는 경우가 많습니다. 이는 코드의 가독성을 해치고 유지보수를 어렵게 만듭니다.
+
+### 로직의 강한 결합
+
+비즈니스 로직과 이벤트 트래킹 로직이 한데 섞여 코드의 복잡도를 높이고, 각 로직의 독립적인 테스트와 수정을 어렵게 만듭니다.
+
+### 보일러플레이트 코드 증가
+
+반복적인 트래킹 코드 작성은 개발 생산성을 저해하는 요인이 됩니다.
+
+</Steps>
+
+## Event Tracker가 제시하는 새로운 패러다임
+
+Event Tracker는 이벤트 트래킹을 위한 새로운 패러다임을 소개합니다.
+Event Tracker가 제시하는 선언적 방식은 전통적으로 이벤트 트래킹과 관련된 복잡성을 단순화하여, 모든 개발자들이 쉽게 접근할 수 있도록 합니다.
+
+<Steps>
+
+### 선언적 이벤트 트래킹
+
+```tsx {7, 10, 12, 32, 34}
+function Page() {
+  const { user, userId } = useUser();
+
+  // Track.Provider를 통해 하위 컴포넌트에 트래킹 컨텍스트(userId)를 제공합니다.
+  // 더 이상 prop drilling이 필요 없습니다.
+  return (
+    <Track.Provider initialContext={{ userId }}>
+      <div>
+        <p>User: {user.name}</p>
+        <Counter /> {/* userId를 prop으로 전달할 필요가 없습니다. */}
+      </div>
+    </Track.Provider>
+  );
+}
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  const handleIncrement = () => {
+    // 이제 handleIncrement 함수는 순수하게 카운트 증가 로직만 담당합니다.
+    setCount(count + 1);
+  };
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      {/*
+        Track.Click 컴포넌트가 클릭 이벤트를 감싸고,
+        클릭 발생 시 정의된 파라미터와 함께 이벤트를 트래킹합니다.
+        컨텍스트로 제공된 userId는 자동으로 트래킹 데이터에 포함됩니다.
+      */}
+      <Track.Click params={{ value: count + 1, type: "count" }}>
+        <button onClick={handleIncrement}>Increment</button>
+      </Track.Click>
+    </div>
+  );
+}
+```
+
+Event Tracker를 사용하면 선언적 이벤트 트래킹이 가능해져 코드 가독성이 향상되고 복잡성이 감소합니다. 이는 개발자들이 이벤트 트래킹을 더 쉽게 이해하고 사용할 수 있도록 돕습니다.
+
+이제 `handleIncrement` 함수는 카운트 증가에만 책임이 있고, 이벤트 트래킹은 `<Track.Click />` 컴포넌트가 처리합니다.
+**이러한 선언적 접근 방식은 개발자가 '어떻게 트래킹할지'가 아닌 '무엇을 트래킹할지'에 집중하도록 합니다.**
+어떻게 트래킹할지는 React 앱 외부에서 정의되어야 합니다.
+
+### 이벤트 트래킹 응집도 개선
+
+```tsx {4-10, 14-20}
+const [Track, useTracker] = createTracker({
+  // DOM 이벤트 발생 시 실행될 콜백 함수
+  DOMEvents: {
+    onClick: (params, context) => {
+      // 실제 트래킹 라이브러리(Google Analytics, Amplitude 등) 호출
+      logEvent("click_event", {
+        ...params, // { value: ..., type: "count" }
+        userId: context.userId, // Provider로부터 받은 userId
+      });
+    },
+    // 필요에 따라 onMouseOver, onFocus 등 다양한 DOM 이벤트 핸들러 정의 가능
+  },
+  // 화면 노출(Impression) 이벤트 발생 시 실행될 콜백 함수
+  onImpression: (params, context) => {
+    logEvent("impression_event", {
+      ...params,
+      userId: context.userId,
+      pagePath: window.location.pathname,
+    });
+  },
+});
+```
+
+이제 <b>'어떻게 추적할지'</b>에 대한 코드가 비즈니스 로직과 분리되었습니다. 애플리케이션 외부에 위치하므로 비즈니스 로직을 변경하지 않고도 이벤트 트래킹 로직을 수정할 수 있습니다.
+
+### 데이터 검증
+
+```tsx {13-20, 24-33}
+import { z } from "zod";
+import { createTracker } from "@offlegacy/Event Tracker";
+
+interface Context {
+  /* ... */
+}
+
+interface Params {
+  /* ... */
+}
+
+// 스키마 정의
+const schemas = {
+  page_view: z.object({
+    title: z.string(),
+  }),
+  click_button: z.object({
+    target: z.string(),
+  }),
+};
+
+// 트래커 설정
+const [Track] = createTracker<Context, Params, typeof schemas>({
+  schema: {
+    schemas: {
+      page_view,
+      click_button,
+    },
+    onSchemaError: (error) => {
+      console.error("Schema validation error:", error);
+    },
+    abortOnError: true,
+  },
+});
+
+// 스키마 사용하기
+<Track.PageView schema="page_view" params={{ title: "Home Page" }} />;
+<Track.Click schema="click_button" params={{ target: "submit-button" }} />;
+```
+
+Event Tracker는 [Zod](https://zod.dev/) 라이브러리와 통합하여 스키마 기반의 강력한 데이터 타입 검증 기능을 제공합니다. 이를 통해 개발 단계에서부터 데이터 오류를 방지하고, 트래킹 데이터의 신뢰성을 높일 수 있습니다.
+
+</Steps>

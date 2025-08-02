@@ -1,0 +1,129 @@
+import { Callout } from "nextra/components";
+
+# Impression
+
+Tracks impression events using the [Intersection Observer API](https://developer.mozilla.org/docs/Web/API/Intersection_Observer_API).  
+It is one of the event components returned as the first element of the `createTracker` tuple.
+
+```tsx
+import { createTracker } from "@offlegacy/event-tracker";
+
+const [Track] = createTracker({
+  impression: {
+    onImpression: (params, context) => {
+      // Handle impression event
+    },
+    options: {
+      threshold: 0.5,
+    },
+  },
+});
+
+function App() {
+  return (
+    <Track.Provider initialContext={{}}>
+      <Track.Impression params={{ elementId: "hero" }} options={{ threshold: 0.8 }}>
+        <div>Tracked Content</div>
+      </Track.Impression>
+    </Track.Provider>
+  );
+}
+```
+
+## Reference
+
+### Props
+
+| Prop       | Type                                                              | Description                                                   | Required |
+| ---------- | ----------------------------------------------------------------- | ------------------------------------------------------------- | -------- |
+| `enabled`  | `boolean \| ((context: Context, params: EventParams) => boolean)` | Conditionally enable/disable event tracking (default: `true`) | -        |
+| `debounce` | `DebounceConfig`                                                  | Configure debouncing to prevent rapid consecutive events      | -        |
+| `throttle` | `ThrottleConfig`                                                  | Configure throttling to limit event frequency                 | -        |
+| `options`  | `ImpressionOptions`                                               | Overrides global `IntersectionObserver` options               | -        |
+| `schema`   | `string`                                                          | Schema name for validating event parameters                   | O        |
+
+<Callout type="info">
+  Note: `debounce` and `throttle` are mutually exclusive and cannot be used together. A type error will prevent invalid
+  usage.
+</Callout>
+
+The `params` prop type changes depending on whether schemas are used.
+
+With schema:
+
+| Prop     | Type                                                 | Description             |
+| -------- | ---------------------------------------------------- | ----------------------- |
+| `params` | `SchemaParams \| (context: Context) => SchemaParams` | Schema-based parameters |
+
+Without schema:
+
+| Prop     | Type                                               | Description         |
+| -------- | -------------------------------------------------- | ------------------- |
+| `params` | `EventParams \| (context: Context) => EventParams` | Standard parameters |
+
+---
+
+#### `params` (Required)
+
+With schema:
+
+- **Type:** `SchemaParams | (context: Context) => SchemaParams`
+- **Description:** Schema-based parameters
+
+Without schema:
+
+- **Type:** `EventParams | (context: Context) => EventParams`
+- **Description:** Event parameters
+
+#### `enabled`
+
+- **Type:** `boolean | ((context: Context, params: EventParams) => boolean)`
+- **Description:** Conditionally enable or disable event tracking (default: `true`)
+
+#### `debounce`
+
+- **Type:** `DebounceConfig`
+- **Description:** Configure debouncing to avoid multiple rapid event triggers.
+
+#### `throttle`
+
+- **Type:** `ThrottleConfig`
+- **Description:** Configure throttling to limit event frequency.
+
+#### `options`
+
+- **Type:** `ImpressionOptions`
+- **Description:** Controls [`IntersectionObserver`](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API) behavior such as `threshold` and `rootMargin`. Overrides global options for fine-grained control per impression.
+
+#### `schema`
+
+When using schemas:
+
+- **Type:** `string`
+- **Description:** Schema name used to validate event parameters.
+
+## Examples
+
+### Conditional Event
+
+```tsx
+<Track.Impression
+  params={{ elementId: "premium-content" }}
+  enabled={(context) => context.user?.hasAccess}
+  options={{ threshold: 0.5 }}
+>
+  <div>Premium Content</div>
+</Track.Impression>
+```
+
+### Throttled Event
+
+```tsx
+<Track.Impression
+  params={{ elementId: "banner" }}
+  throttle={{ delay: 2000, leading: true, trailing: false }}
+  options={{ threshold: 0.8 }}
+>
+  <div>Ad Banner</div>
+</Track.Impression>
+```
