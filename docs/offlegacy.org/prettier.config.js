@@ -1,4 +1,4 @@
-import rootConfig from "../prettier.config.js";
+import rootConfig from "../../prettier.config.js";
 
 /** @type {import("prettier").Config} */
 const config = {

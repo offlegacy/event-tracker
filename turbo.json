@@ -1,0 +1,23 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".next/**", "public/_pagefind/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "ci:test": {
+      "outputs": []
+    },
+    "ci:lint": {
+      "outputs": []
+    },
+    "clean": {
+      "cache": false
+    }
+  }
+}

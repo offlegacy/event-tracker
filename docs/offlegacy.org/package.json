@@ -1,5 +1,5 @@
 {
-  "name": "docs",
+  "name": "@offlegacy/offlegacy.org",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -8,11 +8,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind"
+    "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind",
+    "clean": "rimraf ./next ./node_modules"
   },
   "dependencies": {
     "@amplitude/analytics-browser": "^2.11.11",
-    "@offlegacy/event-tracker": "latest",
+    "@offlegacy/event-tracker": "workspace:*",
     "@uidotdev/usehooks": "^2.4.1",
     "codehike": "^1.0.7",
     "lucide-react": "^0.525.0",
@@ -29,7 +30,6 @@
     "@types/node": "^20",
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19.1.7",
-    "eslint": "^9",
     "eslint-config-next": "15.3.5",
     "pagefind": "^1.3.0",
     "postcss": "^8",
