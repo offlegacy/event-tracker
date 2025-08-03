@@ -1,0 +1,64 @@
+{
+  "name": "@offlegacy/event-tracker",
+  "version": "1.2.1",
+  "description": "The best solution for event tracking in React applications.",
+  "keywords": [
+    "react",
+    "analytics",
+    "google-analytics",
+    "amplitude",
+    "logger",
+    "event tracking",
+    "tracker",
+    "tracking"
+  ],
+  "homepage": "https://event-tracker.offlegacy.org",
+  "bugs": "https://github.com/offlegacy/event-tracker/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/offlegacy/event-tracker.git"
+  },
+  "license": "MIT",
+  "author": "@stakbucks <Hwang Taehwan>",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "type": "module",
+  "scripts": {
+    "dev": "tsdown --watch",
+    "build": "tsdown",
+    "ci:test": "vitest --run",
+    "ci:test:watch": "vitest",
+    "ci:lint": "eslint --cache .",
+    "clean": "rimraf ./dist ./coverage ./node_modules",
+    "publish": "npm publish"
+  },
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@types/react": "^19.0.2",
+    "react": "^19.1.1"
+  },
+  "peerDependencies": {
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
+    "zod": "^3 || ^4"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -9,6 +9,10 @@ jobs:
   ci:
     name: CI
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        command: ["ci:lint", "ci:test", "build"]
+
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -26,8 +30,5 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
 
-      - name: Test
-        run: pnpm test
-
-      - name: Prepack
-        run: pnpm prepack
+      - name: Run Command
+        run: pnpm ${{ matrix.command }}

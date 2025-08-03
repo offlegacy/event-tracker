@@ -1,17 +1,6 @@
 {
-  "name": "@offlegacy/event-tracker",
-  "version": "1.2.1",
-  "description": "The best solution for event tracking in React applications.",
-  "keywords": [
-    "react",
-    "analytics",
-    "google-analytics",
-    "amplitude",
-    "logger",
-    "event tracking",
-    "tracker",
-    "tracking"
-  ],
+  "name": "event-tracker",
+  "private": true,
   "homepage": "https://event-tracker.offlegacy.org",
   "bugs": "https://github.com/offlegacy/event-tracker/issues",
   "repository": {
@@ -20,42 +9,17 @@
   },
   "license": "MIT",
   "author": "@stakbucks <Hwang Taehwan>",
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      }
-    },
-    "./package.json": "./package.json"
-  },
-  "sideEffects": false,
+  "packageManager": "pnpm@9.14.2",
   "type": "module",
   "scripts": {
-    "dev": "tsup --watch",
-    "build": "tsup",
-    "build:docs": "cd docs && pnpm build",
-    "dev:docs": "cd docs && pnpm dev",
-    "test": "vitest --run",
-    "test:watch": "vitest",
-    "lint": "eslint --cache --ignore-pattern=docs/** .",
-    "prepack": "pnpm build",
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "ci:test": "turbo run ci:test",
+    "ci:lint": "turbo run ci:lint",
     "prepare": "husky",
-    "release": "pnpm build && npm publish",
-    "format": "prettier --write --ignore-pattern \"docs/**\" .",
-    "format:check": "prettier --check --ignore-pattern \"docs/**\" .",
-    "format:file": "prettier --write"
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "clean": "turbo run clean"
   },
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
   "devDependencies": {
     "@cspell/eslint-plugin": "^8.17.1",
     "@eslint-react/eslint-plugin": "^1.22.1",
@@ -63,7 +27,6 @@
     "@testing-library/react": "^16.1.0",
     "@testing-library/user-event": "^14.5.2",
     "@types/eslint": "^9.6.1",
-    "@types/react": "^19.0.2",
     "@typescript-eslint/eslint-plugin": "^8.18.2",
     "@typescript-eslint/parser": "^8.18.2",
     "eslint": "^9.17.0",
@@ -74,23 +37,11 @@
     "jsdom": "^25.0.1",
     "lint-staged": "^15.3.0",
     "prettier": "^3.4.2",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "tsup": "^8.3.5",
+    "rimraf": "^6.0.1",
+    "tsdown": "^0.13.1",
+    "turbo": "^2.5.5",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.18.2",
     "vitest": "^2.1.8"
-  },
-  "peerDependencies": {
-    "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
-    "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
-    "zod": "^3.20.0"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "dependencies": {
-    "zod": "^3.20.0"
-  },
-  "packageManager": "pnpm@9.14.2"
+  }
 }

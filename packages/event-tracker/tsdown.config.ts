@@ -1,4 +1,4 @@
-import { defineConfig } from "tsup";
+import { defineConfig } from "tsdown";
 
 export default defineConfig({
   banner: { js: '"use client"' },
@@ -8,8 +8,6 @@ export default defineConfig({
   outDir: "dist",
   sourcemap: true,
   dts: true,
-  splitting: true,
-  bundle: true,
   clean: true,
-  external: ["react", "react-dom"],
+  external: ["react", "zod"],
 });

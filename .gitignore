@@ -15,7 +15,7 @@ node_modules
 out/
 build
 dist
-
+.turbo
 
 # Misc
 .DS_Store
