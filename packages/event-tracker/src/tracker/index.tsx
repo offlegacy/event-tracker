@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from "react";
-import { z } from "zod";
 
 import { isEventPropsWithSchema } from "../helpers/isEventPropsWithSchema";
 import { isFunction } from "../helpers/isFunction";
@@ -26,6 +25,7 @@ import type {
 } from "../types";
 import { evaluateEnabledCondition } from "../utils/condition";
 import { resolveParams } from "../utils/resolveParams";
+import { isFailureResult } from "../utils/schema";
 
 import { Click as PrimitiveClick } from "./components/Click";
 import { DOMEvent as PrimitiveDOMEvent } from "./components/DOMEvent";
@@ -40,22 +40,21 @@ export function createTracker<
 >(config: TrackerConfig<TContext, TEventParams, TSchemas, TTaskResult>) {
   const TrackerContext = createContext<null | TrackerContextProps<TContext, TEventParams, TSchemas, TTaskResult>>(null);
 
-  const validateZodSchema = <TKey extends keyof TSchemas>(schemaKey: TKey, params: z.infer<TSchemas[TKey]>) => {
+  const validateSchema = <TKey extends keyof TSchemas>(schemaKey: TKey, params: SchemaParams<TSchemas, TKey>) => {
     const schema = config.schema?.schemas?.[schemaKey];
     if (schema === undefined) {
       console.warn(`Schema ${String(schemaKey)} not found`);
       return params;
     }
-    try {
-      schema.parse(params);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        config.schema?.onSchemaError?.(error);
-        if (config.schema?.abortOnError) {
-          throw error;
-        }
+
+    const result = schema["~standard"].validate(params);
+    if (isFailureResult(result)) {
+      config.schema?.onSchemaError?.(result.issues);
+      if (config.schema?.abortOnError) {
+        throw result;
       }
     }
+
     return;
   };
 
@@ -124,7 +123,7 @@ export function createTracker<
             ? paramsWithSchema.params(_getContext())
             : paramsWithSchema.params;
 
-          validateZodSchema(paramsWithSchema.schema, params);
+          validateSchema(paramsWithSchema.schema, params);
 
           return _schedule(() =>
             domEvents[key]?.(params as TEventParams & SchemaParams<TSchemas, TKey>, _getContext(), _setContext),
@@ -152,11 +151,11 @@ export function createTracker<
         options?: TrackingOptions<TContext, TEventParams>,
       ) => {
         const executeEvent = () => {
-          const params = isFunction<TContext, z.infer<TSchemas[TKey]>>(paramsWithSchema.params)
+          const params = isFunction<TContext, SchemaParams<TSchemas, TKey>>(paramsWithSchema.params)
             ? paramsWithSchema.params(_getContext())
             : paramsWithSchema.params;
 
-          validateZodSchema(paramsWithSchema.schema, params);
+          validateSchema(paramsWithSchema.schema, params);
 
           return _schedule(() =>
             event?.(params as TEventParams & SchemaParams<TSchemas, TKey>, _getContext(), _setContext),
