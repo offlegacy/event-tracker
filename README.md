@@ -8,15 +8,14 @@
 
 Comprehensive solution for event tracking in React applications
 
-
 ## Key Features
 
-- Declarative API
-- Analytics Tool Independence
-- Clear Separation of Concerns
-- Optimized Performance
-- Guaranteed Execution Order
-- Data Validation
+- Declarative event tracking with type-safe APIs
+- Analytics tool agnostic - works with any provider
+- Clean separation of tracking logic from business logic
+- Optimized performance with event batching
+- Guaranteed execution order for async operations
+- Data type validation with schemas
 
 ## Visit [official documentation](https://event-tracker.offlegacy.org/)
 
