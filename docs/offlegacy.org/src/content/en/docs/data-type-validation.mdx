@@ -2,12 +2,67 @@ import { Callout, Steps } from "nextra/components";
 
 # Data Validation
 
-Event Tracker provides schema-based data type validation using [Zod](https://zod.dev/) to ensure the accuracy of event parameters.  
+Event Tracker provides schema-based data type validation using the [Standard Schema](https://standardschema.dev/) specification to ensure the accuracy of event parameters.  
 With this feature, events are validated against predefined structures before being collected, helping to ensure data reliability, prevent errors, and provide a foundation for structured analytics.
+
+The library supports any schema validation library that implements the Standard Schema specification, including Zod, Valibot, ArkType, and more.
 
 ## Usage
 
-Define Zod schemas and pass them to the `schemas` option in the `createTracker` configuration.
+You can define schemas in two ways: using the Standard Schema interface directly or using any Standard Schema-compatible library like Zod.
+
+### Option 1: Standard Schema Interface (Built-in)
+
+```tsx
+import { createTracker } from "@offlegacy/event-tracker";
+
+// Helper function to create Standard Schema-compliant schemas
+function createSchema<T>(validator: (value: unknown) => T) {
+  return {
+    "~standard": {
+      version: 1,
+      vendor: "custom",
+      validate: (value: unknown) => {
+        try {
+          const result = validator(value);
+          return { value: result };
+        } catch (error) {
+          return {
+            issues: [{ message: error instanceof Error ? error.message : "Validation failed" }],
+          };
+        }
+      },
+    },
+  };
+}
+
+const schemas = {
+  page_view: createSchema((value: unknown): { title: string } => {
+    if (typeof value?.title !== "string") {
+      throw new Error("title must be a string");
+    }
+    return { title: value.title };
+  }),
+  click_button: createSchema((value: unknown): { target: string } => {
+    if (typeof value?.target !== "string") {
+      throw new Error("target must be a string");
+    }
+    return { target: value.target };
+  }),
+};
+
+const [Track] = createTracker<{}, {}, typeof schemas>({
+  schema: {
+    schemas,
+    onSchemaError: (error) => {
+      console.error("Schema validation failed:", error);
+    },
+    abortOnError: true,
+  },
+});
+```
+
+### Option 2: Using Zod (Standard Schema Compatible)
 
 ```tsx
 import { createTracker } from "@offlegacy/event-tracker";
@@ -23,7 +78,7 @@ const schemas = {
 };
 
 const [Track] = createTracker<{}, {}, typeof schemas>({
-  schemas: {
+  schema: {
     schemas,
     onSchemaError: (error) => {
       console.error("Schema validation failed:", error);
@@ -35,11 +90,11 @@ const [Track] = createTracker<{}, {}, typeof schemas>({
 
 ## Reference
 
-| Option          | Type                                         | Description                                           | Default  |
-| --------------- | -------------------------------------------- | ----------------------------------------------------- | -------- |
-| `schemas`       | `Record<string, ZodSchema>`                  | Mapping of event names to Zod schemas                 | Required |
-| `onSchemaError` | `(error: ZodError) => void \| Promise<void>` | Function called when schema validation fails          | Optional |
-| `abortOnError`  | `boolean`                                    | Whether to abort event processing on validation error | `false`  |
+| Option          | Type                                                         | Description                                                 | Default  |
+| --------------- | ------------------------------------------------------------ | ----------------------------------------------------------- | -------- |
+| `schemas`       | `Record<string, StandardSchemaV1>`                           | Mapping of event names to Standard Schema-compliant schemas | Required |
+| `onSchemaError` | `(error: StandardSchemaV1.Issue[]) => void \| Promise<void>` | Function called when schema validation fails                | Optional |
+| `abortOnError`  | `boolean`                                                    | Whether to abort event processing on validation error       | `false`  |
 
 <Callout type="info">
   When `abortOnError` is set to `true`, events that fail schema validation will not be tracked.
@@ -49,7 +104,30 @@ const [Track] = createTracker<{}, {}, typeof schemas>({
 
 <Steps>
 
-### Define Zod Schemas
+### Define Schemas
+
+Choose either the built-in Standard Schema approach or use an external library:
+
+**Option A: Built-in Standard Schema**
+
+```ts
+const schemas = {
+  page_view: createSchema((value: unknown): { title: string } => {
+    if (typeof value?.title !== "string") {
+      throw new Error("title must be a string");
+    }
+    return { title: value.title };
+  }),
+  click_button: createSchema((value: unknown): { target: string } => {
+    if (typeof value?.target !== "string") {
+      throw new Error("target must be a string");
+    }
+    return { target: value.target };
+  }),
+};
+```
+
+**Option B: Using Zod**
 
 ```ts
 import { z } from "zod";
@@ -68,11 +146,11 @@ const schemas = {
 
 ```tsx
 const [Track] = createTracker<{}, {}, typeof schemas>({
-  schemas: {
+  schema: {
     schemas,
     abortOnError: true,
     onSchemaError: (error) => {
-      console.error("Schema error occurred", error);
+      console.error("Schema validation error:", error);
     },
   },
 });
@@ -92,7 +170,7 @@ If it fails, `onSchemaError` is triggered, and if `abortOnError` is `true`, the 
 
 ## Notes
 
-- Zod schemas use [parse](https://zod.dev/?id=parse) for validation by default.
-- For better type inference, define schemas outside of the `createTracker` function and pass `typeof schemas` as the third type argument to `createTracker`.
-
-_Support for additional schema validation libraries is planned for the future._
+- Standard Schema validation uses the `validate` method from the schema's `~standard` property
+- **Type inference**: For better type safety and IntelliSense, define schemas outside of the `createTracker` function and pass `typeof schemas` as the third type argument: `createTracker<Context, EventParams, typeof schemas>`
+- Schema validation errors include detailed messages and path information for debugging
+- All schema approaches (built-in Standard Schema, Zod, Valibot, etc.) provide the same level of type safety when properly configured
