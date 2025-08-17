@@ -153,9 +153,6 @@ importers:
       react:
         specifier: ^19.1.1
         version: 19.1.1
-      zod:
-        specifier: ^4.0.17
-        version: 4.0.17
 
 packages:
 
@@ -4976,9 +4973,6 @@ packages:
 
   zod@4.0.0-beta.20250424T163858:
     resolution: {integrity: sha512-fKhW+lEJnfUGo0fvQjmam39zUytARR2UdCEh7/OXJSBbKScIhD343K74nW+UUHu/r6dkzN6Uc/GqwogFjzpCXg==}
-
-  zod@4.0.17:
-    resolution: {integrity: sha512-1PHjlYRevNxxdy2JZ8JcNAw7rX8V9P1AKkP+x/xZfxB0K5FYfuV+Ug6P/6NVSR2jHQ+FzDDoDHS04nYUsOIyLQ==}
 
   zustand@5.0.7:
     resolution: {integrity: sha512-Ot6uqHDW/O2VdYsKLLU8GQu8sCOM1LcoE8RwvLv9uuRT9s6SOHCKs0ZEOhxg+I1Ld+A1Q5lwx+UlKXXUoCZITg==}
@@ -10814,8 +10808,6 @@ snapshots:
   zod@4.0.0-beta.20250424T163858:
     dependencies:
       '@zod/core': 0.9.0
-
-  zod@4.0.17: {}
 
   zustand@5.0.7(@types/react@19.1.9)(react@19.1.1)(use-sync-external-store@1.5.0(react@19.1.1)):
     optionalDependencies:
