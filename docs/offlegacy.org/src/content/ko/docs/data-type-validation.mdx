@@ -2,12 +2,67 @@ import { Callout, Steps } from "nextra/components";
 
 # 데이터 검증
 
-Event Tracker는 이벤트 파라미터의 정확성을 보장하기 위해 [Zod](https://zod.dev/)를 활용한 스키마 기반 데이터 타입 검증 기능을 제공합니다.  
+Event Tracker는 이벤트 파라미터의 정확성을 보장하기 위해 [Standard Schema](https://standardschema.dev/) 스펙을 활용한 스키마 기반 데이터 타입 검증 기능을 제공합니다.  
 이 기능을 사용하면 이벤트가 수집되기 전에 사전 정의된 구조와 일치하는지 검증할 수 있으며, 이는 데이터 신뢰성과 오류 방지, 정형 분석을 위한 기반으로 유용합니다.
+
+Zod, Valibot, ArkType 등 Standard Schema 스펙을 구현하는 모든 스키마 검증 라이브러리를 지원합니다.
 
 ## Usage
 
-Zod 스키마를 정의하고, `createTracker` 설정에서 `schemas` 옵션으로 전달하면 됩니다.
+스키마는 두 가지 방식으로 정의할 수 있습니다: Standard Schema 인터페이스를 직접 사용하거나 Zod와 같은 Standard Schema 호환 라이브러리를 사용하는 방법입니다.
+
+### 방법 1: Standard Schema 인터페이스 (내장)
+
+```tsx
+import { createTracker } from "@offlegacy/event-tracker";
+
+// Standard Schema 호환 스키마를 생성하는 헬퍼 함수
+function createSchema<T>(validator: (value: unknown) => T) {
+  return {
+    "~standard": {
+      version: 1,
+      vendor: "custom",
+      validate: (value: unknown) => {
+        try {
+          const result = validator(value);
+          return { value: result };
+        } catch (error) {
+          return {
+            issues: [{ message: error instanceof Error ? error.message : "검증 실패" }],
+          };
+        }
+      },
+    },
+  };
+}
+
+const schemas = {
+  page_view: createSchema((value: unknown): { title: string } => {
+    if (typeof value?.title !== "string") {
+      throw new Error("title은 문자열이어야 합니다");
+    }
+    return { title: value.title };
+  }),
+  click_button: createSchema((value: unknown): { target: string } => {
+    if (typeof value?.target !== "string") {
+      throw new Error("target은 문자열이어야 합니다");
+    }
+    return { target: value.target };
+  }),
+};
+
+const [Track] = createTracker<{}, {}, typeof schemas>({
+  schema: {
+    schemas,
+    onSchemaError: (error) => {
+      console.error("스키마 검증 실패:", error);
+    },
+    abortOnError: true,
+  },
+});
+```
+
+### 방법 2: Zod 사용 (Standard Schema 호환)
 
 ```tsx
 import { createTracker } from "@offlegacy/event-tracker";
@@ -23,7 +78,7 @@ const schemas = {
 };
 
 const [Track] = createTracker<{}, {}, typeof schemas>({
-  schemas: {
+  schema: {
     schemas,
     onSchemaError: (error) => {
       console.error("스키마 검증 실패:", error);
@@ -35,11 +90,11 @@ const [Track] = createTracker<{}, {}, typeof schemas>({
 
 ## Reference
 
-| 옵션            | 타입                                         | 설명                                     | 기본값  |
-| --------------- | -------------------------------------------- | ---------------------------------------- | ------- |
-| `schemas`       | `Record<string, ZodSchema>`                  | 이벤트 이름과 Zod 스키마의 매핑          | 필수    |
-| `onSchemaError` | `(error: ZodError) => void \| Promise<void>` | 스키마 검증 실패 시 호출되는 함수        | 선택    |
-| `abortOnError`  | `boolean`                                    | 오류 발생 시 이벤트 처리를 중단할지 여부 | `false` |
+| 옵션            | 타입                                                         | 설명                                             | 기본값  |
+| --------------- | ------------------------------------------------------------ | ------------------------------------------------ | ------- |
+| `schemas`       | `Record<string, StandardSchemaV1>`                           | 이벤트 이름과 Standard Schema 호환 스키마의 매핑 | 필수    |
+| `onSchemaError` | `(error: StandardSchemaV1.Issue[]) => void \| Promise<void>` | 스키마 검증 실패 시 호출되는 함수                | 선택    |
+| `abortOnError`  | `boolean`                                                    | 오류 발생 시 이벤트 처리를 중단할지 여부         | `false` |
 
 <Callout type="info">스키마 오류가 발생했을 때 `abortOnError: true`인 경우, 해당 이벤트는 추적되지 않습니다.</Callout>
 
@@ -47,7 +102,30 @@ const [Track] = createTracker<{}, {}, typeof schemas>({
 
 <Steps>
 
-### Zod 스키마 정의
+### 스키마 정의
+
+내장 Standard Schema 방식 또는 외부 라이브러리를 선택하여 사용할 수 있습니다:
+
+**방법 A: 내장 Standard Schema**
+
+```ts
+const schemas = {
+  page_view: createSchema((value: unknown): { title: string } => {
+    if (typeof value?.title !== "string") {
+      throw new Error("title은 문자열이어야 합니다");
+    }
+    return { title: value.title };
+  }),
+  click_button: createSchema((value: unknown): { target: string } => {
+    if (typeof value?.target !== "string") {
+      throw new Error("target은 문자열이어야 합니다");
+    }
+    return { target: value.target };
+  }),
+};
+```
+
+**방법 B: Zod 사용**
 
 ```ts
 import { z } from "zod";
@@ -66,11 +144,11 @@ const schemas = {
 
 ```tsx
 const [Track] = createTracker<{}, {}, typeof schemas>({
-  schemas: {
+  schema: {
     schemas,
     abortOnError: true,
     onSchemaError: (error) => {
-      console.error("스키마 오류 발생", error);
+      console.error("스키마 검증 오류:", error);
     },
   },
 });
@@ -90,7 +168,7 @@ const [Track] = createTracker<{}, {}, typeof schemas>({
 
 ## Notes
 
-- Zod 스키마는 기본적으로 [parse](https://zod.dev/?id=parse)를 사용하여 검증됩니다.
-- 부드러운 타입 추론을 위해, createTracker 함수 외부에서 스키마를 정의하고 createTracker의 세 번째 타입 인자에 typeof schemas를 할당하길 권장합니다.
-
-_향후 다른 스키마 검증 라이브러리를 지원할 계획입니다._
+- Standard Schema 검증은 스키마의 `~standard` 속성에서 `validate` 메서드를 사용합니다
+- **타입 추론**: 더 나은 타입 안전성과 IntelliSense를 위해 `createTracker` 함수 외부에서 스키마를 정의하고 세 번째 타입 인자로 `typeof schemas`를 전달하세요: `createTracker<Context, EventParams, typeof schemas>`
+- 스키마 검증 오류에는 디버깅을 위한 상세한 메시지와 경로 정보가 포함됩니다
+- 모든 스키마 접근법(내장 Standard Schema, Zod, Valibot 등)은 올바르게 구성되었을 때 동일한 수준의 타입 안전성을 제공합니다
