@@ -23,6 +23,7 @@ export default tseslint.config({
     "@typescript-eslint/no-unused-vars": "error",
     "@typescript-eslint/consistent-type-imports": "error",
     "@eslint-react/no-children-only": "off",
+    "@eslint-react/no-context-provider": "off",
     "import/order": [
       "error",
       {

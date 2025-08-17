@@ -1,11 +1,10 @@
 import { render } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { z } from "zod";
 
 import { createTracker } from "../tracker";
 import { throttle } from "../utils/throttle";
 
-import { sleep, anyFn } from "./utils";
+import { sleep, anyFn, createSchema, isString, isObject } from "./utils";
 
 describe("throttle", () => {
   beforeEach(() => {
@@ -409,8 +408,18 @@ describe("Throttle Integration Tests", () => {
         batch: { enable: false },
         schema: {
           schemas: {
-            clickSchema: z.object({
-              action: z.string(),
+            clickSchema: createSchema((value: unknown): { action: string } => {
+              if (!isObject(value)) {
+                throw new Error("Expected object");
+              }
+              
+              const { action } = value;
+              
+              if (!isString(action)) {
+                throw new Error("action must be a string");
+              }
+              
+              return { action };
             }),
           },
         },
