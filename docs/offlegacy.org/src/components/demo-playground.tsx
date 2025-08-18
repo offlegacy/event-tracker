@@ -6,6 +6,7 @@ import { useTheme } from "nextra-theme-docs";
 import { useSystemDarkMode } from "../logo/useSystemDarkMode";
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
+import { Toaster } from "sonner";
 
 const code = `import { createTracker } from "@offlegacy/event-tracker";
 import { capture } from "you-can-use-analytics";
@@ -75,6 +76,7 @@ export function DemoCode() {
       <div className="absolute bottom-6 right-6 z-10">
         <DemoButton>Click me</DemoButton>
       </div>
+      <Toaster position="top-right" className="!absolute" />
     </motion.div>
   );
 }
