@@ -38,10 +38,8 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           npm version ${{ github.event.inputs.version }} -m "Release v%s"
-          git add package.json
-          git commit -m "Release v${{ github.event.inputs.version }}"
-          git tag v${{ github.event.inputs.version }}
-          git push origin HEAD
+          git checkout -b release/${{ github.event.inputs.version }}
+          git push --set-upstream origin release/${{ github.event.inputs.version }}
           git push --tags
 
       - name: Run Tests
