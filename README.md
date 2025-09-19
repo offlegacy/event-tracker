@@ -97,20 +97,9 @@ You can use the provided components or create custom ones to handle various user
 
 Use when you need more complex or conditional event tracking that is not directly tied to component lifecycle or DOM events. The hook allows you to access context from `Track.Provider` and execute defined tracking logic imperatively.
 
-## Key Features
-
-- Declarative event tracking with type-safe APIs
-- Analytics tool agnostic - works with any provider
-- Clean separation of tracking logic from business logic
-- Optimized performance with event batching
-- Guaranteed execution order for async operations
-- Data type validation with schemas
-
 ## Visit [official documentation](https://event-tracker.offlegacy.org/)
 
 Visit the [official documentation](https://event-tracker.offlegacy.org/) for detailed information on installation, usage, and more.
-
-
 
 ## Contributing
 
