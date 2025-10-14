@@ -46,7 +46,7 @@ export default async function HomePage({
             <InstallCopyButton />
           </div>
         </div>
-        <div className="min-h-[572.75px]">
+        <div className="min-h-[572.75px] w-full max-w-[723px]">
           <DemoCode />
         </div>
       </div>
