@@ -2,9 +2,8 @@
 
 import { highlight, Pre, type HighlightedCode } from "codehike/code";
 import { DemoButton } from "./demo-button";
-import { useTheme } from "nextra-theme-docs";
-import { useSystemDarkMode } from "../logo/useSystemDarkMode";
-import { useEffect, useState } from "react";
+import { Link, useTheme } from "nextra-theme-docs";
+import { useLayoutEffect, useState } from "react";
 import { motion } from "motion/react";
 import { Toaster } from "sonner";
 
@@ -31,13 +30,11 @@ function App() {
 }`;
 
 export function DemoCode() {
-  const { theme } = useTheme();
-  const isSystemDarkMode = useSystemDarkMode();
-  const resolvedTheme = theme === "system" ? (isSystemDarkMode ? "dark" : "light") : theme;
+  const { resolvedTheme } = useTheme();
   const codeTheme = resolvedTheme === "dark" ? "github-dark" : "github-light";
   const [highlighted, setHighlighted] = useState<HighlightedCode | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     highlight(
       {
         value: code,
@@ -66,7 +63,9 @@ export function DemoCode() {
       <div className="relative overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
         <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800/50">
           <div className="flex items-center space-x-2">
-            <span className="ml-2 text-sm font-medium text-gray-600 dark:text-gray-400">example-basic.tsx</span>
+            <Link href="/docs/basic-example" className="ml-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+              example-basic.tsx
+            </Link>
           </div>
         </div>
         <div className="relative overflow-x-auto p-6">
