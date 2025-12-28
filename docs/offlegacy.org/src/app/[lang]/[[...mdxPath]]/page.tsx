@@ -19,11 +19,11 @@ const Wrapper = useMDXComponents().wrapper;
 export default async function Page(props: { params: Promise<{ mdxPath: string[]; lang: Lang }> }) {
   const params = await props.params;
   const result = await importPage(params.mdxPath, params.lang);
-  const { default: MDXContent, toc, metadata } = result;
+  const { default: MDXContent, metadata, toc, sourceCode } = result;
 
   return (
     <>
-      <Wrapper toc={toc} metadata={metadata}>
+      <Wrapper metadata={metadata} toc={toc} sourceCode={sourceCode}>
         <MDXContent {...props} params={params} />
       </Wrapper>
       <TrackPageView params={{ title: metadata.title }} />
