@@ -7,7 +7,6 @@ import "nextra-theme-docs/style-prefixed.css";
 import "../globals.css";
 import { TrackClick, TrackImpression, TrackProvider } from "@/tracker";
 import { Logo } from "@/logo";
-import type { Lang } from "@/lib/types/lang";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -51,13 +50,7 @@ const footer = (
   </TrackImpression>
 );
 
-export default async function RootLayout({
-  params,
-  children,
-}: {
-  children: React.ReactNode;
-  params: Promise<{ lang: Lang }>;
-}) {
+export default async function RootLayout({ params, children }: LayoutProps<"/[lang]">) {
   const { lang } = await params;
   const pageMap = await getPageMap(lang);
   const headersList = await headers();
